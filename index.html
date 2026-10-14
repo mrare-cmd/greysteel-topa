@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greysteel TOPA Tracker</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231a73e8'/%3E%3Cstop offset='.58' stop-color='%235b5bd6'/%3E%3Cstop offset='1' stop-color='%237b4fd0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='45.5' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' font-size='38' font-weight='700' fill='%23fff'%3ET%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1a73e8;--blue-dark:#1557b0;--blue-light:#e8f0fe;--green:#188038;--green-light:#e6f4ea;
+  --yellow:#f9ab00;--yellow-light:#fef7e0;--orange:#fa7b17;--orange-light:#feefe3;
+  --red:#d93025;--red-light:#fce8e6;--purple:#9334e6;--purple-light:#f3e8fd;
+  --text:#202124;--text2:#5f6368;--text3:#80868b;
+  --border:#dadce0;--border2:#e8eaed;--bg:#f8f9fa;--white:#fff;
+  --shadow:0 1px 2px rgba(60,64,67,.3),0 1px 3px 1px rgba(60,64,67,.15);
+  --shadow-lg:0 4px 12px rgba(60,64,67,.15),0 2px 6px rgba(60,64,67,.1);
+  --header:60px;
+}
+html,body{height:100%;font-family:'Roboto',sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
+body{overflow:hidden}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.mono{font-family:'Roboto Mono',monospace}
+[hidden]{display:none!important}
+
+/* ---------- sign-in gate (same Worker + session as GreyHub / PBS8 / LoanID) ---------- */
+#authGate{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 600px at 50% 30%,#eef3fe 0%,#f8f9fa 55%,#f1f3f4 100%);transition:opacity .35s ease}
+#authGate.hidden{opacity:0;pointer-events:none}
+#authGate.gone{display:none}
+.ag-card{width:380px;max-width:calc(100vw - 32px);background:var(--white);border:1px solid var(--border);border-radius:16px;box-shadow:0 18px 50px rgba(32,33,36,.12);padding:34px 32px 28px;text-align:center}
+.ag-brand{display:inline-flex;align-items:center;gap:10px;margin-bottom:8px}
+.ag-title{font-family:'Google Sans',sans-serif;font-size:22px;color:var(--text)}
+.ag-by{font-size:12px;color:var(--text3);margin-bottom:18px}
+.ag-sub{font-size:13.5px;color:var(--text2);margin:0 0 22px;line-height:1.5}
+.ag-btn{width:100%;height:44px;display:inline-flex;align-items:center;justify-content:center;gap:10px;border:1px solid #c4c7cc;border-radius:22px;background:var(--white);color:var(--text);font-size:14px;font-weight:500;transition:background .2s,box-shadow .2s}
+.ag-btn:hover{background:var(--bg);box-shadow:0 1px 4px rgba(32,33,36,.12)}
+.ag-btn:disabled{opacity:.6;cursor:default}
+.ag-msg{min-height:18px;margin-top:14px;font-size:12.5px;color:var(--red)}
+.ag-msg.ok{color:var(--text2)}
+.mark{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Google Sans',sans-serif;font-weight:700;font-size:19px;background:linear-gradient(160deg,rgba(255,255,255,.28),rgba(255,255,255,0) 46%),linear-gradient(135deg,#1a73e8 0%,#5b5bd6 58%,#7b4fd0 100%);box-shadow:0 2px 8px rgba(26,115,232,.35);flex-shrink:0}
+
+/* ---------- header ---------- */
+header{position:fixed;top:0;left:0;right:0;height:var(--header);background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:14px;z-index:200}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand-name{font-family:'Google Sans',sans-serif;font-size:15px;color:var(--text2)}
+.brand-sep{color:var(--border);font-size:20px;font-weight:300}
+.brand-page{font-family:'Google Sans',sans-serif;font-size:18px;color:var(--text)}
+#verBadge{font-size:10.5px;font-weight:500;color:var(--text2);background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:1px 7px}
+nav.tabs{display:flex;gap:2px;margin-left:8px}
+.tab{height:36px;padding:0 14px;border-radius:18px;font-family:'Google Sans',sans-serif;font-size:14px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.tab:hover{background:var(--bg)}
+.tab.active{background:var(--blue-light);color:var(--blue);font-weight:500}
+.gsearch{flex:1;max-width:520px;position:relative;margin-left:auto}
+.gsearch input{width:100%;height:40px;border:1px solid transparent;border-radius:20px;padding:0 16px 0 42px;background:#f1f3f4;outline:none;transition:all .2s}
+.gsearch input:focus{background:var(--white);border-color:var(--border);box-shadow:var(--shadow)}
+.gsearch svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);pointer-events:none}
+.hdr-right{display:flex;align-items:center;gap:8px}
+#syncDot{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text3);white-space:nowrap}
+#syncDot i{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block}
+#syncDot.busy i{background:var(--yellow)}
+#syncDot.err i{background:var(--red)}
+.btn{height:36px;padding:0 16px;border-radius:18px;font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--white);color:var(--text);white-space:nowrap;transition:background .15s,box-shadow .15s}
+.btn:hover{background:var(--bg)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-dark);box-shadow:var(--shadow)}
+.btn.sm{height:30px;padding:0 12px;font-size:12.5px;border-radius:15px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--blue)}
+.btn.ghost:hover{background:var(--blue-light)}
+.btn.danger{color:var(--red)}
+.btn:disabled{opacity:.5;cursor:default}
+#userWrap{position:relative}
+#userChip{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 10px 0 4px;border:1px solid var(--border);border-radius:17px;background:var(--white);font-size:12.5px}
+#userChip:hover{background:var(--bg)}
+.uc-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11.5px;font-weight:700;background:linear-gradient(135deg,#1a73e8,#7b4fd0)}
+#userMenu{position:absolute;top:calc(100% + 8px);right:0;z-index:6000;min-width:230px;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(32,33,36,.18);padding:12px 14px;display:none}
+#userMenu.open{display:block}
+#userMenu .um-n{font-size:13px;font-weight:600}
+#userMenu .um-e{font-size:12px;color:var(--text2);margin:2px 0 12px;word-break:break-all}
+#userMenu button{width:100%;height:32px;border-radius:16px;border:1px solid var(--border);font-size:12.5px}
+
+/* ---------- layout ---------- */
+main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
+.view{position:absolute;inset:0;overflow:auto;display:none}
+.view.active{display:block}
+.wrap{max-width:1480px;margin:0 auto;padding:20px 24px 48px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.card-h{display:flex;align-items:center;gap:10px;padding:14px 18px 10px;flex-wrap:wrap}
+.card-t{font-family:'Google Sans',sans-serif;font-size:16px;color:var(--text)}
+.card-s{font-size:12.5px;color:var(--text2)}
+.card-b{padding:0 18px 16px}
+.grid{display:grid;gap:16px}
+.g-kpi{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g-2{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}
+.g-2e{grid-template-columns:repeat(2,minmax(0,1fr))}
+.mt{margin-top:16px}
+.kpi{padding:16px 18px}
+.kpi .k-l{font-size:12.5px;color:var(--text2)}
+.kpi .k-v{font-family:'Google Sans',sans-serif;font-size:30px;color:var(--text);margin:6px 0 4px;letter-spacing:-.01em}
+.kpi .k-d{font-size:12.5px;color:var(--text2)}
+.delta{font-weight:500}
+.delta.up{color:var(--green)}
+.delta.down{color:var(--red)}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.seg button{height:28px;padding:0 12px;font-size:12px;color:var(--text2);border-right:1px solid var(--border)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--blue-light);color:var(--blue);font-weight:500}
+.ml-auto{margin-left:auto}
+.muted{color:var(--text2)}
+.small{font-size:12px}
+.pill{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:11px;font-size:11.5px;font-weight:500;white-space:nowrap}
+.pill.blue{background:var(--blue-light);color:var(--blue)}
+.pill.green{background:var(--green-light);color:var(--green)}
+.pill.gray{background:#f1f3f4;color:var(--text2)}
+.pill.orange{background:var(--orange-light);color:#b5520c}
+.pill.red{background:var(--red-light);color:var(--red)}
+.pill.purple{background:var(--purple-light);color:var(--purple)}
+
+/* comparison table */
+.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+.cmp th,.cmp td{padding:6px 10px;border-bottom:1px solid var(--border2);text-align:right;white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;position:sticky;left:0;background:var(--white);z-index:1}
+.cmp thead th{font-weight:500;color:var(--text2);font-size:12px;background:var(--white)}
+.cmp tr.sec td{font-family:'Google Sans',sans-serif;font-weight:500;color:var(--text);background:var(--bg);font-size:12.5px}
+.cmp td.cur{background:#f6f9fe;font-weight:500}
+.cmp tbody tr:hover td{background:#f1f3f4}
+.scroll-x{overflow-x:auto}
+.ucap{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.ucap input{width:84px;height:28px;border:1px solid var(--border);border-radius:6px;padding:0 8px;outline:none}
+
+/* charts */
+.chart{position:relative}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart .bar{fill:var(--blue);transition:opacity .12s}
+.chart .bar.cur{fill:#5b5bd6}
+.chart .bar.dim{opacity:.35}
+.chart .ax{font-size:11px;fill:var(--text3)}
+.chart .gl{stroke:var(--border2);stroke-width:1}
+.chart .lbl{font-size:11px;fill:var(--text2)}
+.tip{position:fixed;z-index:8000;pointer-events:none;background:#202124;color:#fff;font-size:12px;padding:7px 10px;border-radius:6px;box-shadow:var(--shadow-lg);white-space:nowrap;display:none;line-height:1.45}
+.tip b{font-weight:500}
+
+/* pipeline list */
+.pipe{max-height:440px;overflow:auto;border-top:1px solid var(--border2)}
+.pi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 18px;border-bottom:1px solid var(--border2);cursor:pointer}
+.pi:hover{background:#f6f9fe}
+.pi .a{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi .m{font-size:12px;color:var(--text2)}
+.pbar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--border2);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--blue);border-radius:2px}
+#map{height:440px;border-top:1px solid var(--border2)}
+
+/* ---------- table view ---------- */
+#vTable{overflow:hidden}
+.tv{position:absolute;inset:0;display:flex}
+.side{width:248px;flex-shrink:0;border-right:1px solid var(--border);background:var(--white);overflow:auto;padding:10px 8px 24px}
+.side h4{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:14px 12px 6px}
+.sh{width:100%;display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:0 17px 17px 0;font-size:13px;color:var(--text);text-align:left}
+.sh:hover{background:#f1f3f4}
+.sh.on{background:var(--blue-light);color:var(--blue);font-weight:500}
+.sh .n{margin-left:auto;font-size:11.5px;color:var(--text3)}
+.sh.on .n{color:var(--blue)}
+.tmain{flex:1;min-width:0;display:flex;flex-direction:column}
+.tbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)}
+.tbar .ttl{font-family:'Google Sans',sans-serif;font-size:18px;margin-right:6px}
+.fld{display:inline-flex;align-items:center;gap:6px;height:32px;border:1px solid var(--border);border-radius:16px;padding:0 10px;background:var(--white);font-size:12.5px;color:var(--text2)}
+.fld input,.fld select{border:none;outline:none;background:transparent;font-size:12.5px;color:var(--text)}
+.fld input[type=date]{width:118px}
+.fld input.num{width:64px}
+.fld.search{min-width:220px}
+.fld.search input{width:100%}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text2);cursor:pointer;user-select:none;height:32px;padding:0 10px;border-radius:16px;border:1px solid var(--border);background:var(--white)}
+.chk.on{background:var(--blue-light);border-color:#c6dafc;color:var(--blue)}
+.chk input{display:none}
+.tscroll{flex:1;overflow:auto;background:var(--white)}
+table.dt{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
+.dt th{position:sticky;top:0;z-index:2;background:var(--white);text-align:left;font-weight:500;font-size:12px;color:var(--text2);padding:0 10px;height:38px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+.dt th:hover{color:var(--text)}
+.dt th.sorted{color:var(--blue)}
+.dt th .ar{font-size:10px;margin-left:3px}
+.dt td{padding:0 10px;height:36px;border-bottom:1px solid var(--border2);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;position:relative}
+.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.dt th.num{text-align:right}
+.dt td.ed{cursor:text}
+.dt td.ed:hover{box-shadow:inset 0 0 0 1px #c6dafc;background:#fafcff}
+.dt td.edited::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:var(--blue)}
+.dt td.editing{padding:0;box-shadow:inset 0 0 0 2px var(--blue);overflow:visible}
+.dt td.editing input{width:100%;height:34px;border:none;outline:none;padding:0 9px;font-size:13px;background:#fff;min-width:140px}
+.dt tbody tr:hover td{background:#f8f9fa}
+.dt td.hlc{width:34px;padding:0 0 0 10px;cursor:pointer}
+.dt td.opn{width:34px;padding:0 8px;cursor:pointer;color:var(--text3)}
+.dt td.opn:hover{color:var(--blue)}
+.hdot{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--border);display:inline-block;vertical-align:middle}
+tr:hover .hdot{border-color:var(--text3)}
+tr.hl-yellow td{background:var(--yellow-light)!important}
+tr.hl-green td{background:var(--green-light)!important}
+tr.hl-blue td{background:var(--blue-light)!important}
+tr.hl-red td{background:var(--red-light)!important}
+tr.hl-purple td{background:var(--purple-light)!important}
+tr.hl-orange td{background:var(--orange-light)!important}
+tr.hl-yellow td:first-child{box-shadow:inset 4px 0 0 var(--yellow)}
+tr.hl-green td:first-child{box-shadow:inset 4px 0 0 var(--green)}
+tr.hl-blue td:first-child{box-shadow:inset 4px 0 0 var(--blue)}
+tr.hl-red td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+tr.hl-purple td:first-child{box-shadow:inset 4px 0 0 var(--purple)}
+tr.hl-orange td:first-child{box-shadow:inset 4px 0 0 var(--orange)}
+tr.hidden-row td{opacity:.45}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%}
+.sw.yellow{background:var(--yellow)}.sw.green{background:var(--green)}.sw.blue{background:var(--blue)}.sw.red{background:var(--red)}.sw.purple{background:var(--purple)}.sw.orange{background:var(--orange)}
+#hlPop{position:fixed;z-index:7000;background:var(--white);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow-lg);padding:6px 8px;display:none;gap:6px;align-items:center}
+#hlPop.open{display:flex}
+#hlPop button{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+#hlPop button:hover{background:#f1f3f4}
+#hlPop .x{font-size:13px;color:var(--text2)}
+.tfoot{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--border);background:var(--white);font-size:12.5px;color:var(--text2)}
+.tfoot select{height:28px;border:1px solid var(--border);border-radius:6px;padding:0 6px;background:#fff}
+.empty{padding:48px;text-align:center;color:var(--text2)}
+
+/* drawer */
+#drawer{position:fixed;top:var(--header);right:0;bottom:0;width:460px;max-width:100vw;background:var(--white);border-left:1px solid var(--border);box-shadow:-8px 0 24px rgba(32,33,36,.12);z-index:300;transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column}
+#drawer.open{transform:none}
+.dr-h{padding:16px 18px 12px;border-bottom:1px solid var(--border2)}
+.dr-h .t{font-family:'Google Sans',sans-serif;font-size:19px;line-height:1.3;padding-right:36px}
+.dr-h .s{font-size:12.5px;color:var(--text2);margin-top:4px}
+.dr-x{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;font-size:18px;color:var(--text2)}
+.dr-x:hover{background:#f1f3f4}
+.dr-b{flex:1;overflow:auto;padding:12px 18px 24px}
+.dr-sec{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin:18px 0 8px}
+.f{margin-bottom:10px}
+.f label{display:flex;font-size:11.5px;color:var(--text2);margin-bottom:3px;gap:6px}
+.f label .who{margin-left:auto;color:var(--blue);font-size:11px}
+.f input,.f textarea,.f select{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 9px;outline:none;background:#fff}
+.f textarea{min-height:64px;resize:vertical}
+.f input:focus,.f textarea:focus,.f select:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light)}
+.f .ro{padding:7px 0;color:var(--text)}
+.f .orig{font-size:11px;color:var(--text3);margin-top:3px}
+.f .orig a{font-size:11px;cursor:pointer}
+.swrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.swrow button{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid transparent}
+.swrow button.on{border-color:var(--text)}
+.statbox{border:1px solid var(--border2);border-radius:10px;padding:12px 14px;background:var(--bg)}
+.statbox .row{display:flex;justify-content:space-between;font-size:12.5px;margin:3px 0}
+.citem{border:1px solid var(--border2);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:12.5px}
+.citem .ct{font-weight:500;margin-bottom:2px}
+.dr-f{padding:12px 18px;border-top:1px solid var(--border2);display:flex;gap:8px;justify-content:flex-end}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:8500;background:rgba(32,33,36,.45);display:none;align-items:center;justify-content:center;padding:24px}
+#modal.open{display:flex}
+.mbox{background:var(--white);border-radius:14px;box-shadow:0 24px 64px rgba(0,0,0,.3);width:980px;max-width:100%;max-height:calc(100vh - 48px);display:flex;flex-direction:column}
+.mbox.narrow{width:560px}
+.mh{padding:18px 22px 10px;display:flex;align-items:flex-start;gap:12px}
+.mh .t{font-family:'Google Sans',sans-serif;font-size:20px}
+.mh .s{font-size:12.5px;color:var(--text2);margin-top:3px}
+.mb{flex:1;overflow:auto;padding:4px 22px 16px}
+.mf{padding:12px 22px;border-top:1px solid var(--border2);display:flex;gap:8px;align-items:center}
+.ptable{width:100%;border-collapse:collapse;font-size:12.5px}
+.ptable th{position:sticky;top:0;background:var(--white);text-align:left;font-weight:500;color:var(--text2);font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--border)}
+.ptable td{padding:5px 8px;border-bottom:1px solid var(--border2);vertical-align:top}
+.ptable tr.dup td{color:var(--text3)}
+.ptable tr.grp td{background:var(--bg);font-weight:500;padding-top:9px}
+.drop{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;color:var(--text2);transition:all .15s}
+.drop.over{border-color:var(--blue);background:var(--blue-light);color:var(--blue)}
+.list-t{width:100%;border-collapse:collapse;font-size:12.5px}
+.list-t th{text-align:left;font-weight:500;color:var(--text2);font-size:12px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.list-t td{padding:8px 12px;border-bottom:1px solid var(--border2)}
+.list-t tbody tr:hover td{background:#f8f9fa}
+.howto ol{padding-left:20px;line-height:1.6;font-size:13px}
+.howto li{margin-bottom:6px}
+.howto .note{font-size:12.5px;color:var(--text2);margin-top:10px;line-height:1.55}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);z-index:9500;background:#202124;color:#fff;font-size:13px;padding:11px 18px;border-radius:8px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .2s;max-width:80vw}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.err{background:var(--red)}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+#boot{position:fixed;inset:var(--header) 0 0 0;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text2);z-index:150;background:var(--bg)}
+@media (max-width:1100px){.g-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.g-2,.g-2e{grid-template-columns:1fr}.gsearch{display:none}.side{width:200px}}
+@media (max-width:760px){nav.tabs .tl{display:none}.brand-name,.brand-sep,#syncDot span{display:none}.side{display:none}.wrap{padding:16px}}
+</style>
+</head>
+<body>
+
+<div id="authGate">
+  <div class="ag-card">
+    <div class="ag-brand"><div class="mark">T</div><div class="ag-title">TOPA Tracker</div></div>
+    <div class="ag-by">Greysteel · Created by Mason Rareshide</div>
+    <div class="ag-sub">Sign in with your Greysteel Microsoft account to continue.</div>
+    <button id="agBtn" class="ag-btn">
+      <svg width="16" height="16" viewBox="0 0 23 23" aria-hidden="true"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
+      Sign in with Microsoft
+    </button>
+    <div class="ag-msg" id="agMsg"></div>
+  </div>
+</div>
+
+<header>
+  <div class="brand">
+    <div class="mark">T</div>
+    <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
+    <span class="brand-page">TOPA Tracker</span>
+    <span id="verBadge" title="Page version">v1</span>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-view="dash"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span class="tl">Dashboard</span></button>
+    <button class="tab" data-view="table"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/></svg><span class="tl">Filings</span></button>
+    <button class="tab" data-view="comps"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg><span class="tl">Sales Comps</span></button>
+    <button class="tab" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg><span class="tl">Weekly Reports</span></button>
+  </nav>
+  <div class="gsearch">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="gq" type="search" placeholder="Search every filing - address, buyer, owner, broker..." autocomplete="off">
+  </div>
+  <div class="hdr-right">
+    <span id="syncDot" title="Live: edits from teammates appear within ~20 seconds"><i></i><span>Live</span></span>
+    <button class="btn primary sm" id="uploadBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload report</button>
+    <div id="userWrap" hidden>
+      <button id="userChip" aria-haspopup="true" aria-expanded="false"><span class="uc-av" id="ucAv"></span><span id="ucName"></span></button>
+      <div id="userMenu"><div class="um-n" id="umName"></div><div class="um-e" id="umEmail"></div><button id="signOutBtn">Sign out</button></div>
+    </div>
+  </div>
+</header>
+
+<div id="boot"><span class="spinner"></span> Loading TOPA data...</div>
+
+<main>
+  <!-- ======================= DASHBOARD ======================= -->
+  <section class="view active" id="vDash"><div class="wrap">
+    <div class="card-h" style="padding:0 2px 12px">
+      <div>
+        <div class="card-t" style="font-size:22px">5+ unit offers of sale</div>
+        <div class="card-s" id="dashSub">Year to date</div>
+      </div>
+      <div class="ml-auto card-s" id="latestReport"></div>
+    </div>
+    <div class="grid g-kpi" id="kpis"></div>
+
+    <div class="grid g-2 mt">
+      <div class="card">
+        <div class="card-h">
+          <div><div class="card-t">Year-to-date by year</div><div class="card-s" id="ytdSub"></div></div>
+          <div class="seg ml-auto" id="ytdMetric"><button data-m="count" class="on">Offers</button><button data-m="units">Units</button><button data-m="price">Volume</button><button data-m="wppu">$/unit</button></div>
+        </div>
+        <div class="card-b"><div class="chart" id="ytdChart"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-h">
+          <div><div class="card-t">Weekly filings</div><div class="card-s">5+ offers of sale per week, last 26 weeks</div></div>
+        </div>
+        <div class="card-b"><div class="chart" id="weekChart"></div></div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <div class="card-h">
+        <div><div class="card-t">Offer of Sale comparison</div><div class="card-s">Rebuilt from the master list's comparison tab - unique addresses filed Jan 1 through today's date in each year</div></div>
+        <label class="ucap ml-auto">Max units <input type="number" id="unitCap" value="10000" min="5"></label>
+        <div class="seg" id="cmpYears"><button data-n="7" class="on">7 yrs</button><button data-n="13">All</button></div>
+      </div>
+      <div class="scroll-x"><table class="cmp" id="cmpTable"></table></div>
+    </div>
+
+    <div class="grid g-2e mt">
+      <div class="card">
+        <div class="card-h">
+          <div><div class="card-t">Active TOPA pipeline</div><div class="card-s" id="pipeSub">Offers of sale inside the 420-day window</div></div>
+          <div class="seg ml-auto" id="pipeSort"><button data-s="date" class="on">Newest</button><button data-s="units">Units</button><button data-s="price">Price</button></div>
+        </div>
+        <div class="pipe" id="pipeList"></div>
+      </div>
+      <div class="card">
+        <div class="card-h">
+          <div><div class="card-t">Map</div><div class="card-s">Active pipeline · circle size = units · green = closed per CoStar</div></div>
+        </div>
+        <div id="map"></div>
+      </div>
+    </div>
+
+    <div class="grid g-2e mt">
+      <div class="card">
+        <div class="card-h"><div><div class="card-t">Recently closed</div><div class="card-s" id="closedSub">CoStar comps linked to an offer of sale</div></div></div>
+        <div class="scroll-x" style="max-height:360px;overflow:auto"><table class="list-t" id="closedTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><div class="card-t">Latest filings, all categories</div><div class="card-s" id="latestSub"></div></div></div>
+        <div class="scroll-x" style="max-height:360px;overflow:auto"><table class="list-t" id="latestTable"></table></div>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ======================= TABLE ======================= -->
+  <section class="view" id="vTable"><div class="tv">
+    <aside class="side" id="sideNav"></aside>
+    <div class="tmain">
+      <div class="tbar">
+        <span class="ttl" id="tTitle">5+ Offer of Sale</span>
+        <span class="fld search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="tq" type="search" placeholder="Search this tab"></span>
+        <label class="chk" id="allSheetsChk" title="Search across every tab"><input type="checkbox">All tabs</label>
+        <span class="fld">From <input type="date" id="tFrom"></span>
+        <span class="fld">To <input type="date" id="tTo"></span>
+        <span class="fld" id="tTypeWrap">Type <select id="tType"><option value="">All</option></select></span>
+        <span class="fld" id="tUnitsWrap">Units &ge; <input type="number" class="num" id="tUnits" min="0"></span>
+        <span class="fld" id="tStatusWrap">Status <select id="tStatus"><option value="">All</option><option>In TOPA</option><option>Closed</option><option>Past 420 days</option></select></span>
+        <label class="chk" id="hlOnlyChk"><input type="checkbox">Highlighted</label>
+        <label class="chk" id="edOnlyChk"><input type="checkbox">Edited</label>
+        <label class="chk" id="hidChk" title="Rows someone hid as duplicates or errors"><input type="checkbox">Show hidden</label>
+        <span class="ml-auto"></span>
+        <button class="btn sm ghost" id="resetF">Reset</button>
+        <button class="btn sm" id="clearHl" title="Remove every highlight on this tab, for everyone">Clear highlights</button>
+        <button class="btn sm" id="addRow">+ Row</button>
+        <button class="btn sm" id="exportCsv">Export CSV</button>
+      </div>
+      <div class="tscroll" id="tScroll"><table class="dt" id="dt"></table></div>
+      <div class="tfoot">
+        <span id="tCount"></span>
+        <span class="ml-auto">Rows per page <select id="pSize"><option>50</option><option selected>100</option><option>250</option><option>500</option></select></span>
+        <button class="btn sm" id="pPrev">&lsaquo;</button><span id="pInfo"></span><button class="btn sm" id="pNext">&rsaquo;</button>
+      </div>
+    </div>
+  </div></section>
+
+  <!-- ======================= COMPS ======================= -->
+  <section class="view" id="vComps"><div class="wrap">
+    <div class="card">
+      <div class="card-h">
+        <div><div class="card-t">CoStar sales comps</div><div class="card-s">A comp linked to an offer of sale marks it closed and gives the days it spent under contract (TOPA date to sale date).</div></div>
+        <span class="ml-auto"></span>
+        <span class="fld search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="cq" type="search" placeholder="Search comps"></span>
+        <div class="seg" id="cLink"><button data-l="" class="on">All</button><button data-l="1">Linked</button><button data-l="0">Unlinked</button></div>
+        <button class="btn sm" id="addComp">+ Comp</button>
+        <button class="btn sm primary" id="importComps">Import CoStar export</button>
+      </div>
+      <div class="scroll-x"><table class="list-t" id="compTable"></table></div>
+    </div>
+  </div></section>
+
+  <!-- ======================= REPORTS ======================= -->
+  <section class="view" id="vReports"><div class="wrap">
+    <div class="grid g-2">
+      <div class="card">
+        <div class="card-h">
+          <div><div class="card-t">DHCD weekly reports</div><div class="card-s">Straight from <a href="https://dhcd.dc.gov/page/weekly-report-tenant-opportunity-purchase-act-topa-filings" target="_blank" rel="noopener">dhcd.dc.gov</a>. Import pulls the PDF, extracts every filing and shows you what is new before anything is saved.</div></div>
+          <button class="btn sm ml-auto" id="dhcdRefresh">Refresh</button>
+          <button class="btn sm primary" id="dhcdAll">Import all missing</button>
+        </div>
+        <div style="max-height:520px;overflow:auto"><table class="list-t" id="dhcdTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><div class="card-t">Upload a report PDF</div><div class="card-s">For a report saved from email or Box. Drop one or more weekly TOPA PDFs.</div></div></div>
+        <div class="card-b">
+          <div class="drop" id="drop">Drop PDFs here or <a href="#" id="pick">choose files</a><input type="file" id="pdfFile" accept="application/pdf" multiple hidden></div>
+        </div>
+        <div class="card-h"><div class="card-t">How to update each week</div></div>
+        <div class="card-b howto">
+          <ol>
+            <li>Open <b>Weekly Reports</b>. The newest DHCD report is at the top; if it says <i>Not imported</i>, click <b>Import</b>.</li>
+            <li>Check the preview. New filings are ticked; anything already in the tracker is greyed out. Click <b>Add</b>.</li>
+            <li>For new 5+ offers of sale, fill in owner, owner contact, owner address, listing broker and phone from CoStar - click the row in <b>Filings</b> and type into the side panel. Everyone sees edits within seconds.</li>
+            <li>When a FOIA comes back, enter the buyer and seller on the row. The original value stays on record under the field.</li>
+            <li>Import CoStar sale comps under <b>Sales Comps</b>; matching offers of sale are marked closed.</li>
+          </ol>
+          <div class="note"><b>Address style</b> (from the master list): street suffixes in full (Street, Avenue, Terrace), directions abbreviated (NW, NE, SE, SW). Imported addresses follow this automatically.<br>
+          <b>FOIA</b>: <a href="https://dc.govqa.us/WEBAPP/_rs/(S(0))/supporthome.aspx" target="_blank" rel="noopener">DC FOIA Center</a>. Request language: <i>"Please provide the offer of sale notice recorded in the weekly TOPA report dated xx/xx/xxxx for [address]."</i></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid g-2e mt">
+      <div class="card">
+        <div class="card-h"><div><div class="card-t">Import log</div><div class="card-s">Every report and upload that has added rows</div></div></div>
+        <div style="max-height:480px;overflow:auto"><table class="list-t" id="importTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><div class="card-t">Recent activity</div><div class="card-s">Edits, highlights and imports, newest first</div></div><button class="btn sm ml-auto" id="actRefresh">Refresh</button></div>
+        <div style="max-height:480px;overflow:auto"><table class="list-t" id="actTable"></table></div>
+      </div>
+    </div>
+  </div></section>
+</main>
+
+<aside id="drawer"><button class="dr-x" id="drX" title="Close">&times;</button><div class="dr-h" id="drH"></div><div class="dr-b" id="drB"></div><div class="dr-f" id="drF"></div></aside>
+<div id="modal"><div class="mbox" id="mbox"></div></div>
+<div id="hlPop"></div>
+<div class="tip" id="tip"></div>
+<div id="toast"></div>
+
+<script>
+/* ======================================================================
+   Greysteel TOPA Tracker
+   Data lives in the PRIVATE repo mrare-cmd/topa-data and reaches this page
+   only through the hap-update Worker after Entra sign-in (same session as
+   GreyHub, PBS8 and LoanID). Shared edits and highlights go to overlay.json
+   via /topa/edit; imports and comps commit whole files via /topa/commit.
+   ====================================================================== */
+var API = "https://hap-update.mrareshide.workers.dev";
+(function () {   /* local preview only: ?api=http://localhost:8787 points at tools/devserver.py */
+  var q = new URLSearchParams(location.search).get("api");
+  if (q && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) API = q;
+})();
+var TKEY = "hap_session";
+var HL = ["yellow", "green", "blue", "red", "purple", "orange"];
+var DAY = 864e5;
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/*PARSER-START*/
+/* DHCD weekly TOPA report parser. Mirrors tools/topa_common.py in the data repo:
+   keep CATEGORY_RULES, normAddr and the column logic in step with it.
+   pdf.js gives text runs ("4335 Kansas Avenue Northwest", "Total Units"); the
+   Related ID is right-aligned under "Address", units and price are left-aligned
+   under "Total Units" and "Sales Price". */
+var CATEGORY_RULES = [
+  ["5+ units offer of sale w/o contract", "ofs5", {type: "w/o Contract"}],
+  ["5+ units offer of sale w/ contract", "ofs5", {type: "w/ Contract"}],
+  ["5+ units notice of transfer", "not", {units: "5+"}],
+  ["2-4 units notice of transfer", "not", {units: "2-4"}],
+  ["sfd notice of transfer", "sfdofs", {type: "Notice of Transfer"}],
+  ["2-4 units offer of sale w/o contract", "ofs24", {type: "w/o Contract"}],
+  ["2-4 units offer of sale w/ contract", "ofs24", {type: "w/ Contract"}],
+  ["2-4 notice of potential sale", "ofs24", {type: "Notice of Potential Sale"}],
+  ["5+ units right of first refusal", "rofr", {type: "5+ Units"}],
+  ["2-4 units right of first refusal", "rofr", {type: "2-4 Units"}],
+  ["sfd right of first refusal", "sfdofs", {type: "ROFR"}],
+  ["sfd offer of sale w/o contract", "sfdofs", {type: "w/o Contract"}],
+  ["sfd offer of sale w/ contract", "sfdofs", {type: "w/ Contract"}],
+  ["sfd notice of solicitation", "sfdnos", {}],
+  ["sfd letter to landlord", "sfdll", {}],
+  ["sfd claim of elderly", "sfded", {}],
+  ["letter of interest", "loi", {}],
+  ["tenant organization registration", "torg", {}],
+  ["assignment of rights", "aor", {}],
+  ["complaint", "complaint", {}],
+  ["petition for declaratory relief", "pdr", {}],
+  ["tenant election correspondence", "te5", {}],
+  ["tenant election application", "tea", {}],
+  ["condominium registration", "condo", {}],
+  ["not a housing accommodation", "nha", {}],
+  ["vacancy exemption", "vac", {}],
+  ["property tax abatement", "pta", {}],
+  ["equity share", "lies", {}],
+  ["opportunity to purchase", "dopa", {type: "DOPA Notice"}],
+  ["foreclosure", "nof", {}],
+  ["raze", "raze", {}]
+];
+function categoryToSheet(cat) {
+  var c = String(cat || "").toLowerCase();
+  for (var i = 0; i < CATEGORY_RULES.length; i++)
+    if (c.indexOf(CATEGORY_RULES[i][0]) > -1) return {sheet: CATEGORY_RULES[i][1], extra: Object.assign({}, CATEGORY_RULES[i][2])};
+  return {sheet: "other", extra: {type: cat}};
+}
+var QUAD = {northwest: "NW", northeast: "NE", southeast: "SE", southwest: "SW"};
+function prettyAddr(a) {
+  return String(a || "").replace(/\b([NS])\.\s?([EW])\.?(?=\s|,|$)/g, "$1$2").replace(/\s+/g, " ").trim().replace(/\b(Northwest|Northeast|Southeast|Southwest)\b/gi, function (m) { return QUAD[m.toLowerCase()]; });
+}
+var ABBR = {street: "st", avenue: "ave", av: "ave", place: "pl", road: "rd", terrace: "ter", drive: "dr", court: "ct",
+  boulevard: "blvd", parkway: "pkwy", lane: "ln", circle: "cir", northwest: "nw", northeast: "ne", southeast: "se",
+  southwest: "sw", north: "n", south: "s", east: "e", west: "w", square: "sq", highway: "hwy", apartment: "#", apt: "#",
+  unit: "#", and: "&"};
+function normAddr(a) {
+  var s = String(a || "").toLowerCase().replace(/\./g, "").replace(/,/g, " ").replace(/[^a-z0-9#&\- ]/g, " ");
+  return s.split(/\s+/).filter(Boolean).map(function (w) { return ABBR[w] || w; }).join(" ");
+}
+function parseNum(v) {
+  if (v === null || v === undefined || v === "") return null;
+  if (typeof v === "number") return isFinite(v) ? v : null;
+  var s = String(v).replace(/[$,\s]/g, "");
+  var m = /^(-?\d*\.?\d+)([kKmM])?$/.exec(s);
+  if (!m) return null;
+  var n = parseFloat(m[1]);
+  if (m[2]) n *= /m/i.test(m[2]) ? 1e6 : 1e3;
+  return Math.abs(n) > 100 || n === Math.round(n) ? Math.round(n) : n;
+}
+var DATE_RE = /\b(\d{2})-(\d{2})-(\d{4})\b/;
+/* items: [{s, x0, x1, y}] per page (y grows upward, as pdf.js reports it) -> [{category, date, address, dhcdId, units, price}] */
+function parseDhcdItems(pages) {
+  var out = [], cat = null, cols = null;
+  pages.forEach(function (items) {
+    items = items.filter(function (i) { return i.s && i.s.trim(); }).map(function (i) { return {s: i.s.trim(), x0: i.x0, x1: i.x1, y: i.y}; });
+    items.sort(function (a, b) { return (b.y - a.y) || (a.x0 - b.x0); });
+    var lines = [];
+    items.forEach(function (it) {
+      var L = lines[lines.length - 1];
+      if (L && Math.abs(L.y - it.y) <= 3) L.items.push(it); else lines.push({y: it.y, items: [it]});
+    });
+    lines.forEach(function (L) {
+      /* some reports split every token ("04","-","14"); glue runs that touch */
+      var its = [];
+      L.items.sort(function (a, b) { return a.x0 - b.x0; }).forEach(function (it) {
+        var prev = its[its.length - 1];
+        if (prev && it.x0 - prev.x1 < 1.2) { prev.s += it.s; prev.x1 = Math.max(prev.x1, it.x1); }
+        else its.push({s: it.s, x0: it.x0, x1: it.x1, y: it.y});
+      });
+      var text = its.map(function (i) { return i.s; }).join(" ").replace(/\s+/g, " ").replace(/â€“/g, "–");
+      var addrIt = its.filter(function (i) { return i.s.indexOf("ADDRESS") > -1; })[0];
+      var totIt = its.filter(function (i) { return /^Total/.test(i.s); })[0];
+      if (addrIt && totIt) {
+        var rel = its.filter(function (i) { return /^Address/.test(i.s); })[0];
+        var sal = its.filter(function (i) { return /^Sales/.test(i.s); })[0];
+        cols = {relX0: rel ? rel.x0 : totIt.x0 - 50, relX1: rel ? rel.x1 : totIt.x0 - 8, units: totIt.x0, price: sal ? sal.x0 : totIt.x0 + 200};
+        return;
+      }
+      if (/^(Sale and Transfer|Conversion|\(empty\))\b/.test(text) && text.indexOf(" - ") > -1) {
+        var c = text.replace(/\s*\(\d+\s+Item.*$/, "");
+        var parts = c.split(" - ").map(function (p) { return p.trim(); });
+        var div = parts[0], conv = parts[1] || "", sale = parts.slice(2).join(" - ");
+        cat = (div === "Conversion" && conv && conv !== "(empty)") ? conv : (sale && sale !== "(empty)" ? sale : conv);
+        return;
+      }
+      var di = -1, dm = null;
+      for (var k = 0; k < its.length; k++) { dm = DATE_RE.exec(its[k].s); if (dm) { di = k; break; } }
+      if (di < 0 || !cols || !cat) return;
+      var rec = {category: cat, date: dm[3] + "-" + dm[1] + "-" + dm[2], address: [], dhcdId: [], units: [], price: []};
+      its.slice(di + 1).forEach(function (w) {
+        if (/^\d{1,2}:\d{2}(\s*[AP]M)?$/.test(w.s) || w.s === "AM" || w.s === "PM") return;
+        if (w.x0 >= cols.price - 20) rec.price.push(w.s);
+        else if (w.x0 >= cols.units - 3) rec.units.push(w.s);
+        else if (w.x1 <= cols.relX1 + 3 && w.x0 >= cols.relX0 - 40) rec.dhcdId.push(w.s);
+        else rec.address.push(w.s);
+      });
+      rec.address = rec.address.join(" ");
+      var star = rec.address.indexOf("*****");          /* DHCD's own remark, e.g. "***** Offer of Sale WITHOUT a Third-Party Sale Contract" */
+      if (star > -1) { rec.remark = rec.address.slice(star).replace(/^\*+\s*/, "").trim(); rec.address = rec.address.slice(0, star); }
+      rec.address = prettyAddr(rec.address);
+      rec.dhcdId = rec.dhcdId.join(" ");
+      rec.units = parseNum(rec.units.join(" "));
+      rec.price = parseNum(rec.price.join(" "));
+      if (rec.address) out.push(rec);
+    });
+  });
+  return out;
+}
+/* pdf.js document -> parseDhcdItems input */
+function pdfItems(pdf) {
+  var pages = [], chain = Promise.resolve();
+  for (var p = 1; p <= pdf.numPages; p++) (function (p) {
+    chain = chain.then(function () { return pdf.getPage(p); }).then(function (page) { return page.getTextContent(); })
+      .then(function (tc) {
+        pages.push(tc.items.map(function (i) { return {s: i.str, x0: i.transform[4], x1: i.transform[4] + i.width, y: i.transform[5]}; }));
+      });
+  })(p);
+  return chain.then(function () { return pages; });
+}
+/*PARSER-END*/
+
+/* ---------------------------------------------------------------- utils */
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]; }); }
+function todayISO() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function dParse(s) { if (!s) return null; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+function daysBetween(a, b) { var x = dParse(a), y = dParse(b); return x && y ? Math.round((y - x) / DAY) : null; }
+function fmtDate(s) { var d = dParse(s); return d ? (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear() : (s || ""); }
+function fmtInt(n) { return n == null || n === "" || isNaN(n) ? "" : Math.round(n).toLocaleString("en-US"); }
+function fmtMoney(n) { return n == null || n === "" || isNaN(n) ? "" : "$" + Math.round(n).toLocaleString("en-US"); }
+function fmtShort(n) {
+  if (n == null || isNaN(n)) return "-";
+  var a = Math.abs(n);
+  if (a >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
+  if (a >= 1e6) return "$" + (n / 1e6).toFixed(a >= 1e8 ? 0 : 1) + "M";
+  if (a >= 1e3) return "$" + Math.round(n / 1e3) + "K";
+  return "$" + Math.round(n);
+}
+function median(a) { if (!a.length) return null; a = a.slice().sort(function (x, y) { return x - y; }); var m = a.length >> 1; return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; }
+function avg(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : null; }
+function sum(a) { return a.reduce(function (s, x) { return s + x; }, 0); }
+function toast(m, err) { var t = $("toast"); t.textContent = m; t.className = "show" + (err ? " err" : ""); clearTimeout(toast._t); toast._t = setTimeout(function () { t.className = ""; }, err ? 6000 : 3200); }
+function b64FromBytes(bytes) { var s = ""; for (var i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s); }
+function b64FromString(str) { return b64FromBytes(new TextEncoder().encode(str)); }
+function who(email) { var n = String(email || "").split("@")[0].replace(/[._-]+/g, " "); return n.replace(/\b\w/g, function (c) { return c.toUpperCase(); }); }
+function ago(iso) {
+  if (!iso) return "";
+  var s = (Date.now() - new Date(iso)) / 1000;
+  if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + "m ago"; if (s < 86400) return Math.floor(s / 3600) + "h ago";
+  if (s < 86400 * 30) return Math.floor(s / 86400) + "d ago"; return fmtDate(String(iso).slice(0, 10));
+}
+async function sha1hex(s) { var b = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).map(function (x) { return x.toString(16).padStart(2, "0"); }).join(""); }
+
+/* ---------------------------------------------------------------- API */
+function authH() { try { return {Authorization: "Bearer " + (localStorage.getItem(TKEY) || "")}; } catch (e) { return {}; } }
+function expired() { try { localStorage.removeItem(TKEY); } catch (e) {} location.reload(); }
+async function apiGet(path, as) {
+  var r = await fetch(API + path, {headers: authH(), cache: "no-store"});
+  if (r.status === 401) { expired(); throw new Error("Your sign-in expired"); }
+  if (!r.ok) { var t = ""; try { t = (await r.json()).error; } catch (e) {} throw new Error(t || ("HTTP " + r.status)); }
+  return as === "buf" ? r.arrayBuffer() : as === "blob" ? r.blob() : r.json();
+}
+async function apiPost(path, body) {
+  var r = await fetch(API + path, {method: "POST", headers: Object.assign({"Content-Type": "application/json"}, authH()), body: JSON.stringify(body)});
+  if (r.status === 401) { expired(); throw new Error("Your sign-in expired"); }
+  var j = {}; try { j = await r.json(); } catch (e) {}
+  if (!r.ok || j.ok === false) { var e = new Error(j.error || ("HTTP " + r.status)); e.status = r.status; e.conflict = j.conflict; throw e; }
+  return j;
+}
+
+/* ---------------------------------------------------------------- state */
+var S = {
+  me: null, manifest: {}, index: {sheets: []}, sheets: {}, overlay: {edits: {}, hl: {}}, comps: [], imports: [],
+  view: "dash", sheet: "ofs5", sort: {key: "date", dir: -1}, page: 0, pageSize: 100,
+  f: {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false},
+  dash: {metric: "count", years: 7, cap: 10000, pipeSort: "date"},
+  comps_f: {q: "", link: ""}, drawer: null
+};
+async function loadManifest(fresh) {
+  var j = await apiGet("/topa/manifest" + (fresh ? "?fresh=1" : (loadManifest.first ? "" : "?load=1")));
+  loadManifest.first = true;
+  S.manifest = j.files || {};
+  return S.manifest;
+}
+async function loadFile(path) {
+  var v = S.manifest[path];
+  return apiGet("/topa/data/" + path + (v ? "?v=" + v : ""));
+}
+var _loading = {};
+function ensureSheet(slug) {
+  if (S.sheets[slug] && S.sheets[slug]._v === S.manifest["sheets/" + slug + ".json"]) return Promise.resolve(S.sheets[slug]);
+  if (_loading[slug]) return _loading[slug];
+  var v = S.manifest["sheets/" + slug + ".json"];
+  _loading[slug] = loadFile("sheets/" + slug + ".json").then(function (sh) {
+    sh._v = v; S.sheets[slug] = sh; prepSheet(sh); delete _loading[slug]; return sh;
+  }, function (e) { delete _loading[slug]; throw e; });
+  return _loading[slug];
+}
+function ensureAll() { return Promise.all(S.index.sheets.map(function (m) { return ensureSheet(m.slug); })); }
+function sheetMeta(slug) { return S.index.sheets.filter(function (m) { return m.slug === slug; })[0] || {slug: slug, title: slug}; }
+
+/* overlay: shared edits layered on the base rows */
+function rk(slug, row) { return slug + "/" + row.id; }
+function ed(slug, row, f) { var e = S.overlay.edits[rk(slug, row)]; return e && e[f]; }
+function val(slug, row, f) {
+  var e = ed(slug, row, f);
+  if (e) return e.v;
+  return row[f];
+}
+function isHidden(slug, row) { var v = val(slug, row, "hidden"); return v === "1" || v === 1 || v === true; }
+function hlOf(slug, row) { var h = S.overlay.hl[rk(slug, row)]; return h && h.c; }
+
+/* computed columns */
+var COMPUTED = {ppu: 1, status: 1, days: 1, saleDate: 1, uc: 1, sheetTitle: 1};
+function compsFor(slug, row) { return slug === "ofs5" ? (S.compsByLink[row.id] || []) : []; }
+function cval(slug, row, f) {
+  if (f === "ppu") { var u = +val(slug, row, "units"), p = +val(slug, row, "price"); return u > 0 && p > 0 ? p / u : null; }
+  if (f === "sheetTitle") return sheetMeta(slug).title;
+  if (slug !== "ofs5") return null;
+  var d = val(slug, row, "date"), cs = compsFor(slug, row), c = cs[0];
+  if (f === "days") return d ? daysBetween(d, todayISO()) : null;
+  if (f === "saleDate") return c ? c.date : null;
+  if (f === "uc") return c && d ? daysBetween(d, c.date) : null;
+  if (f === "status") { if (c) return "Closed"; var n = d ? daysBetween(d, todayISO()) : null; return n == null ? "" : n > 420 ? "Past 420 days" : "In TOPA"; }
+  return null;
+}
+function anyVal(slug, row, f) { return COMPUTED[f] ? cval(slug, row, f) : val(slug, row, f); }
+function phase(days) {
+  if (days == null) return "";
+  if (days <= 45) return "TA formation window";
+  if (days <= 180) return "TA contract & deposit";
+  if (days <= 300) return "TA financing";
+  if (days <= 420) return "Financing extension";
+  return "Past 420 days";
+}
+function prepSheet(sh) {
+  sh.colKeys = {}; sh.columns.forEach(function (c) { sh.colKeys[c.key] = c; });
+  if (sh.slug === "ofs5") {
+    var i = sh.columns.findIndex(function (c) { return c.key === "ppu"; });
+    sh.columns.splice(i + 1, 0, {key: "status", label: "Status", type: "text", computed: 1}, {key: "days", label: "Days in TOPA", type: "int", computed: 1},
+      {key: "saleDate", label: "Closed (CoStar)", type: "date", computed: 1}, {key: "uc", label: "Days to close", type: "int", computed: 1});
+  }
+  sh.columns.forEach(function (c) { if (COMPUTED[c.key]) c.computed = 1; });
+}
+function rebuildCompIndex() {
+  S.compsByLink = {};
+  S.comps.forEach(function (c) { if (c.link) (S.compsByLink[c.link] = S.compsByLink[c.link] || []).push(c); });
+  Object.keys(S.compsByLink).forEach(function (k) { S.compsByLink[k].sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }); });
+}
+
+/* ---------------------------------------------------------------- boot */
+async function boot() {
+  await loadManifest();
+  var r = await Promise.all([loadFile("index.json"), loadFile("overlay.json"), loadFile("comps.json"), loadFile("imports.json")]);
+  S.index = r[0]; S.overlay = r[1] || {edits: {}, hl: {}}; S.comps = (r[2] && r[2].comps) || []; S.imports = (r[3] && r[3].imports) || [];
+  S.loaded = {"index.json": S.manifest["index.json"], "overlay.json": S.manifest["overlay.json"], "comps.json": S.manifest["comps.json"], "imports.json": S.manifest["imports.json"]};
+  rebuildCompIndex();
+  await ensureSheet("ofs5");
+  $("boot").hidden = true;
+  readHash();
+  renderAll();
+  setInterval(poll, 20000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) poll(); });
+  ensureAll().then(function () { if (S.view === "dash") renderLatest(); });
+}
+/* live sync: any file whose blob sha moved is re-read and the view redrawn */
+var _polling = false;
+async function poll() {
+  if (_polling || document.hidden || !S.me) return;
+  _polling = true;
+  try {
+    var old = Object.assign({}, S.loaded);
+    await loadManifest();
+    var changed = [];
+    var jobs = ["index.json", "overlay.json", "comps.json", "imports.json"].filter(function (p) { return S.manifest[p] && S.manifest[p] !== old[p]; }).map(function (p) {
+      changed.push(p);
+      return loadFile(p).then(function (d) {
+        if (p === "index.json") S.index = d;
+        if (p === "overlay.json") S.overlay = d;
+        if (p === "comps.json") { S.comps = d.comps || []; rebuildCompIndex(); }
+        if (p === "imports.json") S.imports = d.imports || [];
+        S.loaded[p] = S.manifest[p];
+      });
+    });
+    Object.keys(S.sheets).forEach(function (slug) {
+      var p = "sheets/" + slug + ".json";
+      if (S.manifest[p] && S.manifest[p] !== S.sheets[slug]._v) { changed.push(p); jobs.push(ensureSheet(slug)); }
+    });
+    await Promise.all(jobs);
+    $("syncDot").className = "";
+    if (changed.length && !document.querySelector("td.editing") && !document.activeElement.closest("#drawer")) renderAll(true);
+    else if (changed.length && S.drawer) refreshDrawerMeta();
+  } catch (e) { $("syncDot").className = "err"; $("syncDot").title = "Sync error: " + e.message; }
+  _polling = false;
+}
+
+/* ---------------------------------------------------------------- shared edits */
+var _edQueue = Promise.resolve();
+function sendOps(ops, okMsg) {
+  /* optimistic: apply locally now, then let the Worker's copy win */
+  ops.forEach(function (o) { applyOp(S.overlay, o, S.me.email); });
+  renderAll(true);
+  $("syncDot").className = "busy";
+  _edQueue = _edQueue.then(function () {
+    return apiPost("/topa/edit", {ops: ops}).then(function (j) {
+      S.overlay = j.overlay; if (j.sha) { S.manifest["overlay.json"] = j.sha; S.loaded["overlay.json"] = j.sha; }
+      $("syncDot").className = ""; if (okMsg) toast(okMsg);
+      if (!document.querySelector("td.editing")) renderAll(true);
+    }, function (e) {
+      $("syncDot").className = "err"; toast("Not saved: " + e.message, true);
+      return loadManifest(true).then(function () { return loadFile("overlay.json"); }).then(function (d) { S.overlay = d; S.loaded["overlay.json"] = S.manifest["overlay.json"]; renderAll(true); });
+    });
+  });
+  return _edQueue;
+}
+function applyOp(ov, o, email) {
+  var at = new Date().toISOString();
+  if (o.t === "set") {
+    var row = ov.edits[o.k] || (ov.edits[o.k] = {});
+    if (o.v == null) delete row[o.f]; else row[o.f] = {v: o.v, by: email, at: at};
+    if (!Object.keys(row).length) delete ov.edits[o.k];
+  } else if (o.t === "hl") { if (o.c) ov.hl[o.k] = {c: o.c, by: email, at: at}; else delete ov.hl[o.k]; }
+  else if (o.t === "hlclear") Object.keys(ov.hl).forEach(function (k) { if (!o.sheet || k.indexOf(o.sheet + "/") === 0) delete ov.hl[k]; });
+}
+function coerce(col, raw) {
+  var s = String(raw == null ? "" : raw).trim();
+  if (col.type === "int" || col.type === "money") { if (!s) return ""; var n = parseNum(s); return n == null ? undefined : n; }
+  if (col.type === "date") { if (!s) return ""; var m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s); if (m) return (m[3].length === 2 ? "20" + m[3] : m[3]) + "-" + m[1].padStart(2, "0") + "-" + m[2].padStart(2, "0"); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : undefined; }
+  return s;
+}
+/* set a field; returns false when the value is not valid for the column */
+function setField(slug, row, col, raw) {
+  var v = coerce(col, raw);
+  if (v === undefined) { toast(col.label + ": that is not a valid " + (col.type === "date" ? "date" : "number"), true); return false; }
+  var base = row[col.key] == null ? "" : row[col.key];
+  var cur = val(slug, row, col.key); cur = cur == null ? "" : cur;
+  if (String(v) === String(cur)) return true;
+  var op = {t: "set", k: rk(slug, row), f: col.key, v: String(v) === String(base) ? null : v};
+  sendOps([op], "Saved " + col.label.toLowerCase());
+  return true;
+}
+
+/* ---------------------------------------------------------------- multi-file commits (imports, new rows, comps) */
+/* mutate(files) gets {path: freshObject} for every path, changes them in place and
+   returns a summary string (or false to cancel). Built on the newest copies; if
+   someone saved in between, it rebuilds and tries again. */
+async function commitFiles(paths, mutate, event, extraFiles) {
+  for (var attempt = 0; attempt < 3; attempt++) {
+    await loadManifest(true);
+    var objs = {};
+    await Promise.all(paths.map(function (p) {
+      return (S.manifest[p] ? loadFile(p) : Promise.resolve(null)).then(function (d) { objs[p] = d; });
+    }));
+    var msg = await mutate(objs);
+    if (msg === false) return null;
+    var files = paths.map(function (p) { return {path: p, base: S.manifest[p] || null, content: b64FromString(JSON.stringify(objs[p], null, p.indexOf("sheets/") === 0 ? 0 : 1))}; });
+    (extraFiles || []).forEach(function (f) { files.push(f); });
+    try {
+      var j = await apiPost("/topa/commit", {message: msg, event: event, files: files});
+      Object.keys(j.files || {}).forEach(function (p) { S.manifest[p] = j.files[p]; });
+      paths.forEach(function (p) {
+        var d = objs[p];
+        if (p === "index.json") { S.index = d; S.loaded[p] = S.manifest[p]; }
+        else if (p === "comps.json") { S.comps = d.comps; rebuildCompIndex(); S.loaded[p] = S.manifest[p]; }
+        else if (p === "imports.json") { S.imports = d.imports; S.loaded[p] = S.manifest[p]; }
+        else if (p.indexOf("sheets/") === 0) { d._v = S.manifest[p]; prepSheet(d); S.sheets[d.slug] = d; }
+      });
+      return j;
+    } catch (e) {
+      if (e.status === 409 && attempt < 2) continue;
+      throw e;
+    }
+  }
+}
+function reindex(index, sheet) {
+  var ds = sheet.rows.map(function (r) { return r.date; }).filter(Boolean).filter(function (d) { return d <= todayISO(); });
+  var m = index.sheets.filter(function (x) { return x.slug === sheet.slug; })[0];
+  if (!m) { m = {slug: sheet.slug, title: sheet.title, group: sheet.group}; index.sheets.push(m); }
+  m.count = sheet.rows.length; m.maxDate = ds.length ? ds.sort().pop() : "";
+  index.updated = new Date().toISOString();
+}
+function stripPrep(sh) { var o = {}; ["slug", "title", "group", "excelSheet", "columns", "rows"].forEach(function (k) { o[k] = sh[k]; }); o.columns = o.columns.filter(function (c) { return !c.computed || c.key === "ppu"; }).map(function (c) { var x = Object.assign({}, c); delete x.computed; return x; }); return o; }
+async function newRowId(slug, row, taken) {
+  var key = [row.date, row.address, row.orgName, row.type, row.units, row.price].map(function (x) { return x == null ? "" : x; }).join("|");
+  var base = (await sha1hex(slug + "|" + key)).slice(0, 10), id = base, n = 1;
+  while (taken[id]) id = base + (n++);
+  taken[id] = 1; return id;
+}
+
+/* ---------------------------------------------------------------- render */
+function renderAll(soft) {
+  if (S.view === "dash") renderDash();
+  if (S.view === "table") renderTable(soft);
+  if (S.view === "comps") renderComps();
+  if (S.view === "reports") renderReports();
+  if (S.drawer && !soft) refreshDrawerMeta();
+}
+function setView(v, noHash) {
+  S.view = v;
+  document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === v); });
+  document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
+  $({dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[v]).classList.add("active");
+  if (!noHash) writeHash();
+  renderAll();
+  if (v === "reports") { loadDhcd(); loadActivity(); }
+}
+function writeHash() { var h = "#" + S.view + (S.view === "table" ? "/" + S.sheet : ""); if (location.hash !== h) history.replaceState(null, "", h); }
+function readHash() {
+  var m = /^#(dash|table|comps|reports)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
+  if (m) { S.view = m[1]; if (m[2] && sheetMeta(m[2]).title !== m[2]) S.sheet = m[2]; }
+  document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === S.view); });
+  document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
+  $({dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[S.view]).classList.add("active");
+  if (S.view === "table") ensureSheet(S.sheet).then(function () { renderTable(); });
+  if (S.view === "reports") { loadDhcd(); loadActivity(); }
+}
+
+/* ---------- dashboard ---------- */
+function ofsRows() { var sh = S.sheets.ofs5; return sh ? sh.rows.filter(function (r) { return !isHidden("ofs5", r); }) : []; }
+/* one year's window [Jan 1, same month/day) like the Excel tab; unique addresses, earliest filing wins */
+function ytdStats(year, full, cap) {
+  var t = new Date(), start = year + "-01-01";
+  var endD = full ? new Date(year + 1, 0, 1) : new Date(year, t.getMonth(), t.getDate());
+  var end = endD.getFullYear() + "-" + String(endD.getMonth() + 1).padStart(2, "0") + "-" + String(endD.getDate()).padStart(2, "0");
+  var seen = {}, rows = [];
+  ofsRows().map(function (r) { return {r: r, d: val("ofs5", r, "date")}; }).filter(function (x) { return x.d && x.d >= start && x.d < end; })
+    .sort(function (a, b) { return a.d.localeCompare(b.d); })
+    .forEach(function (x) {
+      var u = +val("ofs5", x.r, "units") || 0;
+      if (u > cap) return;
+      var k = normAddr(val("ofs5", x.r, "address"));
+      if (seen[k]) return; seen[k] = 1; rows.push(x.r);
+    });
+  /* with / without contract: unique addresses among each type, as the Excel tab counts them */
+  var byType = {"w/o contract": {}, "w/ contract": {}};
+  ofsRows().forEach(function (r) {
+    var d = val("ofs5", r, "date"), ty = String(val("ofs5", r, "type") || "").toLowerCase();
+    if (d && d >= start && d < end && byType[ty] && (+val("ofs5", r, "units") || 0) <= cap) byType[ty][normAddr(val("ofs5", r, "address"))] = 1;
+  });
+  var wo = Object.keys(byType["w/o contract"]).length, w = Object.keys(byType["w/ contract"]).length;
+  var price = [], units = [], ppu = [], pp = 0, uu = 0;
+  rows.forEach(function (r) {
+    var p = +val("ofs5", r, "price") || 0, u = +val("ofs5", r, "units") || 0;
+    if (p) price.push(p); if (u) units.push(u); if (p && u) { ppu.push(p / u); pp += p; uu += u; }
+  });
+  var days = Math.max(1, Math.round((endD - new Date(year, 0, 1)) / DAY));
+  return {year: year, n: rows.length, wo: wo, w: w, days: days, price: sum(price), units: sum(units),
+    avgP: avg(price), medP: median(price), wppu: uu ? pp / uu : null, avgPpu: avg(ppu), medPpu: median(ppu), avgU: avg(units), medU: median(units)};
+}
+function renderDash() {
+  if (!S.sheets.ofs5) return;
+  var Y = new Date().getFullYear(), cap = S.dash.cap;
+  var cur = ytdStats(Y, false, cap), prev = ytdStats(Y - 1, false, cap);
+  var t = new Date();
+  $("dashSub").textContent = "Jan 1 - " + t.toLocaleDateString("en-US", {month: "short", day: "numeric", year: "numeric"}) + " vs the same period in " + (Y - 1);
+  function dl(a, b, money) {
+    if (a == null || b == null || !b) return "";
+    var p = (a - b) / b * 100, up = p >= 0;
+    return '<span class="delta ' + (up ? "up" : "down") + '">' + (up ? "&#9650; " : "&#9660; ") + Math.abs(p).toFixed(0) + "%</span> vs " + (money ? fmtShort(b) : fmtInt(b)) + " in " + (Y - 1);
+  }
+  $("kpis").innerHTML = [
+    ["Offers of sale", fmtInt(cur.n), dl(cur.n, prev.n), cur.w + " with contract · " + cur.wo + " without"],
+    ["Units offered", fmtInt(cur.units), dl(cur.units, prev.units), "Median " + fmtInt(cur.medU) + " units per filing"],
+    ["Contract volume", fmtShort(cur.price), dl(cur.price, prev.price, true), "Median " + fmtShort(cur.medP) + " per filing"],
+    ["Weighted $ / unit", fmtShort(cur.wppu), dl(cur.wppu, prev.wppu, true), "Median " + fmtShort(cur.medPpu) + " per unit"]
+  ].map(function (k) { return '<div class="card kpi"><div class="k-l">' + k[0] + '</div><div class="k-v">' + k[1] + '</div><div class="k-d">' + (k[2] || "&nbsp;") + '</div><div class="k-d small" style="margin-top:2px;color:var(--text3)">' + k[3] + "</div></div>"; }).join("");
+  var last = S.imports.filter(function (i) { return i.kind !== "excel" && i.week; }).sort(function (a, b) { return String(b.week).localeCompare(String(a.week)) || String(b.at).localeCompare(String(a.at)); })[0];
+  $("latestReport").innerHTML = last ? "Latest report: <b>" + esc(last.label) + "</b> · <a href=\"#reports\" onclick=\"setView('reports');return false\">Check DHCD</a>" : "";
+  renderYtdChart(); renderWeekChart(); renderCmp(); renderPipe(); renderClosed(); renderLatest();
+}
+function barChart(el, data, fmt, opts) {
+  opts = opts || {};
+  var W = el.clientWidth || 600, H = opts.h || 230, padL = 54, padB = 26, padT = 18, padR = 6;
+  var max = Math.max.apply(null, data.map(function (d) { return d.v || 0; }).concat([1]));
+  var nice = Math.pow(10, Math.floor(Math.log10(max))), step = [1, 2, 2.5, 5, 10].map(function (m) { return m * nice; }).filter(function (s) { return max / s <= 5; })[0] || nice * 10;
+  var top = Math.ceil(max / step) * step, iw = W - padL - padR, ih = H - padT - padB, bw = iw / data.length;
+  var bwid = Math.max(2, Math.min(44, bw * .62));
+  var s = '<svg viewBox="0 0 ' + W + " " + H + '" height="' + H + '">';
+  for (var g = 0; g <= top + 1e-9; g += step) { var y = padT + ih - g / top * ih; s += '<line class="gl" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y + '" y2="' + y + '"/><text class="ax" x="' + (padL - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + fmt(g, true) + "</text>"; }
+  data.forEach(function (d, i) {
+    var h = (d.v || 0) / top * ih, x = padL + i * bw + (bw - bwid) / 2, y = padT + ih - h, r = Math.min(4, bwid / 2, h);
+    var path = h > 0 ? "M" + x + "," + (padT + ih) + "V" + (y + r) + "Q" + x + "," + y + " " + (x + r) + "," + y + "H" + (x + bwid - r) + "Q" + (x + bwid) + "," + y + " " + (x + bwid) + "," + (y + r) + "V" + (padT + ih) + "Z" : "";
+    s += '<g class="bg" data-i="' + i + '"><rect x="' + (padL + i * bw) + '" y="' + padT + '" width="' + bw + '" height="' + ih + '" fill="transparent"/>' + (path ? '<path class="bar' + (d.cur ? " cur" : "") + '" d="' + path + '"/>' : "") + "</g>";
+    if (!opts.every || i % opts.every === 0 || i === data.length - 1) s += '<text class="ax" x="' + (padL + i * bw + bw / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + esc(d.l) + "</text>";
+    if (opts.labels && d.v) s += '<text class="lbl" x="' + (padL + i * bw + bw / 2) + '" y="' + (y - 5) + '" text-anchor="middle">' + fmt(d.v, true) + "</text>";
+  });
+  el.innerHTML = s + "</svg>";
+  var tip = $("tip");
+  el.querySelectorAll(".bg").forEach(function (g) {
+    g.addEventListener("mousemove", function (e) {
+      var d = data[+g.dataset.i];
+      el.querySelectorAll(".bar").forEach(function (b) { b.classList.add("dim"); });
+      var b = g.querySelector(".bar"); if (b) b.classList.remove("dim");
+      tip.innerHTML = d.tip || ("<b>" + esc(d.l) + "</b><br>" + fmt(d.v));
+      tip.style.display = "block"; tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY - 10) + "px";
+    });
+    g.addEventListener("mouseleave", function () { tip.style.display = "none"; el.querySelectorAll(".bar").forEach(function (b) { b.classList.remove("dim"); }); });
+    if (d_click(opts)) g.addEventListener("click", function () { opts.onClick(data[+g.dataset.i]); });
+  });
+}
+function d_click(o) { return o && typeof o.onClick === "function"; }
+function renderYtdChart() {
+  var Y = new Date().getFullYear(), m = S.dash.metric, cap = S.dash.cap, data = [];
+  for (var y = Y - 12; y <= Y; y++) {
+    var st = ytdStats(y, false, cap);
+    var v = m === "count" ? st.n : m === "units" ? st.units : m === "price" ? st.price : st.wppu;
+    data.push({l: String(y), v: v, cur: y === Y, tip: "<b>" + y + "</b> (Jan 1 - " + new Date().toLocaleDateString("en-US", {month: "short", day: "numeric"}) + ")<br>" + fmtInt(st.n) + " offers · " + fmtInt(st.units) + " units<br>" + fmtShort(st.price) + " volume · " + fmtShort(st.wppu) + " / unit"});
+  }
+  var fm = m === "count" || m === "units" ? function (v) { return fmtInt(v); } : function (v) { return fmtShort(v); };
+  $("ytdSub").textContent = {count: "Unique addresses filed", units: "Units in those filings", price: "Total contract price", wppu: "Weighted average price per unit"}[m] + ", Jan 1 to today's date";
+  barChart($("ytdChart"), data, fm, {labels: true});
+}
+function renderWeekChart() {
+  var weeks = [], now = new Date(), mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  for (var i = 25; i >= 0; i--) { var a = new Date(mon - i * 7 * DAY); weeks.push({start: a, n: 0, u: 0, items: []}); }
+  ofsRows().forEach(function (r) {
+    var d = dParse(val("ofs5", r, "date")); if (!d) return;
+    var i = Math.floor((d - weeks[0].start) / (7 * DAY)); if (i < 0 || i >= weeks.length) return;
+    weeks[i].n++; weeks[i].u += +val("ofs5", r, "units") || 0; weeks[i].items.push(val("ofs5", r, "address"));
+  });
+  barChart($("weekChart"), weeks.map(function (w, i) {
+    var l = (w.start.getMonth() + 1) + "/" + w.start.getDate();
+    return {l: l, v: w.n, cur: i === weeks.length - 1, tip: "<b>Week of " + l + "</b><br>" + w.n + " offer" + (w.n === 1 ? "" : "s") + " · " + fmtInt(w.u) + " units" + (w.items.length ? "<br>" + w.items.slice(0, 5).map(esc).join("<br>") + (w.items.length > 5 ? "<br>..." : "") : "")};
+  }), function (v) { return fmtInt(v); }, {every: 4});
+}
+function renderCmp() {
+  var Y = new Date().getFullYear(), n = S.dash.years, cap = S.dash.cap, ys = [];
+  for (var y = Y; y > Y - n && y >= 2014; y--) ys.push(y);
+  var ytd = {}, ann = {};
+  ys.forEach(function (y) { ytd[y] = ytdStats(y, false, cap); ann[y] = y < Y ? ytdStats(y, true, cap) : null; });
+  var t = new Date(), md = (t.getMonth() + 1) + "/" + t.getDate();
+  function row(label, f, fmt, sec) {
+    if (sec) return '<tr class="sec"><td colspan="' + (ys.length + 1) + '">' + label + "</td></tr>";
+    return "<tr><td>" + label + "</td>" + ys.map(function (y) { var v = f(y); return '<td class="' + (y === Y ? "cur" : "") + '">' + (v === "TBD" ? '<span class="muted">TBD</span>' : fmt(v)) + "</td>"; }).join("") + "</tr>";
+  }
+  var I = function (v) { return v == null ? "-" : fmtInt(v); }, M = function (v) { return v == null ? "-" : fmtMoney(v); };
+  var proj = function (st, k) { return Math.floor(st[k] * 365 / st.days); };
+  $("cmpTable").innerHTML = "<thead><tr><th></th>" + ys.map(function (y) { return "<th>" + y + " TOPA OFS</th>"; }).join("") + "</tr></thead><tbody>" + [
+    row("Offers of sale", 0, 0, 1),
+    row("OFS without contract", function (y) { return ytd[y].wo; }, I),
+    row("OFS with contract", function (y) { return ytd[y].w; }, I),
+    row("Number of YTD contracts (as of " + md + ")", function (y) { return ytd[y].n; }, I),
+    row("Projected annual count based on YTD", function (y) { return proj(ytd[y], "n"); }, I),
+    row("Actual annual number of contracts", function (y) { return ann[y] ? ann[y].n : "TBD"; }, I),
+    row("Contract price", 0, 0, 1),
+    row("Total YTD contract price", function (y) { return ytd[y].price; }, M),
+    row("Projected annual contract price", function (y) { return proj(ytd[y], "price"); }, M),
+    row("Actual annual contract price", function (y) { return ann[y] ? ann[y].price : "TBD"; }, M),
+    row("Average contract price (YTD)", function (y) { return ytd[y].avgP; }, M),
+    row("Median contract price (YTD)", function (y) { return ytd[y].medP; }, M),
+    row("Average contract price (annual)", function (y) { return ann[y] ? ann[y].avgP : "TBD"; }, M),
+    row("Median contract price (annual)", function (y) { return ann[y] ? ann[y].medP : "TBD"; }, M),
+    row("Price per unit", 0, 0, 1),
+    row("Weighted average $/unit (YTD)", function (y) { return ytd[y].wppu; }, M),
+    row("Average $/unit (YTD)", function (y) { return ytd[y].avgPpu; }, M),
+    row("Median $/unit (YTD)", function (y) { return ytd[y].medPpu; }, M),
+    row("Weighted average $/unit (annual)", function (y) { return ann[y] ? ann[y].wppu : "TBD"; }, M),
+    row("Average $/unit (annual)", function (y) { return ann[y] ? ann[y].avgPpu : "TBD"; }, M),
+    row("Median $/unit (annual)", function (y) { return ann[y] ? ann[y].medPpu : "TBD"; }, M),
+    row("Number of units", 0, 0, 1),
+    row("Total units (YTD)", function (y) { return ytd[y].units; }, I),
+    row("Average units (YTD)", function (y) { return ytd[y].avgU; }, function (v) { return v == null ? "-" : v.toFixed(1); }),
+    row("Median units (YTD)", function (y) { return ytd[y].medU; }, I),
+    row("Total units (annual)", function (y) { return ann[y] ? ann[y].units : "TBD"; }, I),
+    row("Average units (annual)", function (y) { return ann[y] ? ann[y].avgU : "TBD"; }, function (v) { return v == null ? "-" : v.toFixed(1); }),
+    row("Median units (annual)", function (y) { return ann[y] ? ann[y].medU : "TBD"; }, I)
+  ].join("") + "</tbody>";
+}
+function pipelineRows() {
+  var t = todayISO();
+  return ofsRows().filter(function (r) { var d = val("ofs5", r, "date"); var n = d ? daysBetween(d, t) : null; return n != null && n >= 0 && n <= 420; });
+}
+function renderPipe() {
+  var rows = pipelineRows(), k = S.dash.pipeSort;
+  rows.sort(function (a, b) {
+    if (k === "date") return String(val("ofs5", b, "date")).localeCompare(String(val("ofs5", a, "date")));
+    return (+val("ofs5", b, k) || 0) - (+val("ofs5", a, k) || 0);
+  });
+  var open = rows.filter(function (r) { return !compsFor("ofs5", r).length; });
+  $("pipeSub").textContent = rows.length + " offers inside the 420-day window · " + fmtInt(sum(rows.map(function (r) { return +val("ofs5", r, "units") || 0; }))) + " units · " + (rows.length - open.length) + " already closed per CoStar";
+  $("pipeList").innerHTML = rows.map(function (r) {
+    var d = val("ofs5", r, "date"), n = daysBetween(d, todayISO()), c = compsFor("ofs5", r)[0], hl = hlOf("ofs5", r);
+    var name = val("ofs5", r, "name"), u = val("ofs5", r, "units"), p = val("ofs5", r, "price");
+    return '<div class="pi" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 var(--' + hl + ')"' : "") + '><div><div class="a">' + esc(val("ofs5", r, "address")) + (name ? ' <span class="muted" style="font-weight:400">· ' + esc(name) + "</span>" : "") + '</div><div class="m">' +
+      fmtDate(d) + " · " + esc(val("ofs5", r, "type") || "") + (u ? " · " + fmtInt(u) + " units" : "") + (p ? " · " + fmtShort(p) : "") + (u && p ? " (" + fmtShort(p / u) + "/unit)" : "") + '</div></div><div style="text-align:right">' +
+      (c ? '<span class="pill green">Closed ' + fmtDate(c.date) + "</span>" : '<span class="pill blue">' + phase(n) + "</span>") + '<div class="m" style="margin-top:3px">Day ' + n + ' of 420</div></div><div class="pbar"><i style="width:' + Math.min(100, n / 420 * 100) + "%" + (c ? ";background:var(--green)" : "") + '"></i></div></div>';
+  }).join("") || '<div class="empty">Nothing inside the window.</div>';
+  $("pipeList").querySelectorAll(".pi").forEach(function (el) { el.onclick = function () { openRow("ofs5", el.dataset.id); }; });
+  renderMap(rows);
+}
+var _map, _layer;
+function renderMap(rows) {
+  if (!window.L) return;
+  if (!_map) {
+    _map = L.map("map", {zoomControl: true, scrollWheelZoom: false}).setView([38.9, -77.02], 11);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {maxZoom: 16, attribution: "Tiles &copy; Esri"}).addTo(_map);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {maxZoom: 16}).addTo(_map);
+    _layer = L.layerGroup().addTo(_map);
+  }
+  setTimeout(function () { _map.invalidateSize(); }, 50);
+  _layer.clearLayers();
+  rows.forEach(function (r) {
+    var g = r.geo; if (!g) return;
+    var u = +val("ofs5", r, "units") || 5, c = compsFor("ofs5", r)[0];
+    var m = L.circleMarker(g, {radius: Math.max(4, Math.min(16, Math.sqrt(u) * 1.1)), color: "#fff", weight: 1.5, fillColor: c ? "#188038" : "#1a73e8", fillOpacity: .8});
+    m.bindTooltip("<b>" + esc(val("ofs5", r, "address")) + "</b><br>" + fmtDate(val("ofs5", r, "date")) + " · " + fmtInt(u) + " units" + (val("ofs5", r, "price") ? " · " + fmtShort(val("ofs5", r, "price")) : ""));
+    m.on("click", function () { openRow("ofs5", r.id); });
+    m.addTo(_layer);
+  });
+}
+function renderClosed() {
+  var rows = [];
+  (S.sheets.ofs5 ? S.sheets.ofs5.rows : []).forEach(function (r) {
+    compsFor("ofs5", r).forEach(function (c) { rows.push({r: r, c: c, uc: daysBetween(val("ofs5", r, "date"), c.date)}); });
+  });
+  rows.sort(function (a, b) { return String(b.c.date || "").localeCompare(String(a.c.date || "")); });
+  var ucs = rows.map(function (x) { return x.uc; }).filter(function (x) { return x != null && x >= 0; });
+  $("closedSub").textContent = rows.length + " closings linked · median " + (median(ucs) == null ? "-" : Math.round(median(ucs))) + " days from TOPA filing to sale";
+  $("closedTable").innerHTML = "<thead><tr><th>Address</th><th>TOPA date</th><th>Sold</th><th style=text-align:right>Price</th><th style=text-align:right>Days</th><th>Buyer</th></tr></thead><tbody>" +
+    rows.slice(0, 60).map(function (x) { return '<tr data-id="' + x.r.id + '" style="cursor:pointer"><td>' + esc(val("ofs5", x.r, "address")) + "</td><td>" + fmtDate(val("ofs5", x.r, "date")) + "</td><td>" + fmtDate(x.c.date) + '</td><td style="text-align:right">' + fmtShort(x.c.price) + '</td><td style="text-align:right">' + (x.uc == null ? "" : x.uc) + "</td><td>" + esc(x.c.buyer || "") + "</td></tr>"; }).join("") + "</tbody>";
+  $("closedTable").querySelectorAll("tr[data-id]").forEach(function (tr) { tr.onclick = function () { openRow("ofs5", tr.dataset.id); }; });
+}
+function renderLatest() {
+  var all = [];
+  Object.keys(S.sheets).forEach(function (slug) { S.sheets[slug].rows.forEach(function (r) { var d = val(slug, r, "date"); if (d && d <= todayISO()) all.push({slug: slug, r: r, d: d}); }); });
+  all.sort(function (a, b) { return b.d.localeCompare(a.d); });
+  var top = all.slice(0, 80);
+  var loaded = Object.keys(S.sheets).length, total = S.index.sheets.length;
+  $("latestSub").textContent = loaded < total ? "Loading every tab..." : "Newest 80 filings across all " + total + " tabs";
+  $("latestTable").innerHTML = "<thead><tr><th>Date</th><th>Address</th><th>Tab</th><th>Detail</th></tr></thead><tbody>" + top.map(function (x) {
+    var det = [val(x.slug, x.r, "type"), val(x.slug, x.r, "units") ? fmtInt(val(x.slug, x.r, "units")) + (x.slug === "not" ? "" : " units") : "", val(x.slug, x.r, "price") ? fmtShort(val(x.slug, x.r, "price")) : ""].filter(Boolean).join(" · ");
+    return '<tr data-s="' + x.slug + '" data-id="' + x.r.id + '" style="cursor:pointer"><td>' + fmtDate(x.d) + "</td><td>" + esc(val(x.slug, x.r, "address")) + '</td><td><span class="pill gray">' + esc(sheetMeta(x.slug).title) + "</span></td><td>" + esc(det) + "</td></tr>";
+  }).join("") + "</tbody>";
+  $("latestTable").querySelectorAll("tr[data-id]").forEach(function (tr) { tr.onclick = function () { openRow(tr.dataset.s, tr.dataset.id); }; });
+}
+
+/* ---------- table ---------- */
+function renderSide() {
+  var groups = {};
+  S.index.sheets.forEach(function (m) { (groups[m.group] = groups[m.group] || []).push(m); });
+  $("sideNav").innerHTML = ["Sale & Transfer", "Single Family", "Tenants", "Conversion", "Other"].filter(function (g) { return groups[g]; }).map(function (g) {
+    return "<h4>" + esc(g) + "</h4>" + groups[g].map(function (m) {
+      return '<button class="sh' + (m.slug === S.sheet && !S.f.all ? " on" : "") + '" data-s="' + m.slug + '"><span>' + esc(m.title) + '</span><span class="n">' + fmtInt(m.count) + "</span></button>";
+    }).join("");
+  }).join("");
+  $("sideNav").querySelectorAll(".sh").forEach(function (b) { b.onclick = function () { selectSheet(b.dataset.s); }; });
+}
+function selectSheet(slug) {
+  S.sheet = slug; S.page = 0; S.f.all = false; $("allSheetsChk").classList.remove("on");
+  S.sort = {key: "date", dir: -1}; S.f.type = ""; S.f.status = "";
+  writeHash();
+  ensureSheet(slug).then(function () { renderTable(); }, function (e) { toast(e.message, true); });
+  renderSide();
+}
+var ALLCOLS = [{key: "sheetTitle", label: "Tab", type: "text", computed: 1}, {key: "date", label: "Date", type: "date"}, {key: "address", label: "Address", type: "text"},
+  {key: "type", label: "Type", type: "text"}, {key: "units", label: "Units", type: "text"}, {key: "price", label: "Price", type: "money"}, {key: "buyer", label: "Buyer", type: "text"},
+  {key: "seller", label: "Seller", type: "text"}, {key: "notes", label: "Notes", type: "text"}];
+function currentRows() {
+  var f = S.f, q = f.q.trim().toLowerCase(), terms = q ? q.split(/\s+/) : [];
+  var slugs = f.all ? Object.keys(S.sheets) : [S.sheet];
+  var out = [];
+  slugs.forEach(function (slug) {
+    var sh = S.sheets[slug]; if (!sh) return;
+    var cols = sh.columns;
+    sh.rows.forEach(function (r) {
+      if (!f.hid && isHidden(slug, r)) return;
+      var d = val(slug, r, "date") || "";
+      if (f.from && (!d || d < f.from)) return;
+      if (f.to && (!d || d > f.to)) return;
+      if (!f.all) {
+        if (f.type && String(val(slug, r, "type") || "") !== f.type) return;
+        if (f.units && !((+val(slug, r, "units") || 0) >= +f.units)) return;
+        if (f.status && cval(slug, r, "status") !== f.status) return;
+      }
+      if (f.hl && !hlOf(slug, r)) return;
+      if (f.ed && !S.overlay.edits[rk(slug, r)]) return;
+      if (terms.length) {
+        var hay = cols.map(function (c) { var v = anyVal(slug, r, c.key); return v == null ? "" : String(v); }).join(" ").toLowerCase() + " " + normAddr(val(slug, r, "address"));
+        for (var i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) < 0 && hay.indexOf(normAddr(terms[i])) < 0) return;
+      }
+      out.push({slug: slug, r: r});
+    });
+  });
+  var k = S.sort.key, dir = S.sort.dir, colType = (f.all ? ALLCOLS : (S.sheets[S.sheet] || {columns: []}).columns).filter(function (c) { return c.key === k; })[0];
+  var num = colType && (colType.type === "int" || colType.type === "money");
+  out.sort(function (a, b) {
+    var x = anyVal(a.slug, a.r, k), y = anyVal(b.slug, b.r, k);
+    var ex = x == null || x === "", ey = y == null || y === "";
+    if (ex && ey) return 0; if (ex) return 1; if (ey) return -1;
+    if (num) return ((+x) - (+y)) * dir;
+    return String(x).localeCompare(String(y), undefined, {numeric: true}) * dir;
+  });
+  return out;
+}
+function cellHtml(slug, r, c) {
+  var v = anyVal(slug, r, c.key), e = !c.computed && ed(slug, r, c.key);
+  var t = c.type, txt;
+  if (t === "date") txt = fmtDate(v);
+  else if (t === "money") txt = fmtMoney(v);
+  else if (t === "int") txt = typeof v === "number" ? fmtInt(v) : esc(v);
+  else txt = esc(v);
+  if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
+  if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
+  var cls = (t === "int" || t === "money" ? "num " : "") + (c.computed ? "" : "ed ") + (e ? "edited" : "");
+  var title = e ? ' title="' + esc("Edited by " + who(e.by) + " " + ago(e.at) + (r[c.key] != null && r[c.key] !== "" ? " · was: " + r[c.key] : " · was blank")) + '"' : (String(v || "").length > 40 ? ' title="' + esc(v) + '"' : "");
+  return '<td class="' + cls + '" data-f="' + c.key + '"' + title + ">" + txt + "</td>";
+}
+function renderTable(soft) {
+  renderSide();
+  var f = S.f, sh = S.sheets[S.sheet];
+  if (!sh && !f.all) return;
+  var cols = f.all ? ALLCOLS : sh.columns;
+  $("tTitle").textContent = f.all ? "All tabs" : sh.title;
+  var hasType = !f.all && sh.colKeys.type, hasUnits = !f.all && sh.colKeys.units && sh.colKeys.units.type === "int";
+  $("tTypeWrap").hidden = !hasType; $("tUnitsWrap").hidden = !hasUnits; $("tStatusWrap").hidden = f.all || S.sheet !== "ofs5";
+  $("addRow").hidden = f.all; $("clearHl").hidden = f.all;
+  if (hasType) {
+    var counts = {}; sh.rows.forEach(function (r) { var t = val(S.sheet, r, "type"); if (t) counts[t] = (counts[t] || 0) + 1; });
+    var opts = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).slice(0, 60);
+    $("tType").innerHTML = '<option value="">All</option>' + opts.map(function (o) { return "<option" + (o === f.type ? " selected" : "") + ">" + esc(o) + "</option>"; }).join("");
+  }
+  var rows = currentRows(), ps = S.pageSize, pages = Math.max(1, Math.ceil(rows.length / ps));
+  if (S.page >= pages) S.page = pages - 1;
+  var slice = rows.slice(S.page * ps, S.page * ps + ps);
+  var head = '<thead><tr><th style="width:34px" title="Highlight"></th>' + cols.map(function (c) {
+    var on = S.sort.key === c.key;
+    return '<th data-k="' + c.key + '" class="' + (on ? "sorted " : "") + (c.type === "int" || c.type === "money" ? "num" : "") + '">' + esc(c.label) + (on ? '<span class="ar">' + (S.sort.dir > 0 ? "&#9650;" : "&#9660;") + "</span>" : "") + "</th>";
+  }).join("") + '<th style="width:34px"></th></tr></thead>';
+  var body = "<tbody>" + slice.map(function (x) {
+    var hl = hlOf(x.slug, x.r);
+    return '<tr data-s="' + x.slug + '" data-id="' + x.r.id + '" class="' + (hl ? "hl-" + hl : "") + (isHidden(x.slug, x.r) ? " hidden-row" : "") + '"><td class="hlc" title="Highlight row">' + (hl ? '<span class="sw ' + hl + '"></span>' : '<span class="hdot"></span>') + "</td>" +
+      cols.map(function (c) { return cellHtml(x.slug, x.r, c); }).join("") + '<td class="opn" title="Open details"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></td></tr>';
+  }).join("") + "</tbody>";
+  var sc = $("tScroll"), top = sc.scrollTop, left = sc.scrollLeft;
+  $("dt").innerHTML = head + body;
+  if (soft) { sc.scrollTop = top; sc.scrollLeft = left; }
+  var hlN = (f.all ? 0 : sh.rows.filter(function (r) { return hlOf(S.sheet, r); }).length);
+  $("tCount").innerHTML = fmtInt(rows.length) + " rows" + (f.q ? " matching <b>" + esc(f.q) + "</b>" : "") + (hlN ? " · " + hlN + " highlighted" : "");
+  $("pInfo").textContent = (S.page + 1) + " / " + pages;
+  $("pPrev").disabled = S.page === 0; $("pNext").disabled = S.page >= pages - 1;
+  $("dt").querySelectorAll("th[data-k]").forEach(function (th) { th.onclick = function () { var k = th.dataset.k; S.sort = {key: k, dir: S.sort.key === k ? -S.sort.dir : (k === "date" || k === "units" || k === "price" ? -1 : 1)}; renderTable(); }; });
+  if (!slice.length) $("dt").querySelector("tbody").innerHTML = '<tr><td colspan="' + (cols.length + 2) + '" class="empty">No rows match these filters.</td></tr>';
+}
+/* table interactions: delegated */
+function tableClick(e) {
+  var td = e.target.closest("td"), tr = e.target.closest("tr[data-id]"); if (!td || !tr) return;
+  var slug = tr.dataset.s, id = tr.dataset.id;
+  if (td.classList.contains("hlc")) { openHlPop(td, slug, id); return; }
+  if (td.classList.contains("opn")) { openRow(slug, id); return; }
+}
+function tableDbl(e) {
+  var td = e.target.closest("td.ed"), tr = e.target.closest("tr[data-id]"); if (!td || !tr || td.classList.contains("editing")) return;
+  startEdit(td, tr.dataset.s, tr.dataset.id, td.dataset.f);
+}
+function findRow(slug, id) { var sh = S.sheets[slug]; if (!sh) return null; for (var i = 0; i < sh.rows.length; i++) if (sh.rows[i].id === id) return sh.rows[i]; return null; }
+function colOf(slug, key) { var sh = S.sheets[slug]; return (sh && sh.colKeys[key]) || ALLCOLS.filter(function (c) { return c.key === key; })[0] || {key: key, label: key, type: "text"}; }
+function startEdit(td, slug, id, key) {
+  var r = findRow(slug, id), c = colOf(slug, key); if (!r || c.computed) return;
+  var v = val(slug, r, key);
+  td.classList.add("editing");
+  var inp = document.createElement("input");
+  inp.type = c.type === "date" ? "date" : "text";
+  inp.value = v == null ? "" : (c.type === "money" || c.type === "int") && typeof v === "number" ? String(v) : v;
+  td.innerHTML = ""; td.appendChild(inp); inp.focus(); if (inp.select) inp.select();
+  var done = false;
+  function finish(save) {
+    if (done) return; done = true;
+    td.classList.remove("editing");
+    if (save && !setField(slug, r, c, inp.value)) { renderTable(true); return; }
+    if (!save) renderTable(true);
+  }
+  inp.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); finish(true); }
+    else if (ev.key === "Escape") { ev.preventDefault(); finish(false); }
+    else if (ev.key === "Tab") {
+      ev.preventDefault(); finish(true);
+      setTimeout(function () {
+        var row = document.querySelector('tr[data-id="' + id + '"]'); if (!row) return;
+        var cells = Array.prototype.slice.call(row.querySelectorAll("td.ed")), i = cells.findIndex(function (x) { return x.dataset.f === key; });
+        var nx = cells[i + (ev.shiftKey ? -1 : 1)]; if (nx) startEdit(nx, slug, id, nx.dataset.f);
+      }, 30);
+    }
+  });
+  inp.addEventListener("blur", function () { finish(true); });
+}
+var _hlTarget = null;
+function openHlPop(anchor, slug, id) {
+  var pop = $("hlPop"), r = findRow(slug, id); _hlTarget = {slug: slug, r: r};
+  var cur = hlOf(slug, r);
+  pop.innerHTML = HL.map(function (c) { return '<button data-c="' + c + '" title="' + c + '"><span class="sw ' + c + '" style="' + (c === cur ? "box-shadow:0 0 0 2px #fff,0 0 0 4px #202124" : "") + '"></span></button>'; }).join("") + '<button class="x" data-c="" title="Remove highlight">&#10005;</button>';
+  var b = anchor.getBoundingClientRect();
+  pop.style.left = (b.left + 4) + "px"; pop.style.top = (b.bottom + 4) + "px"; pop.classList.add("open");
+  pop.querySelectorAll("button").forEach(function (btn) {
+    btn.onclick = function (ev) { ev.stopPropagation(); pop.classList.remove("open"); sendOps([{t: "hl", k: rk(slug, r), c: btn.dataset.c || null}]); if (S.drawer) refreshDrawerMeta(); };
+  });
+}
+document.addEventListener("click", function (e) { if (!e.target.closest("#hlPop") && !e.target.closest("td.hlc") && !e.target.closest(".swrow")) $("hlPop").classList.remove("open"); });
+function exportCsv() {
+  var rows = currentRows(), cols = S.f.all ? ALLCOLS : S.sheets[S.sheet].columns;
+  var lines = [["Highlight"].concat(cols.map(function (c) { return c.label; }))].concat(rows.map(function (x) {
+    return [hlOf(x.slug, x.r) || ""].concat(cols.map(function (c) { var v = anyVal(x.slug, x.r, c.key); return v == null ? "" : v; }));
+  }));
+  var csv = lines.map(function (l) { return l.map(function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(","); }).join("\r\n");
+  var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], {type: "text/csv"}));
+  a.download = "TOPA - " + (S.f.all ? "All tabs" : S.sheets[S.sheet].title).replace(/[\\/:*?"<>|]/g, "") + " - " + todayISO() + ".csv"; a.click();
+  apiGet("/track?e=topa:export").catch(function () {});
+}
+
+/* ---------- drawer ---------- */
+function openRow(slug, id) {
+  ensureSheet(slug).then(function () {
+    var r = findRow(slug, id); if (!r) { toast("That row is gone - it may have been re-imported.", true); return; }
+    S.drawer = {slug: slug, id: id}; renderDrawer(); $("drawer").classList.add("open");
+  });
+}
+function closeDrawer() { $("drawer").classList.remove("open"); S.drawer = null; }
+function refreshDrawerMeta() { if (S.drawer && !(document.activeElement && document.activeElement.closest("#drawer"))) renderDrawer(); }
+function renderDrawer() {
+  var D = S.drawer; if (!D) return;
+  if (D.newRow) return renderNewRow();
+  var slug = D.slug, r = findRow(slug, D.id), sh = S.sheets[slug]; if (!r) return closeDrawer();
+  var hl = hlOf(slug, r), d = val(slug, r, "date");
+  var srcTxt = r.src === "xlsx" ? "Master list (Excel)" : String(r.src || "").indexOf("dhcd:") === 0 ? "DHCD report " + r.src.slice(5) : r.src === "manual" ? "Added by hand" : (r.src || "");
+  $("drH").innerHTML = '<div class="t">' + esc(val(slug, r, "address") || val(slug, r, "orgName") || "(no address)") + '</div><div class="s">' + esc(sh.title) + (d ? " · " + fmtDate(d) : "") + (srcTxt ? " · " + esc(srcTxt) : "") + "</div>";
+  var h = '<div class="swrow"><span class="small muted" style="margin-right:4px">Highlight</span>' + HL.map(function (c) { return '<button data-c="' + c + '" class="' + (c === hl ? "on" : "") + '" title="' + c + '"><span class="sw ' + c + '"></span></button>'; }).join("") +
+    (hl ? '<button data-c="" title="Remove" style="width:auto;padding:0 8px;font-size:12px;color:var(--text2)">Clear</button>' : "") +
+    '<span class="ml-auto"></span><a class="small" target="_blank" rel="noopener" href="https://www.google.com/maps/search/' + encodeURIComponent((val(slug, r, "address") || "") + ", Washington, DC") + '">Google Maps &#8599;</a></div>';
+  if (slug === "ofs5") {
+    var n = d ? daysBetween(d, todayISO()) : null, cs = compsFor(slug, r), c = cs[0];
+    h += '<div class="dr-sec">TOPA status</div><div class="statbox">' +
+      '<div class="row"><span>Status</span><b>' + (c ? "Closed per CoStar" : n == null ? "-" : n > 420 ? "Past the 420-day window" : "In TOPA - " + phase(n)) + "</b></div>" +
+      '<div class="row"><span>Days since filing</span><span>' + (n == null ? "-" : n) + "</span></div>" +
+      (c ? '<div class="row"><span>Sold</span><span>' + fmtDate(c.date) + (c.price ? " · " + fmtMoney(c.price) : "") + '</span></div><div class="row"><span>Days under contract (TOPA date to sale)</span><b>' + daysBetween(d, c.date) + "</b></div>" : "") +
+      '<div class="pbar" style="margin-top:8px"><i style="width:' + Math.min(100, (c ? daysBetween(d, c.date) : n || 0) / 420 * 100) + "%" + (c ? ";background:var(--green)" : "") + '"></i></div></div>';
+    h += '<div class="dr-sec">CoStar sale comps</div>' + (cs.length ? cs.map(function (c) {
+      return '<div class="citem"><div class="ct">' + fmtDate(c.date) + " · " + fmtMoney(c.price) + (c.units ? " · " + c.units + " units" : "") + '</div><div class="muted">' + esc([c.buyer && "Buyer: " + c.buyer, c.seller && "Seller: " + c.seller].filter(Boolean).join(" · ")) + '</div><a href="#" class="small" data-unlink="' + c.id + '">Unlink</a></div>';
+    }).join("") : '<div class="small muted" style="margin-bottom:8px">No closing linked yet.</div>') +
+      '<div class="f"><input id="linkQ" placeholder="Link a comp: search comps by address"></div><div id="linkRes"></div>';
+  }
+  h += '<div class="dr-sec">Details</div>';
+  sh.columns.forEach(function (col) {
+    if (col.computed && col.key !== "ppu") return;
+    var v = col.key === "ppu" ? cval(slug, r, "ppu") : val(slug, r, col.key), e = ed(slug, r, col.key);
+    h += '<div class="f"><label>' + esc(col.label) + (e ? '<span class="who">edited by ' + esc(who(e.by)) + " " + ago(e.at) + "</span>" : "") + "</label>";
+    if (col.key === "ppu") h += '<div class="ro">' + (v ? fmtMoney(v) : "-") + "</div>";
+    else {
+      var shown = v == null ? "" : col.type === "money" && typeof v === "number" ? fmtMoney(v) : v;
+      if (col.key === "notes") h += '<textarea data-f="' + col.key + '">' + esc(shown) + "</textarea>";
+      else h += '<input data-f="' + col.key + '" type="' + (col.type === "date" ? "date" : "text") + '" value="' + esc(shown) + '"' + (col.type === "money" ? ' placeholder="$"' : "") + ">";
+    }
+    if (e) h += '<div class="orig">Original: ' + esc(r[col.key] == null || r[col.key] === "" ? "(blank)" : col.type === "money" ? fmtMoney(r[col.key]) : col.type === "date" ? fmtDate(r[col.key]) : r[col.key]) + ' · <a data-revert="' + col.key + '">restore</a></div>';
+    h += "</div>";
+  });
+  h += '<div class="small muted" style="margin-top:10px">Changes save when you leave a field and are visible to everyone.</div>';
+  $("drB").innerHTML = h;
+  $("drF").innerHTML = '<button class="btn sm danger" id="drHide">' + (isHidden(slug, r) ? "Unhide row" : "Hide row") + '</button><span class="ml-auto"></span><button class="btn sm" id="drClose">Close</button>';
+  $("drClose").onclick = closeDrawer;
+  $("drHide").onclick = function () { var hid = isHidden(slug, r); sendOps([{t: "set", k: rk(slug, r), f: "hidden", v: hid ? null : "1"}], hid ? "Row restored" : "Row hidden for everyone (tick Show hidden to see it)"); setTimeout(renderDrawer, 50); };
+  $("drB").querySelectorAll(".swrow button[data-c]").forEach(function (b) { b.onclick = function () { sendOps([{t: "hl", k: rk(slug, r), c: b.dataset.c || null}]); setTimeout(renderDrawer, 30); }; });
+  $("drB").querySelectorAll("[data-f]").forEach(function (inp) {
+    var save = function () { var c = colOf(slug, inp.dataset.f); if (!setField(slug, r, c, inp.value)) inp.value = val(slug, r, c.key) == null ? "" : val(slug, r, c.key); };
+    inp.addEventListener("change", save);
+    if (inp.tagName === "INPUT") inp.addEventListener("keydown", function (e) { if (e.key === "Enter") inp.blur(); });
+  });
+  $("drB").querySelectorAll("[data-revert]").forEach(function (a) { a.onclick = function () { sendOps([{t: "set", k: rk(slug, r), f: a.dataset.revert, v: null}], "Restored original"); setTimeout(renderDrawer, 30); }; });
+  $("drB").querySelectorAll("[data-unlink]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); linkComp(a.dataset.unlink, null); }; });
+  var lq = $("linkQ");
+  if (lq) lq.addEventListener("input", function () {
+    var q = normAddr(lq.value); if (q.length < 2) { $("linkRes").innerHTML = ""; return; }
+    var hits = S.comps.filter(function (c) { return normAddr(c.address).indexOf(q) > -1 || normAddr(c.name).indexOf(q) > -1; }).slice(0, 8);
+    $("linkRes").innerHTML = hits.map(function (c) { return '<div class="citem" style="cursor:pointer" data-link="' + c.id + '"><div class="ct">' + esc(c.address) + '</div><div class="muted">' + fmtDate(c.date) + " · " + fmtMoney(c.price) + (c.link ? " · linked elsewhere" : "") + "</div></div>"; }).join("") || '<div class="small muted">No comps match.</div>';
+    $("linkRes").querySelectorAll("[data-link]").forEach(function (el) { el.onclick = function () { linkComp(el.dataset.link, r.id); }; });
+  });
+}
+async function linkComp(compId, rowId) {
+  try {
+    await commitFiles(["comps.json"], function (o) {
+      var c = o["comps.json"].comps.filter(function (x) { return x.id === compId; })[0];
+      if (!c) throw new Error("comp not found");
+      if (rowId) c.link = rowId; else delete c.link;
+      return (rowId ? "link comp " : "unlink comp ") + c.address;
+    }, "topa:comp_link");
+    toast(rowId ? "Comp linked" : "Comp unlinked"); renderAll(true); renderDrawer();
+  } catch (e) { toast("Not saved: " + e.message, true); }
+}
+function renderNewRow() {
+  var sh = S.sheets[S.drawer.slug];
+  $("drH").innerHTML = '<div class="t">New row</div><div class="s">' + esc(sh.title) + " · for a filing the weekly reports missed</div>";
+  $("drB").innerHTML = sh.columns.filter(function (c) { return !c.computed; }).map(function (c) {
+    return '<div class="f"><label>' + esc(c.label) + "</label>" + (c.key === "notes" ? '<textarea data-f="notes"></textarea>' : '<input data-f="' + c.key + '" type="' + (c.type === "date" ? "date" : "text") + '"' + (c.key === "date" ? ' value="' + todayISO() + '"' : "") + ">") + "</div>";
+  }).join("");
+  $("drF").innerHTML = '<button class="btn sm" id="drClose">Cancel</button><button class="btn sm primary" id="drSave">Add row</button>';
+  $("drClose").onclick = closeDrawer;
+  $("drSave").onclick = async function () {
+    var row = {}, bad = false;
+    $("drB").querySelectorAll("[data-f]").forEach(function (inp) { var c = colOf(sh.slug, inp.dataset.f), v = coerce(c, inp.value); if (v === undefined) { bad = true; toast(c.label + " is not valid", true); } else if (v !== "") row[c.key] = v; });
+    if (bad) return;
+    if (!row.address && !row.orgName) { toast("Address is required", true); return; }
+    $("drSave").disabled = true;
+    try {
+      var p = "sheets/" + sh.slug + ".json", newId;
+      await commitFiles([p, "index.json"], async function (o) {
+        var s2 = o[p], taken = {}; s2.rows.forEach(function (x) { taken[x.id] = 1; });
+        var nr = Object.assign({}, row, {src: "manual", addedBy: S.me.email});
+        newId = await newRowId(sh.slug, nr, taken);
+        s2.rows.unshift(Object.assign({id: newId}, nr));
+        reindex(o["index.json"], s2);
+        return "add row " + (row.address || row.orgName) + " to " + sh.title;
+      }, "topa:add_row");
+      toast("Row added"); S.drawer = {slug: sh.slug, id: newId}; renderAll(); renderDrawer();
+    } catch (e) { toast("Not saved: " + e.message, true); $("drSave").disabled = false; }
+  };
+}
+
+/* ---------- comps ---------- */
+function renderComps() {
+  var q = normAddr(S.comps_f.q), lk = S.comps_f.link;
+  var ofs = {}; (S.sheets.ofs5 ? S.sheets.ofs5.rows : []).forEach(function (r) { ofs[r.id] = r; });
+  var rows = S.comps.filter(function (c) {
+    if (lk === "1" && !c.link) return false; if (lk === "0" && c.link) return false;
+    if (q && [c.address, c.name, c.buyer, c.seller, c.broker].map(normAddr).join(" ").indexOf(q) < 0) return false;
+    return true;
+  }).sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+  $("compTable").innerHTML = "<thead><tr><th>Address</th><th>Sold</th><th style=text-align:right>Price</th><th style=text-align:right>Units</th><th style=text-align:right>$/unit</th><th>Buyer</th><th>Seller</th><th>Offer of sale</th><th style=text-align:right>Days to close</th><th>Source</th></tr></thead><tbody>" +
+    rows.map(function (c) {
+      var r = c.link && ofs[c.link], td = r ? val("ofs5", r, "date") : null;
+      return '<tr data-c="' + c.id + '" style="cursor:pointer"><td><b style="font-weight:500">' + esc(c.address) + "</b>" + (c.name ? '<div class="small muted">' + esc(c.name) + "</div>" : "") + "</td><td>" + fmtDate(c.date) + '</td><td style="text-align:right">' + fmtMoney(c.price) + '</td><td style="text-align:right">' + fmtInt(c.units) + '</td><td style="text-align:right">' + (c.price && c.units ? fmtMoney(c.price / c.units) : "") + "</td><td>" + esc(c.buyer || "") + "</td><td>" + esc(c.seller || "") + "</td><td>" +
+        (r ? '<a href="#" data-open="' + r.id + '">' + esc(val("ofs5", r, "address")) + "</a><div class=\"small muted\">filed " + fmtDate(td) + "</div>" : '<span class="pill gray">not linked</span>') + '</td><td style="text-align:right">' + (r && td && c.date ? daysBetween(td, c.date) : "") + '</td><td class="small muted">' + esc(c.src === "costar" ? "CoStar import" : c.src === "old-dashboard" ? "Old dashboard" : c.src || "") + "</td></tr>";
+    }).join("") + "</tbody>" + (rows.length ? "" : '<tbody><tr><td colspan="10" class="empty">No comps.</td></tr></tbody>');
+  $("compTable").querySelectorAll("[data-open]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); e.stopPropagation(); openRow("ofs5", a.dataset.open); }; });
+  $("compTable").querySelectorAll("tr[data-c]").forEach(function (tr) { tr.onclick = function () { openComp(tr.dataset.c); }; });
+}
+var COMP_FIELDS = [["address", "Address"], ["name", "Property name"], ["date", "Sale date", "date"], ["price", "Sale price", "money"], ["units", "Units", "int"], ["sf", "Building SF", "int"],
+  ["yearBuilt", "Year built", "int"], ["bldgClass", "Building class"], ["capRate", "Cap rate"], ["buyer", "Buyer"], ["seller", "Seller"], ["broker", "Broker"], ["notes", "Notes"]];
+function openComp(id) {
+  var c = id ? S.comps.filter(function (x) { return x.id === id; })[0] : {};
+  S.drawer = {comp: id || "new"};
+  $("drH").innerHTML = '<div class="t">' + esc(id ? c.address : "New sales comp") + '</div><div class="s">' + (id ? "CoStar comp" + (c.addedBy ? " · added by " + esc(who(c.addedBy)) : "") : "Enter a closing from CoStar") + "</div>";
+  var cands = suggestLinks(c);
+  $("drB").innerHTML = COMP_FIELDS.map(function (f) {
+    var v = c[f[0]] == null ? "" : c[f[0]];
+    return '<div class="f"><label>' + f[1] + "</label>" + (f[0] === "notes" ? '<textarea data-f="notes">' + esc(v) + "</textarea>" : '<input data-f="' + f[0] + '" type="' + (f[2] === "date" ? "date" : "text") + '" value="' + esc(v) + '">') + "</div>";
+  }).join("") + '<div class="dr-sec">Linked offer of sale</div><div class="f"><select id="cLinkSel"><option value="">Not linked</option>' +
+    cands.map(function (x) { return '<option value="' + x.r.id + '"' + (x.r.id === c.link ? " selected" : "") + ">" + esc(val("ofs5", x.r, "address")) + " · filed " + fmtDate(val("ofs5", x.r, "date")) + (x.exact ? "" : " (similar)") + "</option>"; }).join("") + "</select></div>";
+  $("drF").innerHTML = (id ? '<button class="btn sm danger" id="cDel">Delete comp</button>' : "") + '<span class="ml-auto"></span><button class="btn sm" id="drClose">Close</button><button class="btn sm primary" id="cSave">Save</button>';
+  $("drClose").onclick = closeDrawer;
+  $("cSave").onclick = async function () {
+    var upd = {}, bad = false;
+    $("drB").querySelectorAll("[data-f]").forEach(function (inp) { var f = COMP_FIELDS.filter(function (x) { return x[0] === inp.dataset.f; })[0], v = coerce({type: f[2] || "text", label: f[1]}, inp.value); if (v === undefined) { bad = true; toast(f[1] + " is not valid", true); } else upd[f[0]] = v; });
+    if (bad) return; if (!upd.address) { toast("Address is required", true); return; }
+    upd.link = $("cLinkSel").value || "";
+    $("cSave").disabled = true;
+    try {
+      await commitFiles(["comps.json"], function (o) {
+        var list = o["comps.json"].comps, t = id ? list.filter(function (x) { return x.id === id; })[0] : null;
+        if (id && !t) throw new Error("comp was deleted by someone else");
+        if (!t) { t = {id: "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), src: "manual", addedBy: S.me.email, addedAt: new Date().toISOString()}; list.push(t); }
+        Object.keys(upd).forEach(function (k) { if (upd[k] === "" || upd[k] == null) delete t[k]; else t[k] = upd[k]; });
+        t.editedBy = S.me.email; t.editedAt = new Date().toISOString();
+        return (id ? "edit comp " : "add comp ") + t.address;
+      }, "topa:comp_edit");
+      toast("Comp saved"); closeDrawer(); renderAll();
+    } catch (e) { toast("Not saved: " + e.message, true); $("cSave").disabled = false; }
+  };
+  if (id) $("cDel").onclick = async function () {
+    if (!confirm("Delete this comp for everyone?")) return;
+    try { await commitFiles(["comps.json"], function (o) { o["comps.json"].comps = o["comps.json"].comps.filter(function (x) { return x.id !== id; }); return "delete comp " + c.address; }, "topa:comp_delete"); toast("Comp deleted"); closeDrawer(); renderAll(); }
+    catch (e) { toast("Not deleted: " + e.message, true); }
+  };
+  $("drawer").classList.add("open");
+}
+/* candidate offers of sale for a comp: same normalized address, else same house number + street word */
+function suggestLinks(c) {
+  var rows = S.sheets.ofs5 ? S.sheets.ofs5.rows : [], a = normAddr(c.address || ""), out = [];
+  var num = (/^(\d+)/.exec(a) || [])[1], word = a.split(" ")[1];
+  rows.forEach(function (r) {
+    var b = normAddr(val("ofs5", r, "address"));
+    if (b === a && a) out.push({r: r, exact: 1});
+    else if (num && word && b.indexOf(num) === 0 && b.split(" ").indexOf(word) > -1) out.push({r: r, exact: 0});
+    else if (num && word && new RegExp("(^|\\D)" + num + "(\\D|$)").test(b) && b.indexOf(" " + word + " ") > -1) out.push({r: r, exact: 0});
+  });
+  if (c.link && !out.some(function (x) { return x.r.id === c.link; })) { var lr = findRow("ofs5", c.link); if (lr) out.unshift({r: lr, exact: 1}); }
+  out.sort(function (x, y) { return (y.exact - x.exact) || String(val("ofs5", y.r, "date")).localeCompare(String(val("ofs5", x.r, "date"))); });
+  return out.slice(0, 15);
+}
+/* auto link: exact address, filed on or before the sale, within 3 years */
+function autoLink(c) {
+  var best = null;
+  suggestLinks(c).forEach(function (x) {
+    if (!x.exact) return;
+    var d = val("ofs5", x.r, "date"), gap = c.date && d ? daysBetween(d, c.date) : null;
+    if (gap == null || gap < 0 || gap > 1100) return;
+    if (!best || d > val("ofs5", best, "date")) best = x.r;
+  });
+  return best;
+}
+/* CoStar export: Excel or CSV straight from CoStar's Sale Comps search */
+var COSTAR_MAP = [
+  ["address", /^(property address|address|street address)$/i], ["name", /^(property name|building name)$/i], ["date", /^(sale date|close date|sold date)$/i],
+  ["price", /^(sale price|price|sold price)$/i], ["units", /^(number of units|# of units|units|no\.? of units|total units)$/i],
+  ["sf", /^(rba|building sf|bldg sf|gross sf|sf)$/i], ["yearBuilt", /^(year built|yr built)$/i], ["bldgClass", /^(building class|class)$/i],
+  ["capRate", /^(actual cap rate|cap rate)$/i], ["buyer", /^(buyer true company|buyer company|true buyer company|recorded buyer|buyer)$/i],
+  ["seller", /^(seller true company|seller company|true seller company|recorded seller|seller)$/i], ["broker", /^(listing broker company|listing broker|seller broker company|broker)$/i],
+  ["notes", /^(comments|sale notes|transaction notes|research status)$/i], ["costarId", /^(comp id|comp #|sale comp id|propertyid|property id)$/i], ["city", /^(city|property city)$/i]
+];
+function excelDate(v) {
+  if (v == null || v === "") return "";
+  if (v instanceof Date) return v.getFullYear() + "-" + String(v.getMonth() + 1).padStart(2, "0") + "-" + String(v.getDate()).padStart(2, "0");
+  if (typeof v === "number") { var d = new Date(Math.round((v - 25569) * DAY)); return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0") + "-" + String(d.getUTCDate()).padStart(2, "0"); }
+  return coerce({type: "date"}, v) || "";
+}
+function importCompsFile(file) {
+  var fr = new FileReader();
+  fr.onload = function () {
+    try {
+      var wb = XLSX.read(new Uint8Array(fr.result), {type: "array", cellDates: true});
+      var ws = wb.Sheets[wb.SheetNames[0]], aoa = XLSX.utils.sheet_to_json(ws, {header: 1, raw: true, defval: ""});
+      var hi = aoa.findIndex(function (r) { return r.some(function (c) { return /address/i.test(String(c)); }) && r.some(function (c) { return /sale|price/i.test(String(c)); }); });
+      if (hi < 0) throw new Error("couldn't find a header row with Address and Sale Price");
+      var hdr = aoa[hi].map(function (h) { return String(h).trim(); }), map = {};
+      COSTAR_MAP.forEach(function (m) { var i = hdr.findIndex(function (h) { return m[1].test(h); }); if (i > -1) map[m[0]] = i; });
+      if (map.address == null) throw new Error("no address column");
+      var comps = aoa.slice(hi + 1).filter(function (r) { return r[map.address]; }).map(function (r) {
+        var c = {};
+        Object.keys(map).forEach(function (k) {
+          var v = r[map[k]];
+          if (k === "date") v = excelDate(v);
+          else if (["price", "units", "sf", "yearBuilt"].indexOf(k) > -1) v = parseNum(v);
+          else v = String(v == null ? "" : v).trim();
+          if (v !== "" && v != null) c[k] = v;
+        });
+        if (c.address) c.address = prettyAddr(c.address);
+        if (c.city && !/washington/i.test(c.city)) c._outside = 1;
+        return c;
+      });
+      previewComps(comps, hdr, map, file.name);
+    } catch (e) { toast("Couldn't read that file: " + e.message, true); }
+  };
+  fr.readAsArrayBuffer(file);
+}
+function previewComps(comps, hdr, map, fname) {
+  var have = {}; S.comps.forEach(function (c) { have[normAddr(c.address) + "|" + (c.date || "")] = 1; });
+  comps.forEach(function (c) { c._dup = !!have[normAddr(c.address) + "|" + (c.date || "")]; var r = autoLink(c); c._link = r ? r.id : ""; });
+  var fresh = comps.filter(function (c) { return !c._dup; });
+  openModal('<div class="mh"><div><div class="t">Import CoStar comps</div><div class="s">' + esc(fname) + " · " + comps.length + " rows · " + fresh.length + " new · " + fresh.filter(function (c) { return c._link; }).length + ' will link to an offer of sale</div><div class="s">Columns found: ' +
+    Object.keys(map).map(function (k) { return esc(k) + " &larr; " + esc(hdr[map[k]]); }).join(", ") + '</div></div><button class="dr-x" style="position:static;margin-left:auto" onclick="closeModal()">&times;</button></div>' +
+    '<div class="mb"><table class="ptable"><thead><tr><th></th><th>Address</th><th>Sold</th><th>Price</th><th>Units</th><th>Buyer</th><th>Links to</th></tr></thead><tbody>' +
+    comps.map(function (c, i) {
+      var r = c._link && findRow("ofs5", c._link);
+      return '<tr class="' + (c._dup ? "dup" : "") + '"><td><input type="checkbox" data-i="' + i + '"' + (c._dup ? "" : " checked") + "></td><td>" + esc(c.address) + (c._dup ? ' <span class="pill gray">already in</span>' : "") + (c._outside ? ' <span class="pill orange">' + esc(c.city) + "</span>" : "") + "</td><td>" + fmtDate(c.date) + "</td><td>" + fmtShort(c.price) + "</td><td>" + fmtInt(c.units) + "</td><td>" + esc(c.buyer || "") + "</td><td>" + (r ? esc(val("ofs5", r, "address")) + " (" + fmtDate(val("ofs5", r, "date")) + ")" : '<span class="muted">-</span>') + "</td></tr>";
+    }).join("") + '</tbody></table></div><div class="mf"><span class="small muted">Unmatched comps can be linked later from the comp or the offer of sale.</span><span class="ml-auto"></span><button class="btn sm" onclick="closeModal()">Cancel</button><button class="btn sm primary" id="mGo">Add selected</button></div>');
+  $("mGo").onclick = async function () {
+    var pick = Array.prototype.slice.call(document.querySelectorAll("#mbox input[data-i]:checked")).map(function (x) { return comps[+x.dataset.i]; });
+    if (!pick.length) { closeModal(); return; }
+    $("mGo").disabled = true; $("mGo").textContent = "Saving...";
+    try {
+      await commitFiles(["comps.json"], function (o) {
+        var list = o["comps.json"].comps, at = new Date().toISOString(), seen = {};
+        list.forEach(function (c) { seen[normAddr(c.address) + "|" + (c.date || "")] = 1; });
+        var n = 0;
+        pick.forEach(function (c, i) {
+          var k = normAddr(c.address) + "|" + (c.date || ""); if (seen[k]) return; seen[k] = 1;
+          var x = {}; Object.keys(c).forEach(function (f) { if (f[0] !== "_") x[f] = c[f]; });
+          x.id = "c" + Date.now().toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 5);
+          if (c._link) x.link = c._link; x.src = "costar"; x.addedBy = S.me.email; x.addedAt = at; x.file = fname;
+          list.push(x); n++;
+        });
+        return "CoStar comps from " + fname + " (" + n + " added)";
+      }, "topa:comps_import");
+      closeModal(); toast(pick.length + " comps added"); renderAll();
+    } catch (e) { toast("Not saved: " + e.message, true); $("mGo").disabled = false; $("mGo").textContent = "Add selected"; }
+  };
+}
+
+/* ---------- reports & imports ---------- */
+var _dhcd = null;
+function importedLabels() { var m = {}; S.imports.forEach(function (i) { m[String(i.label || "").replace(/\s+/g, " ").toLowerCase()] = i; }); return m; }
+async function loadDhcd(fresh) {
+  $("dhcdTable").innerHTML = '<tbody><tr><td class="empty"><span class="spinner"></span> Checking dhcd.dc.gov...</td></tr></tbody>';
+  try { _dhcd = await apiGet("/topa/dhcd" + (fresh ? "?fresh=1" : "")); renderDhcd(); }
+  catch (e) { $("dhcdTable").innerHTML = '<tbody><tr><td class="empty">Could not reach DHCD: ' + esc(e.message) + "</td></tr></tbody>"; }
+}
+function renderDhcd() {
+  if (!_dhcd) return;
+  var imp = importedLabels(), lastExcel = "2026-10-02";
+  $("dhcdTable").innerHTML = "<thead><tr><th>Week</th><th>Status</th><th></th></tr></thead><tbody>" + _dhcd.reports.slice(0, 80).map(function (r, i) {
+    var x = imp[r.label.replace(/\s+/g, " ").toLowerCase()];
+    var tot = x ? sum(Object.keys(x.added || {}).map(function (k) { return x.added[k]; })) : 0;
+    return "<tr><td>" + esc(r.label) + (r.current ? ' <span class="pill blue">Current</span>' : "") + "</td><td>" +
+      (x ? '<span class="pill green">Imported</span> <span class="small muted">' + (x.by === "seed" ? "at setup" : "by " + esc(who(x.by)) + " " + ago(x.at)) + " · " + tot + " new</span>" : '<span class="pill orange">Not imported</span>') +
+      '</td><td style="text-align:right"><button class="btn sm' + (x ? "" : " primary") + '" data-i="' + i + '">' + (x ? "Re-check" : "Import") + "</button></td></tr>";
+  }).join("") + "</tbody>";
+  $("dhcdTable").querySelectorAll("button[data-i]").forEach(function (b) { b.onclick = function () { importDhcd([_dhcd.reports[+b.dataset.i]]); }; });
+}
+async function importDhcd(reports) {
+  openModal('<div class="mh"><div><div class="t">Reading reports</div><div class="s" id="impProg">Starting...</div></div></div><div class="mb"><span class="spinner"></span></div>');
+  var batches = [];
+  for (var i = 0; i < reports.length; i++) {
+    var r = reports[i];
+    $("impProg").textContent = "Fetching " + r.label + " (" + (i + 1) + " of " + reports.length + ")";
+    try {
+      var buf = await apiGet("/topa/dhcd/pdf?href=" + encodeURIComponent(r.href), "buf");
+      var recs = await parsePdfBuffer(buf);
+      batches.push({label: r.label, kind: "dhcd", href: r.href, recs: recs});
+    } catch (e) { toast(r.label + ": " + e.message, true); }
+  }
+  if (batches.length) previewImport(batches); else closeModal();
+}
+async function parsePdfBuffer(buf) {
+  if (!window.pdfjsLib) throw new Error("PDF reader did not load");
+  var pdf = await pdfjsLib.getDocument({data: new Uint8Array(buf)}).promise;
+  return parseDhcdItems(await pdfItems(pdf));
+}
+async function uploadPdfs(files) {
+  files = Array.prototype.slice.call(files).filter(function (f) { return /\.pdf$/i.test(f.name); });
+  if (!files.length) return;
+  openModal('<div class="mh"><div><div class="t">Reading PDFs</div><div class="s" id="impProg"></div></div></div><div class="mb"><span class="spinner"></span></div>');
+  var batches = [];
+  for (var i = 0; i < files.length; i++) {
+    $("impProg").textContent = files[i].name;
+    try {
+      var buf = await files[i].arrayBuffer(), recs = await parsePdfBuffer(buf.slice(0));
+      if (!recs.length) { toast(files[i].name + ": no filings found - is this a DHCD weekly TOPA report?", true); continue; }
+      var ds = recs.map(function (x) { return x.date; }).sort();
+      batches.push({label: weekLabel(ds[0], ds[ds.length - 1]), kind: "upload", file: files[i].name, bytes: new Uint8Array(buf), recs: recs});
+    } catch (e) { toast(files[i].name + ": " + e.message, true); }
+  }
+  if (batches.length) previewImport(batches); else closeModal();
+}
+function weekLabel(a, b) {
+  var x = dParse(a), y = dParse(b), M = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  if (!x) return "Uploaded report";
+  return x.getMonth() === y.getMonth() ? M[x.getMonth()] + " " + x.getDate() + "-" + y.getDate() + ", " + y.getFullYear() : M[x.getMonth()] + " " + x.getDate() + "-" + M[y.getMonth()] + " " + y.getDate() + ", " + y.getFullYear();
+}
+/* classify every parsed filing as new or already tracked, then show it before saving */
+async function previewImport(batches) {
+  var slugs = {};
+  batches.forEach(function (b) { b.recs.forEach(function (r) { var m = categoryToSheet(r.category); r._sheet = m.sheet; r._extra = m.extra; slugs[m.sheet] = 1; }); });
+  await Promise.all(Object.keys(slugs).map(ensureSheet));
+  var keys = {};
+  Object.keys(slugs).forEach(function (s) { keys[s] = {}; (S.sheets[s] ? S.sheets[s].rows : []).forEach(function (r) { keys[s][r.date + "|" + normAddr(r.address)] = r; }); });
+  var nNew = 0;
+  batches.forEach(function (b) { b.recs.forEach(function (r) {
+    var k = r.date + "|" + normAddr(r.address);
+    r._dup = keys[r._sheet][k] || null; if (!r._dup) { keys[r._sheet][k] = {pending: 1}; nNew++; }
+  }); });
+  var groups = {};
+  batches.forEach(function (b, bi) { b.recs.forEach(function (r, ri) { (groups[r._sheet] = groups[r._sheet] || []).push({b: bi, i: ri, r: r}); }); });
+  var order = S.index.sheets.map(function (m) { return m.slug; });
+  var html = '<div class="mh"><div><div class="t">Review import</div><div class="s">' + batches.map(function (b) { return esc(b.label); }).join(", ") + " · " + sum(batches.map(function (b) { return b.recs.length; })) + " filings found · <b>" + nNew + ' new</b></div></div><button class="dr-x" style="position:static;margin-left:auto" onclick="closeModal()">&times;</button></div><div class="mb"><table class="ptable"><thead><tr><th></th><th>Date</th><th>Address</th><th>DHCD category</th><th>Units</th><th>Price</th><th>DHCD ID</th></tr></thead><tbody>' +
+    Object.keys(groups).sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }).map(function (s) {
+      var g = groups[s], nn = g.filter(function (x) { return !x.r._dup; }).length;
+      return '<tr class="grp"><td colspan="7">' + esc(sheetMeta(s).title) + ' <span class="muted" style="font-weight:400">· ' + nn + " new of " + g.length + "</span></td></tr>" + g.map(function (x) {
+        var r = x.r;
+        return '<tr class="' + (r._dup ? "dup" : "") + '"><td><input type="checkbox" data-b="' + x.b + '" data-i="' + x.i + '"' + (r._dup ? "" : " checked") + "></td><td>" + fmtDate(r.date) + "</td><td>" + esc(r.address) + (r._dup ? ' <span class="pill gray">already tracked</span>' : "") + (r.remark ? '<div class="small" style="color:var(--orange)">' + esc(r.remark) + "</div>" : "") + "</td><td class=\"small muted\">" + esc(r.category) + "</td><td>" + fmtInt(r.units) + "</td><td>" + fmtShort(r.price) + "</td><td class=\"small muted\">" + esc(r.dhcdId) + "</td></tr>";
+      }).join("");
+    }).join("") + "</tbody></table></div>" +
+    '<div class="mf"><span class="small muted">New 5+ offers of sale are geocoded for the map. The import is logged with your name.</span><span class="ml-auto"></span><button class="btn sm" onclick="closeModal()">Cancel</button><button class="btn sm primary" id="mGo">Add ' + nNew + " rows</button></div>";
+  openModal(html);
+  var upd = function () { var n = document.querySelectorAll("#mbox input[data-b]:checked").length; $("mGo").textContent = n ? "Add " + n + " rows" : "Log report (no new rows)"; };
+  document.querySelectorAll("#mbox input[data-b]").forEach(function (c) { c.onchange = upd; }); upd();
+  $("mGo").onclick = function () {
+    var pick = {}; document.querySelectorAll("#mbox input[data-b]:checked").forEach(function (c) { pick[c.dataset.b + ":" + c.dataset.i] = 1; });
+    saveImport(batches, pick);
+  };
+}
+async function geocodeRows(rows) {
+  var items = rows.map(function (r, i) { return {k: String(i), a: String(r.address).split(/\s*(?:&| and |,|;)\s*/)[0].replace(/^(\d+)[A-Za-z]?\s*-\s*\d+[A-Za-z]?\b/, "$1").replace(/\s*#.*$/, ""), c: "Washington", s: "DC"}; });
+  for (var i = 0; i < items.length; i += 10) {
+    try {
+      var j = await apiPost("/topa/geocode", {items: items.slice(i, i + 10)});
+      Object.keys(j.results || {}).forEach(function (k) { var g = j.results[k]; if (g) rows[+k].geo = [Math.round(g.lat * 1e6) / 1e6, Math.round(g.lng * 1e6) / 1e6]; });
+    } catch (e) { /* the map is a nicety; never block an import on it */ }
+  }
+}
+async function saveImport(batches, pick) {
+  $("mGo").disabled = true; $("mGo").textContent = "Saving...";
+  try {
+    var slugs = {}; batches.forEach(function (b) { b.recs.forEach(function (r) { slugs[r._sheet] = 1; }); });
+    var paths = Object.keys(slugs).map(function (s) { return "sheets/" + s + ".json"; }).concat(["index.json", "imports.json"]);
+    var extra = [], pdfPaths = {};
+    batches.forEach(function (b) {
+      if (b.kind === "upload" && b.bytes && b.bytes.length < 8e6) {
+        var p = "pdfs/" + todayISO() + "_" + b.file.replace(/\.pdf$/i, "").replace(/[^A-Za-z0-9._-]+/g, "_").slice(0, 80) + ".pdf";
+        pdfPaths[b.label] = p; extra.push({path: p, content: b64FromBytes(b.bytes)});
+      }
+    });
+    var toGeo = [];
+    var total = 0;
+    await commitFiles(paths, async function (o) {
+      total = 0; toGeo = [];
+      var idx = o["index.json"], log = o["imports.json"] || {imports: []}; o["imports.json"] = log;
+      var at = new Date().toISOString(), keys = {}, taken = {};
+      Object.keys(slugs).forEach(function (s) {
+        var sh = o["sheets/" + s + ".json"]; if (!sh) throw new Error("tab " + s + " is missing");
+        keys[s] = {}; taken[s] = {};
+        sh.rows.forEach(function (r) { keys[s][r.date + "|" + normAddr(r.address)] = 1; taken[s][r.id] = 1; });
+      });
+      for (var bi = 0; bi < batches.length; bi++) {
+        var b = batches[bi], added = {}, skipped = 0;
+        for (var ri = 0; ri < b.recs.length; ri++) {
+          var r = b.recs[ri], s = r._sheet, sh = o["sheets/" + s + ".json"];
+          var k = r.date + "|" + normAddr(r.address);
+          if (!pick[bi + ":" + ri] || keys[s][k]) { skipped++; continue; }
+          keys[s][k] = 1;
+          var cols = {}; sh.columns.forEach(function (c) { cols[c.key] = c.type; });
+          var row = {date: r.date, address: r.address};
+          if (r.dhcdId) row.dhcdId = r.dhcdId;
+          ["units", "price"].forEach(function (f) { if (r[f] != null) { if (cols[f] === "int" || cols[f] === "money") row[f] = r[f]; else row.notes = ((row.notes || "") + " " + f.charAt(0).toUpperCase() + f.slice(1) + ": " + fmtInt(r[f])).trim(); } });
+          Object.assign(row, r._extra);
+          if (r.remark) row.notes = ((row.notes ? row.notes + "; " : "") + "DHCD: " + r.remark);
+          row.src = "dhcd:" + b.label; row.addedBy = S.me.email;
+          var id = await newRowId(s, row, taken[s]);
+          var full = Object.assign({id: id}, row);
+          sh.rows.unshift(full);
+          if (s === "ofs5" || s === "not" || s === "dopa") toGeo.push(full);
+          added[s] = (added[s] || 0) + 1; total++;
+        }
+        var ds = b.recs.map(function (x) { return x.date; }).sort();
+        log.imports.push({id: (b.kind === "dhcd" ? "dhcd-" : "up-") + b.label.toLowerCase().replace(/\W+/g, "-") + "-" + Date.now().toString(36), kind: b.kind, label: b.label, week: ds[0] || "",
+          href: b.href ? (/^http/.test(b.href) ? b.href : "https://dhcd.dc.gov" + b.href) : undefined, pdfPath: pdfPaths[b.label], file: b.file, at: at, by: S.me.email, added: added, skipped: skipped, parsed: b.recs.length});
+      }
+      if (toGeo.length) { $("mGo").textContent = "Geocoding " + toGeo.length + "..."; await geocodeRows(toGeo); $("mGo").textContent = "Saving..."; }
+      Object.keys(slugs).forEach(function (s) {
+        var sh = o["sheets/" + s + ".json"];
+        sh.rows.sort(function (a, b) { return String(b.date || "0000").localeCompare(String(a.date || "0000")); });
+        reindex(idx, sh);
+      });
+      return batches.map(function (b) { return b.label; }).join(", ") + " (" + total + " new rows)";
+    }, "topa:import", extra);
+    closeModal(); toast(total ? total + " new rows added" : "Report logged - nothing new in it");
+    renderAll(); if (S.view === "reports") renderDhcd();
+  } catch (e) { toast("Import failed: " + e.message, true); $("mGo").disabled = false; $("mGo").textContent = "Try again"; }
+}
+function renderReports() {
+  renderDhcd();
+  var list = S.imports.slice().sort(function (a, b) { return String(b.at).localeCompare(String(a.at)) || String(b.week || "").localeCompare(String(a.week || "")); });
+  $("importTable").innerHTML = "<thead><tr><th>Report</th><th>Added</th><th>By</th><th></th></tr></thead><tbody>" + list.slice(0, 200).map(function (x) {
+    var tot = sum(Object.keys(x.added || {}).map(function (k) { return x.added[k]; }));
+    var det = Object.keys(x.added || {}).map(function (k) { return sheetMeta(k).title + ": " + x.added[k]; }).join("\n");
+    var link = x.pdfPath ? '<a href="#" data-pdf="' + esc(x.pdfPath) + '">PDF</a>' : x.pdf || x.href ? '<a target="_blank" rel="noopener" href="' + esc(x.pdf || x.href) + '">DHCD</a>' : "";
+    return "<tr><td>" + esc(x.label) + '<div class="small muted">' + esc(x.kind === "excel" ? "Excel master list" : x.kind === "upload" ? "Uploaded PDF" + (x.file ? " · " + x.file : "") : "DHCD weekly report") + '</div></td><td title="' + esc(det) + '">' + fmtInt(tot) + (x.skipped ? ' <span class="small muted">(' + x.skipped + " already in)</span>" : "") + "</td><td>" + (x.by === "seed" ? '<span class="muted">setup</span>' : esc(who(x.by))) + '<div class="small muted">' + ago(x.at) + "</div></td><td>" + link + "</td></tr>";
+  }).join("") + "</tbody>";
+  $("importTable").querySelectorAll("[data-pdf]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); openPdf(a.dataset.pdf); }; });
+}
+async function openPdf(path) {
+  var w = window.open("", "_blank");
+  try { var b = await apiGet("/topa/data/" + path + (S.manifest[path] ? "?v=" + S.manifest[path] : ""), "blob"); w.location = URL.createObjectURL(new Blob([b], {type: "application/pdf"})); }
+  catch (e) { w.close(); toast(e.message, true); }
+}
+async function loadActivity() {
+  try {
+    var j = await apiGet("/topa/history");
+    $("actTable").innerHTML = "<thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>" + j.commits.slice(0, 80).map(function (c) {
+      var m = c.msg.replace(/^TOPA (edit|import): /, "");
+      m = m.replace(/\[([a-z0-9]+)\/([A-Za-z0-9_-]+)( [A-Za-z]+)?\]/, function (_, s, id, f) { var r = findRow(s, id); return "· " + (r ? val(s, r, "address") : sheetMeta(s).title) + (f ? " (" + f.trim() + ")" : ""); });
+      return '<tr><td class="small">' + ago(c.date) + "</td><td>" + esc(c.by ? who(c.by) : "setup") + "</td><td>" + esc(m) + "</td></tr>";
+    }).join("") + "</tbody>";
+  } catch (e) { $("actTable").innerHTML = '<tbody><tr><td class="empty">' + esc(e.message) + "</td></tr></tbody>"; }
+}
+
+/* ---------- modal ---------- */
+function openModal(html, narrow) { $("mbox").className = "mbox" + (narrow ? " narrow" : ""); $("mbox").innerHTML = html; $("modal").classList.add("open"); }
+function closeModal() { $("modal").classList.remove("open"); $("mbox").innerHTML = ""; }
+
+/* ---------------------------------------------------------------- wiring */
+function wire() {
+  document.querySelectorAll(".tab").forEach(function (t) { t.onclick = function () { setView(t.dataset.view); }; });
+  $("dt").addEventListener("click", tableClick);
+  $("dt").addEventListener("dblclick", tableDbl);
+  $("drX").onclick = closeDrawer;
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if ($("modal").classList.contains("open")) closeModal(); else if (S.drawer && !e.target.closest("td.editing")) closeDrawer(); } });
+  var tq; $("tq").addEventListener("input", function () { clearTimeout(tq); tq = setTimeout(function () { S.f.q = $("tq").value; S.page = 0; renderTable(); }, 160); });
+  $("gq").addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    S.f.q = $("gq").value; $("tq").value = S.f.q; S.f.all = true; $("allSheetsChk").classList.add("on"); S.page = 0;
+    setView("table"); toast("Searching every tab..."); ensureAll().then(function () { renderTable(); });
+  });
+  $("allSheetsChk").onclick = function (e) {
+    e.preventDefault(); S.f.all = !S.f.all; this.classList.toggle("on", S.f.all); S.page = 0; S.sort = {key: "date", dir: -1};
+    if (S.f.all) { $("tCount").textContent = "Loading every tab..."; ensureAll().then(function () { renderTable(); }); } else renderTable();
+  };
+  [["hlOnlyChk", "hl"], ["edOnlyChk", "ed"], ["hidChk", "hid"]].forEach(function (p) {
+    $(p[0]).onclick = function (e) { e.preventDefault(); S.f[p[1]] = !S.f[p[1]]; this.classList.toggle("on", S.f[p[1]]); S.page = 0; renderTable(); };
+  });
+  [["tFrom", "from"], ["tTo", "to"], ["tType", "type"], ["tUnits", "units"], ["tStatus", "status"]].forEach(function (p) {
+    $(p[0]).addEventListener("change", function () { S.f[p[1]] = this.value; S.page = 0; renderTable(); });
+  });
+  $("resetF").onclick = function () {
+    S.f = {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false};
+    ["tq", "tFrom", "tTo", "tUnits"].forEach(function (id) { $(id).value = ""; }); $("tStatus").value = "";
+    document.querySelectorAll(".tbar .chk").forEach(function (c) { c.classList.remove("on"); }); S.page = 0; renderTable();
+  };
+  $("clearHl").onclick = function () {
+    var sh = S.sheets[S.sheet], n = sh.rows.filter(function (r) { return hlOf(S.sheet, r); }).length;
+    if (!n) { toast("No highlights on this tab"); return; }
+    if (confirm("Clear all " + n + " highlights on " + sh.title + " for everyone?")) sendOps([{t: "hlclear", sheet: S.sheet}], "Highlights cleared");
+  };
+  $("addRow").onclick = function () { S.drawer = {slug: S.sheet, newRow: 1}; renderNewRow(); $("drawer").classList.add("open"); };
+  $("exportCsv").onclick = exportCsv;
+  $("pSize").onchange = function () { S.pageSize = +this.value; S.page = 0; renderTable(); };
+  $("pPrev").onclick = function () { S.page--; renderTable(); $("tScroll").scrollTop = 0; };
+  $("pNext").onclick = function () { S.page++; renderTable(); $("tScroll").scrollTop = 0; };
+  $("ytdMetric").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.metric = b.dataset.m; $("ytdMetric").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderYtdChart(); }; });
+  $("cmpYears").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.years = +b.dataset.n; $("cmpYears").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderCmp(); }; });
+  $("pipeSort").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.pipeSort = b.dataset.s; $("pipeSort").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderPipe(); }; });
+  $("unitCap").addEventListener("change", function () { S.dash.cap = +this.value || 10000; renderDash(); });
+  var cq; $("cq").addEventListener("input", function () { clearTimeout(cq); cq = setTimeout(function () { S.comps_f.q = $("cq").value; renderComps(); }, 160); });
+  $("cLink").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.comps_f.link = b.dataset.l; $("cLink").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderComps(); }; });
+  $("addComp").onclick = function () { openComp(null); };
+  $("importComps").onclick = function () {
+    var i = document.createElement("input"); i.type = "file"; i.accept = ".xlsx,.xls,.csv";
+    i.onchange = function () { if (i.files[0]) importCompsFile(i.files[0]); }; i.click();
+  };
+  $("uploadBtn").onclick = function () { $("pdfFile").click(); };
+  $("pick").onclick = function (e) { e.preventDefault(); $("pdfFile").click(); };
+  $("pdfFile").onchange = function () { uploadPdfs(this.files); this.value = ""; };
+  var drop = $("drop");
+  ["dragenter", "dragover"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add("over"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove("over"); }); });
+  drop.addEventListener("drop", function (e) { uploadPdfs(e.dataTransfer.files); });
+  $("dhcdRefresh").onclick = function () { loadDhcd(true); };
+  $("dhcdAll").onclick = function () {
+    if (!_dhcd) return;
+    var imp = importedLabels(), miss = _dhcd.reports.filter(function (r) { return !imp[r.label.replace(/\s+/g, " ").toLowerCase()]; }).slice(0, 12);
+    if (!miss.length) { toast("Every listed report is already imported"); return; }
+    importDhcd(miss);
+  };
+  $("actRefresh").onclick = loadActivity;
+  window.addEventListener("resize", function () { clearTimeout(wire._r); wire._r = setTimeout(function () { if (S.view === "dash") { renderYtdChart(); renderWeekChart(); } }, 150); });
+}
+
+/* ---------------------------------------------------------------- sign-in */
+(function () {
+  function tokenGet() { try { return localStorage.getItem(TKEY); } catch (e) { return null; } }
+  function tokenSet(t) { try { t ? localStorage.setItem(TKEY, t) : localStorage.removeItem(TKEY); } catch (e) {} }
+  var gate = $("authGate");
+  function msg(m, ok) { var el = $("agMsg"); el.textContent = m || ""; el.className = "ag-msg" + (ok ? " ok" : ""); }
+  function showGate(m) { gate.classList.remove("hidden", "gone"); $("agBtn").disabled = false; msg(m || "", !m); }
+  function hideGate() { gate.classList.add("hidden"); setTimeout(function () { gate.classList.add("gone"); }, 400); }
+  $("agBtn").onclick = function () { $("agBtn").disabled = true; msg("Redirecting to Microsoft…", true); location.href = API + "/login?return=" + encodeURIComponent(location.origin + location.pathname); };
+  $("signOutBtn").onclick = function () { tokenSet(null); location.href = location.origin + location.pathname; };
+  var chip = $("userChip"), menu = $("userMenu");
+  chip.onclick = function (e) { e.stopPropagation(); menu.classList.toggle("open"); };
+  document.addEventListener("click", function (e) { if (!e.target.closest("#userWrap")) menu.classList.remove("open"); });
+  var returned = false, m = /[#&]auth=([^&]+)/.exec(location.hash || "");
+  if (m) { tokenSet(decodeURIComponent(m[1])); returned = true; try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {} }
+  if (returned) msg("Signing you in…", true);
+  var t = tokenGet();
+  (t ? fetch(API + "/me", {headers: {Authorization: "Bearer " + t}, cache: "no-store"}).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }) : Promise.resolve(null)).then(function (a) {
+    if (!a || !a.ok) { tokenSet(null); showGate(returned ? "Sign-in did not complete. Please try again." : ""); return; }
+    S.me = a;
+    var full = a.name || a.email, parts = full.indexOf(",") > -1 ? full.split(",").reverse() : full.split(/\s+/);
+    $("ucAv").textContent = ((parts[0] || "").trim().charAt(0) + ((parts[parts.length - 1] || "").trim().charAt(0) || "")).toUpperCase();
+    $("ucName").textContent = (a.given || parts[0] || "").trim(); $("umName").textContent = full; $("umEmail").textContent = a.email;
+    $("userWrap").hidden = false; hideGate();
+    wire();
+    boot().catch(function (e) {
+      var hint = /manifest fetch failed \((403|404)\)/.test(e.message) ? "The sign-in Worker's GitHub token cannot read the private repo mrare-cmd/topa-data yet. Add that repo to the token's repository access in GitHub settings." : e.message;
+      $("boot").innerHTML = '<div style="max-width:520px;text-align:center;line-height:1.6"><b>Could not load the TOPA data.</b><br><span class="small">' + esc(hint) + "</span><br><button class=\"btn sm\" onclick=\"location.reload()\" style=\"margin-top:10px\">Try again</button></div>";
+    });
+  });
+})();
+</script>
+</body>
+</html>
