@@ -230,6 +230,8 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .pu-ms .row.cur i{background:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
 .pu-ms .row span:last-child{margin-left:auto}
 .pu-f{display:flex;gap:10px;margin-top:10px}
+.pill.gsp{background:linear-gradient(135deg,#1a73e8 0%,#5b5bd6 58%,#7b4fd0 100%);color:#fff;font-weight:700}
+.mdot.g{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:700 9px/1 'Google Sans',Arial,sans-serif;box-shadow:0 0 0 2px #5b5bd6}
 
 /* ---------- table view ---------- */
 #vTable{overflow:hidden}
@@ -415,7 +417,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v11</span>
+    <span id="verBadge" title="Page version">v12</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -496,6 +498,7 @@ tr.hidden-row td{opacity:.45}
         <div class="lr"><span class="mdot" style="background:#f29900"></span>Closed - TOPA + sale comp</div>
         <div class="lr"><span class="mdot" style="background:#9aa0a6"></span>Past 420 days</div>
         <div class="lr"><span class="mdot" style="background:#9334e6"></span>Sale comp only</div>
+        <div class="lr"><span class="mdot g" style="background:#188038">G</span>Greysteel deal (FOIA or broker)</div>
       </div>
     </div>
   </div></section>
@@ -1377,7 +1380,18 @@ function initMap() {
     if (S.mf.dc) _dcLayer.addTo(_map);
   }).catch(function () {});
 }
-function dotIcon(color, ring, sel) {
+/* Greysteel's deals (Greysteel in FOIA or Broker) carry a "G" badge on the map instead of a highlight ring */
+function isGs(r) { return /greysteel/i.test(String(val("ofs5", r, "foia") || "") + " " + String(val("ofs5", r, "broker") || "")); }
+function mapHl(r) { var h = hlShown("ofs5", r); return h === "gray" ? null : h; }
+function markerFor(r, sel) { var hl = mapHl(r); return dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, sel, isGs(r)); }
+function dotIcon(color, ring, sel, gs) {
+  if (gs) {
+    var gz = sel ? 26 : 21;
+    return L.divIcon({className: "", iconSize: [gz, gz], iconAnchor: [gz / 2, gz / 2], popupAnchor: [0, -gz / 2],
+      html: '<div style="width:' + gz + "px;height:" + gz + "px;border-radius:50%;background:" + color + ";border:2.5px solid " + (ring || "#fff") +
+        ";box-shadow:0 0 0 2px #5b5bd6,0 1px 5px rgba(0,0,0,.4)" + (sel ? ",0 0 0 6px rgba(26,115,232,.35)" : "") +
+        ";display:flex;align-items:center;justify-content:center;color:#fff;font:700 " + (sel ? 13 : 11) + "px/1 'Google Sans',Arial,sans-serif;cursor:pointer\">G</div>"});
+  }
   var sz = sel ? 20 : 15;
   return L.divIcon({className: "", iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2], popupAnchor: [0, -sz / 2],
     html: '<div style="width:' + sz + "px;height:" + sz + "px;border-radius:50%;background:" + color + ";border:2.5px solid " + (ring || "#fff") +
@@ -1422,17 +1436,17 @@ function renderMapView() {
   fsel.innerHTML = '<option value="">All</option>' + Object.keys(foias).sort(function (a, b) { return foias[b] - foias[a]; }).map(function (v) { return "<option" + (v === cur ? " selected" : "") + ">" + esc(v) + "</option>"; }).join("") + '<option value="(none)"' + (cur === "(none)" ? " selected" : "") + ">None</option>";
   var t = todayISO();
   $("mList").innerHTML = rows.map(function (r) {
-    var d = val("ofs5", r, "date"), n = d ? daysBetween(d, t) : null, c = compsFor("ofs5", r)[0], st = mStatus(r), hl = hlShown("ofs5", r);
+    var d = val("ofs5", r, "date"), n = d ? daysBetween(d, t) : null, c = compsFor("ofs5", r)[0], st = mStatus(r), hl = mapHl(r);
     var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
     return '<div class="mc' + (r.id === _mSel ? " sel" : "") + '" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 ' + HL_HEX[hl] + '"' : "") + '>' +
       '<div class="r1"><span class="mdot" style="background:' + STATUS_COLOR[st] + ';margin-top:3px"></span><div class="ad">' + esc(val("ofs5", r, "address")) + (val("ofs5", r, "name") ? '<div class="nm">' + esc(val("ofs5", r, "name")) + "</div>" : "") + '</div><div class="pr">' + (p ? fmtShort(p) : "") + "</div></div>" +
-      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + "</div>" +
+      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + (isGs(r) ? '<span class="pill gsp">Greysteel</span>' : "") + "</div>" +
       '<div class="r3">' + segBar(c ? daysBetween(d, c.date) : n) + "<span>" + (c ? "Closed " + fmtDate(c.date) + " · " + daysBetween(d, c.date) + " days" : n == null ? "" : "<b>" + n + "</b> days · " + (n > 420 ? "past 420" : phase(n))) + '</span><a class="det" href="#" data-open="' + r.id + '">Details</a></div></div>';
   }).join("") || '<div class="empty">No offers match these filters.</div>';
   _mLayer.clearLayers(); _mk = {};
   rows.forEach(function (r) {
     if (!r.geo) return;
-    var hl = hlShown("ofs5", r), m = L.marker(r.geo, {icon: dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, r.id === _mSel), riseOnHover: true, zIndexOffset: r.id === _mSel ? 1000 : 0});
+    var m = L.marker(r.geo, {icon: markerFor(r, r.id === _mSel), riseOnHover: true, zIndexOffset: r.id === _mSel ? 1000 : isGs(r) ? 500 : 0});
     m.bindPopup(function () { return popupHtml(r); }, {maxWidth: 340, autoPanPadding: [40, 40]});
     m.bindTooltip(esc(val("ofs5", r, "address")), {direction: "top", offset: [0, -8]});
     m.on("click", function () { selectMapRow(r.id, true); });
@@ -1453,7 +1467,7 @@ function selectMapRow(id, fromMarker) {
   var prev = _mSel; _mSel = id;
   [prev, id].forEach(function (x) {
     var r = x && findRow("ofs5", x), m = x && _mk[x];
-    if (r && m) { var hl = hlShown("ofs5", r); m.setIcon(dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, x === id)); m.setZIndexOffset(x === id ? 1000 : 0); }
+    if (r && m) { m.setIcon(markerFor(r, x === id)); m.setZIndexOffset(x === id ? 1000 : isGs(r) ? 500 : 0); }
   });
   document.querySelectorAll("#mList .mc").forEach(function (el) { el.classList.toggle("sel", el.dataset.id === id); });
   var card = document.querySelector('#mList .mc[data-id="' + id + '"]');
