@@ -79,6 +79,10 @@ nav.tabs{display:flex;gap:2px;margin-left:8px}
 .btn.ghost:hover{background:var(--blue-light)}
 .btn.danger{color:var(--red)}
 .btn:disabled{opacity:.5;cursor:default}
+.clearall{height:30px;padding:0 12px;border-radius:15px;font-size:12.5px;font-weight:500;border:1px solid var(--border);background:var(--white);color:var(--text3);white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.clearall.on{background:var(--red);border-color:var(--red);color:#fff}
+.clearall.on:hover{background:#b3261e;border-color:#b3261e}
+.clearall:not(.on){cursor:default}
 #userWrap{position:relative}
 #userChip{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 10px 0 4px;border:1px solid var(--border);border-radius:17px;background:var(--white);font-size:12.5px}
 #userChip:hover{background:var(--bg)}
@@ -399,7 +403,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v8</span>
+    <span id="verBadge" title="Page version">v9</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -446,7 +450,7 @@ tr.hidden-row td{opacity:.45}
             <option value="ppu-desc">$/unit high-low</option><option value="ppu-asc">$/unit low-high</option>
           </select>
         </div>
-        <div class="ms-row"><span class="ms-more" id="mMore">More filters</span><span class="ml-auto"></span><span class="ms-more" id="mReset">Reset</span></div>
+        <div class="ms-row"><span class="ms-more" id="mMore">More filters</span><span class="ml-auto"></span><button class="clearall" id="mReset" title="Nothing to clear">Clear All</button></div>
         <div class="ms-filters" id="mFilters" hidden>
           <div class="ms-f"><label>Units</label><div class="rr"><input type="number" id="mUmin" placeholder="Min" min="0"><span>-</span><input type="number" id="mUmax" placeholder="Max" min="0"></div></div>
           <div class="ms-f"><label>Price ($)</label><div class="rr"><input type="number" id="mPmin" placeholder="Min" min="0" step="100000"><span>-</span><input type="number" id="mPmax" placeholder="Max" min="0" step="100000"></div></div>
@@ -538,7 +542,7 @@ tr.hidden-row td{opacity:.45}
         <label class="chk" id="edOnlyChk"><input type="checkbox">Edited</label>
         <label class="chk" id="hidChk" title="Rows someone hid as duplicates or errors"><input type="checkbox">Show hidden</label>
         <span class="ml-auto"></span>
-        <button class="btn sm ghost" id="resetF">Reset</button>
+        <button class="clearall" id="resetF" title="Nothing to clear">Clear All</button>
         <button class="btn sm" id="clearHl" title="Remove every highlight on this tab, for everyone">Clear highlights</button>
         <button class="btn sm" id="addRow">+ Row</button>
         <button class="btn sm" id="exportCsv">Export CSV</button>
@@ -1386,6 +1390,9 @@ function renderMapView() {
   rows.forEach(function (r) { var u = +val("ofs5", r, "units") || 0, p = +val("ofs5", r, "price") || 0; units += u; vol += p; if (u && p) { pu += p; uu += u; } if (r.geo) mapped++; });
   $("mStats").innerHTML = [[fmtInt(rows.length), "Offers"], [fmtInt(units), "Units"], [fmtShort(vol), "Volume"], [uu ? fmtShort(pu / uu) : "-", "Avg $ / unit"]].map(function (x) { return '<div class="ms-stat"><div class="v">' + x[0] + '</div><div class="l">' + x[1] + "</div></div>"; }).join("");
   renderArea();
+  var mf = S.mf, mOn = !!(_shapes.length || mf.type || mf.q || mf.umin || mf.umax || mf.pmin || mf.pmax || mf.ppmin || mf.ppmax || mf.dmin || mf.dmax || mf.from || mf.to || mf.foia || mf.hl ||
+    Object.keys(mf.status).join() !== "active");
+  $("mReset").classList.toggle("on", mOn); $("mReset").title = mOn ? "Clear every map filter and drawn area" : "Nothing to clear";
   $("mCount").innerHTML = "<span>" + fmtInt(rows.length) + " properties" + (_shapes.length ? " in the drawn area" : "") + "</span>" + (rows.length - mapped ? '<span class="muted" title="These addresses could not be geocoded">· ' + (rows.length - mapped) + " not on map</span>" : "");
   var foias = {}; ofsRows().forEach(function (r) { var v = val("ofs5", r, "foia"); if (v) foias[v] = (foias[v] || 0) + 1; });
   var fsel = $("mFoia"), cur = S.mf.foia;
@@ -1531,6 +1538,7 @@ function wireMap() {
   });
   $("mMore").onclick = function () { var h = $("mFilters").hidden = !$("mFilters").hidden; this.textContent = h ? "More filters" : "Fewer filters"; };
   $("mReset").onclick = function () {
+    if (!this.classList.contains("on")) return;
     Object.assign(S.mf, {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: ""});
     ["mq", "mUmin", "mUmax", "mPmin", "mPmax", "mPPmin", "mPPmax", "mDmin", "mDmax", "mFrom", "mTo"].forEach(function (id) { $(id).value = ""; });
     $("mSort").value = "date-desc"; $("mHl").value = "";
@@ -1697,6 +1705,8 @@ function renderTable(soft) {
   var hlN = (f.all ? 0 : sh.rows.filter(function (r) { return hlOf(S.sheet, r); }).length);
   $("tCount").innerHTML = fmtInt(rows.length) + " rows" + (f.q ? " matching <b>" + esc(f.q) + "</b>" : "") + (hlN ? " · " + hlN + " highlighted" : "");
   $("pInfo").textContent = (S.page + 1) + " / " + pages;
+  var fOn = !!(f.q || f.from || f.to || f.type || f.units || f.status || f.hl || f.ed || f.hid || f.all);
+  $("resetF").classList.toggle("on", fOn); $("resetF").title = fOn ? "Clear every filter on this view" : "Nothing to clear";
   $("pPrev").disabled = S.page === 0; $("pNext").disabled = S.page >= pages - 1;
   $("dt").querySelectorAll("th[data-k]").forEach(function (th) { th.onclick = function () { var k = th.dataset.k; S.sort = {key: k, dir: S.sort.key === k ? -S.sort.dir : (k === "date" || k === "units" || k === "price" ? -1 : 1)}; renderTable(); }; });
   if (!slice.length) $("dt").querySelector("tbody").innerHTML = '<tr><td colspan="' + (cols.length + 2) + '" class="empty">No rows match these filters.</td></tr>';
@@ -2263,8 +2273,9 @@ function wire() {
     $(p[0]).addEventListener("change", function () { S.f[p[1]] = this.value; S.page = 0; renderTable(); });
   });
   $("resetF").onclick = function () {
+    if (!this.classList.contains("on")) return;
     S.f = {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false};
-    ["tq", "tFrom", "tTo", "tUnits"].forEach(function (id) { $(id).value = ""; }); $("tStatus").value = "";
+    ["tq", "tFrom", "tTo", "tUnits", "gq"].forEach(function (id) { $(id).value = ""; }); $("tStatus").value = "";
     document.querySelectorAll(".tbar .chk").forEach(function (c) { c.classList.remove("on"); }); S.page = 0; renderTable();
   };
   $("clearHl").onclick = function () {
