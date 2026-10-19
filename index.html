@@ -386,7 +386,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v2</span>
+    <span id="verBadge" title="Page version">v3</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1283,7 +1283,7 @@ function popupHtml(r) {
 function compPopup(c) {
   return '<div style="min-width:240px"><div class="pu-a">' + esc(c.address) + "</div>" + (c.name ? '<div class="pu-n">' + esc(c.name) + "</div>" : "") +
     '<div style="margin-top:6px"><span class="pill purple">Sale comp only</span></div><div class="pu-g">' +
-    '<div><label>Sold</label>' + fmtDate(c.date) + '</div><div><label>Price</label>' + fmtMoney(c.price) + "</div>" + (c.units ? "<div><label>Units</label>" + fmtInt(c.units) + "</div><div><label>$ / unit</label>" + (c.price ? fmtMoney(c.price / c.units) : "") + "</div>" : "") +
+    '<div><label>Sold</label>' + fmtDate(c.date) + '</div><div><label>Price' + (c.portfolio ? " (share of portfolio)" : "") + '</label>' + fmtMoney(c.price) + "</div>" + (c.units ? "<div><label>Units</label>" + fmtInt(c.units) + "</div><div><label>$ / unit</label>" + (c.price ? fmtMoney(c.price / c.units) : "-") + "</div>" : "") +
     (c.buyer ? '<div class="w"><label>Buyer</label>' + esc(c.buyer) + "</div>" : "") + (c.seller ? '<div class="w"><label>Seller</label>' + esc(c.seller) + "</div>" : "") + "</div>" +
     '<div class="pu-f"><a href="#" onclick="openComp(\'' + c.id + '\');return false">Open comp</a></div></div>';
 }
@@ -1700,7 +1700,7 @@ function renderComps() {
   $("compTable").innerHTML = "<thead><tr><th>Address</th><th>Sold</th><th style=text-align:right>Price</th><th style=text-align:right>Units</th><th style=text-align:right>$/unit</th><th>Buyer</th><th>Seller</th><th>Offer of sale</th><th style=text-align:right>Days to close</th><th>Source</th></tr></thead><tbody>" +
     rows.map(function (c) {
       var r = c.link && ofs[c.link], td = r ? val("ofs5", r, "date") : null;
-      return '<tr data-c="' + c.id + '" style="cursor:pointer"><td><b style="font-weight:500">' + esc(c.address) + "</b>" + (c.name ? '<div class="small muted">' + esc(c.name) + "</div>" : "") + "</td><td>" + fmtDate(c.date) + '</td><td style="text-align:right">' + fmtMoney(c.price) + '</td><td style="text-align:right">' + fmtInt(c.units) + '</td><td style="text-align:right">' + (c.price && c.units ? fmtMoney(c.price / c.units) : "") + "</td><td>" + esc(c.buyer || "") + "</td><td>" + esc(c.seller || "") + "</td><td>" +
+      return '<tr data-c="' + c.id + '" style="cursor:pointer"><td><b style="font-weight:500">' + esc(c.address) + "</b>" + (c.name || c.portfolio ? '<div class="small muted">' + esc([c.name, c.portfolio].filter(Boolean).join(" · ")) + "</div>" : "") + "</td><td>" + fmtDate(c.date) + '</td><td style="text-align:right">' + fmtMoney(c.price) + '</td><td style="text-align:right">' + fmtInt(c.units) + '</td><td style="text-align:right">' + (c.price && c.units ? fmtMoney(c.price / c.units) : "") + "</td><td>" + esc(c.buyer || "") + "</td><td>" + esc(c.seller || "") + "</td><td>" +
         (r ? '<a href="#" data-open="' + r.id + '">' + esc(val("ofs5", r, "address")) + "</a><div class=\"small muted\">filed " + fmtDate(td) + "</div>" : '<span class="pill gray">not linked</span>') + '</td><td style="text-align:right">' + (r && td && c.date ? daysBetween(td, c.date) : "") + '</td><td class="small muted">' + esc(c.src === "costar" ? "CoStar import" : c.src === "old-dashboard" ? "Old dashboard" : c.src || "") + "</td></tr>";
     }).join("") + "</tbody>" + (rows.length ? "" : '<tbody><tr><td colspan="10" class="empty">No comps.</td></tr></tbody>');
   $("compTable").querySelectorAll("[data-open]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); e.stopPropagation(); openRow("ofs5", a.dataset.open); }; });
@@ -1775,9 +1775,10 @@ var COSTAR_MAP = [
   ["address", /^(property address|address|street address)$/i], ["name", /^(property name|building name)$/i], ["date", /^(sale date|close date|sold date)$/i],
   ["price", /^(sale price|price|sold price)$/i], ["units", /^(number of units|# of units|units|no\.? of units|total units)$/i],
   ["sf", /^(rba|building sf|bldg sf|gross sf|sf)$/i], ["yearBuilt", /^(year built|yr built)$/i], ["bldgClass", /^(building class|class)$/i],
-  ["capRate", /^(actual cap rate|cap rate)$/i], ["buyer", /^(buyer true company|buyer company|true buyer company|recorded buyer|buyer)$/i],
-  ["seller", /^(seller true company|seller company|true seller company|recorded seller|seller)$/i], ["broker", /^(listing broker company|listing broker|seller broker company|broker)$/i],
-  ["notes", /^(comments|sale notes|transaction notes|research status)$/i], ["costarId", /^(comp id|comp #|sale comp id|propertyid|property id)$/i], ["city", /^(city|property city)$/i]
+  ["capRate", /^(actual cap rate|cap rate)$/i], ["buyer", /^(buyer \(true\) company|buyer true company|buyer company|true buyer company|buyer \(recorded\) company|recorded buyer|buyer)$/i],
+  ["seller", /^(seller \(true\) company|seller true company|seller company|true seller company|seller \(recorded\) company|recorded seller|seller)$/i], ["broker", /^(listing broker company|listing broker|seller broker company|broker)$/i],
+  ["notes", /^(comments|sale notes|transaction notes|research status)$/i], ["costarId", /^(comp id|comp #|sale comp id|propertyid|property id)$/i], ["city", /^(city|property city)$/i],
+  ["market", /^market$/i], ["lat", /^latitude$/i], ["lng", /^longitude$/i]
 ];
 function excelDate(v) {
   if (v == null || v === "") return "";
@@ -1801,12 +1802,18 @@ function importCompsFile(file) {
         Object.keys(map).forEach(function (k) {
           var v = r[map[k]];
           if (k === "date") v = excelDate(v);
-          else if (["price", "units", "sf", "yearBuilt"].indexOf(k) > -1) v = parseNum(v);
+          else if (["price", "units", "sf", "yearBuilt", "lat", "lng"].indexOf(k) > -1) v = parseNum(v);
           else v = String(v == null ? "" : v).trim();
           if (v !== "" && v != null) c[k] = v;
         });
         if (c.address) c.address = prettyAddr(c.address);
+        /* CoStar tags portfolio sales onto the address: "5415 Connecticut Ave NW (Part of a 2 Property Portfolio)" */
+        var pm = c.address && /\s*\((Part of an? [^)]*)\)\s*$/i.exec(c.address);
+        if (pm) { c.portfolio = pm[1]; c.address = c.address.slice(0, pm.index); }
         if (c.city && !/washington/i.test(c.city)) c._outside = 1;
+        if (c.market && !/washington/i.test(c.market)) { c._outside = 1; c.city = c.city || c.market; }
+        if (typeof c.lat === "number" && typeof c.lng === "number") c._geo = [c.lat, c.lng];   /* CoStar's own coordinates beat geocoding */
+        delete c.lat; delete c.lng; delete c.market;
         return c;
       });
       previewComps(comps, hdr, map, file.name);
@@ -1823,13 +1830,13 @@ function previewComps(comps, hdr, map, fname) {
     '<div class="mb"><table class="ptable"><thead><tr><th></th><th>Address</th><th>Sold</th><th>Price</th><th>Units</th><th>Buyer</th><th>Links to</th></tr></thead><tbody>' +
     comps.map(function (c, i) {
       var r = c._link && findRow("ofs5", c._link);
-      return '<tr class="' + (c._dup ? "dup" : "") + '"><td><input type="checkbox" data-i="' + i + '"' + (c._dup ? "" : " checked") + "></td><td>" + esc(c.address) + (c._dup ? ' <span class="pill gray">already in</span>' : "") + (c._outside ? ' <span class="pill orange">' + esc(c.city) + "</span>" : "") + "</td><td>" + fmtDate(c.date) + "</td><td>" + fmtShort(c.price) + "</td><td>" + fmtInt(c.units) + "</td><td>" + esc(c.buyer || "") + "</td><td>" + (r ? esc(val("ofs5", r, "address")) + " (" + fmtDate(val("ofs5", r, "date")) + ")" : '<span class="muted">-</span>') + "</td></tr>";
+      return '<tr class="' + (c._dup ? "dup" : "") + '"><td><input type="checkbox" data-i="' + i + '"' + (c._dup ? "" : " checked") + "></td><td>" + esc(c.address) + (c.portfolio ? ' <span class="pill purple">' + esc(c.portfolio) + "</span>" : "") + (c._dup ? ' <span class="pill gray">already in</span>' : "") + (c._outside ? ' <span class="pill orange">' + esc(c.city) + "</span>" : "") + "</td><td>" + fmtDate(c.date) + "</td><td>" + fmtShort(c.price) + "</td><td>" + fmtInt(c.units) + "</td><td>" + esc(c.buyer || "") + "</td><td>" + (r ? esc(val("ofs5", r, "address")) + " (" + fmtDate(val("ofs5", r, "date")) + ")" : '<span class="muted">-</span>') + "</td></tr>";
     }).join("") + '</tbody></table></div><div class="mf"><span class="small muted">Unmatched comps can be linked later from the comp or the offer of sale.</span><span class="ml-auto"></span><button class="btn sm" onclick="closeModal()">Cancel</button><button class="btn sm primary" id="mGo">Add selected</button></div>');
   $("mGo").onclick = async function () {
     var pick = Array.prototype.slice.call(document.querySelectorAll("#mbox input[data-i]:checked")).map(function (x) { return comps[+x.dataset.i]; });
     if (!pick.length) { closeModal(); return; }
     $("mGo").disabled = true; $("mGo").textContent = "Locating...";
-    await geocodeRows(pick.filter(function (c) { return !c._link; }).map(function (c) { return {address: c.address, set geo(g) { c._geo = g; }}; }));
+    await geocodeRows(pick.filter(function (c) { return !c._link && !c._geo; }).map(function (c) { return {address: c.address, set geo(g) { c._geo = g; }}; }));
     $("mGo").textContent = "Saving...";
     try {
       await commitFiles(["comps.json"], function (o) {
