@@ -386,7 +386,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v4</span>
+    <span id="verBadge" title="Page version">v5</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -418,8 +418,10 @@ tr.hidden-row td{opacity:.45}
       <div class="ms-stats" id="mStats"></div>
       <div class="ms-ctl">
         <div class="ms-row">
-          <div class="seg" id="mStatus"><button data-v="active" class="on">Active</button><button data-v="closed">Closed</button><button data-v="archived">420+ days</button><button data-v="all">All</button></div>
-          <div class="seg" id="mType"><button data-v="" class="on">All</button><button data-v="w/ Contract">w/</button><button data-v="w/o Contract">w/o</button></div>
+          <div class="seg" id="mStatus" title="Pick one or more"><button data-v="active" class="on">Active</button><button data-v="closed">Closed</button><button data-v="archived">420+ days</button><button data-v="all">All</button></div>
+        </div>
+        <div class="ms-row">
+          <div class="seg" id="mType"><button data-v="" class="on">All offerings</button><button data-v="w/ Contract">w/ Contract</button><button data-v="w/o Contract">w/o Contract</button></div>
         </div>
         <div class="ms-row">
           <span class="fld search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="mq" type="search" placeholder="Address, name, buyer, seller"></span>
@@ -810,7 +812,7 @@ var S = {
   f: {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false},
   dash: {metric: "count", years: 7, cap: 10000, pipeSort: "date"},
   comps_f: {q: "", link: ""}, drawer: null,
-  mf: {status: "active", type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", comps: true, dc: true}
+  mf: {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", comps: true, dc: true}
 };
 async function loadManifest(fresh) {
   var j = await apiGet("/topa/manifest" + (fresh ? "?fresh=1" : (loadManifest.first ? "" : "?load=1")));
@@ -1221,7 +1223,8 @@ function mapRows() {
   var f = S.mf, q = normAddr(f.q), t = todayISO();
   var num = function (x) { return x === "" || x == null ? null : +x; };
   var rows = ofsRows().filter(function (r) {
-    if (f.status !== "all" && mStatus(r) !== f.status) return false;
+    var stt = mStatus(r);
+    if (stt === "undated" ? !mAllStatuses() : !f.status[stt]) return false;
     if (f.type && String(val("ofs5", r, "type") || "") !== f.type) return false;
     var d = val("ofs5", r, "date") || "", n = d ? daysBetween(d, t) : null;
     var u = +val("ofs5", r, "units") || 0, p = +val("ofs5", r, "price") || 0, pp = cval("ofs5", r, "ppu") || 0;
@@ -1317,7 +1320,8 @@ function renderMapView() {
     m.addTo(_mLayer); _mk[r.id] = m;
   });
   _cLayer.clearLayers();
-  if (S.mf.comps) S.comps.forEach(function (c) {
+  /* comps with no offer of sale are closings, so they belong with Closed, never with Active alone */
+  if (S.mf.comps && S.mf.status.closed) S.comps.forEach(function (c) {
     if (c.link || !c.geo) return;
     if (S.mf.q && normAddr(c.address).indexOf(normAddr(S.mf.q)) < 0) return;
     L.marker(c.geo, {icon: dotIcon(STATUS_COLOR.comp)}).bindPopup(function () { return compPopup(c); }, {maxWidth: 320}).bindTooltip(esc(c.address), {direction: "top", offset: [0, -8]}).addTo(_cLayer);
@@ -1340,21 +1344,37 @@ function selectMapRow(id, fromMarker) {
   _map.once("moveend", function () { if (_mk[id]) _mk[id].openPopup(); });
   _map.flyTo(r.geo, 15, {duration: .8});
 }
+function mAllStatuses() { var st = S.mf.status; return !!(st.active && st.closed && st.archived); }
+function paintStatus() {
+  var all = mAllStatuses();
+  $("mStatus").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", b.dataset.v === "all" ? all : !all && !!S.mf.status[b.dataset.v]); });
+}
 function wireMap() {
   function seg(id, key) {
     $(id).querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.mf[key] = b.dataset.v; $(id).querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderMapView(); }; });
   }
-  seg("mStatus", "status"); seg("mType", "type");
+  seg("mType", "type");
+  /* status is multi-select: Active, Closed and 420+ toggle independently; All turns all three on */
+  $("mStatus").querySelectorAll("button").forEach(function (b) {
+    b.onclick = function () {
+      var st = S.mf.status, v = b.dataset.v;
+      if (v === "all") S.mf.status = {active: 1, closed: 1, archived: 1};
+      else if (mAllStatuses()) { S.mf.status = {}; S.mf.status[v] = 1; }
+      else if (st[v] && Object.keys(st).length > 1) delete st[v];
+      else st[v] = 1;
+      paintStatus(); renderMapView();
+    };
+  });
   var qt; $("mq").addEventListener("input", function () { clearTimeout(qt); qt = setTimeout(function () { S.mf.q = $("mq").value; renderMapView(); }, 160); });
   [["mSort", "sort"], ["mUmin", "umin"], ["mUmax", "umax"], ["mPmin", "pmin"], ["mPmax", "pmax"], ["mPPmin", "ppmin"], ["mPPmax", "ppmax"], ["mDmin", "dmin"], ["mDmax", "dmax"], ["mFrom", "from"], ["mTo", "to"], ["mFoia", "foia"], ["mHl", "hl"]].forEach(function (p) {
     $(p[0]).addEventListener("change", function () { S.mf[p[1]] = this.value; renderMapView(); });
   });
   $("mMore").onclick = function () { var h = $("mFilters").hidden = !$("mFilters").hidden; this.textContent = h ? "More filters" : "Fewer filters"; };
   $("mReset").onclick = function () {
-    Object.assign(S.mf, {status: "active", type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: ""});
+    Object.assign(S.mf, {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: ""});
     ["mq", "mUmin", "mUmax", "mPmin", "mPmax", "mPPmin", "mPPmax", "mDmin", "mDmax", "mFrom", "mTo"].forEach(function (id) { $(id).value = ""; });
     $("mSort").value = "date-desc"; $("mHl").value = "";
-    ["mStatus", "mType"].forEach(function (id) { $(id).querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === 0); }); });
+    $("mType").querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === 0); }); paintStatus();
     renderMapView(); if (_map) _map.setView([38.9072, -77.0169], 12);
   };
   $("mCompsChk").onclick = function (e) { e.preventDefault(); S.mf.comps = !S.mf.comps; this.classList.toggle("on", S.mf.comps); renderMapView(); };
