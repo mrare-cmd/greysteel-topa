@@ -333,6 +333,18 @@ tr.hidden-row td{opacity:.45}
 .f{margin-bottom:10px}
 .f label{display:flex;font-size:11.5px;color:var(--text2);margin-bottom:3px;gap:6px}
 .f label .who{margin-left:auto;color:var(--blue);font-size:11px}
+.gs-foia{font-weight:700;font-style:italic;color:#80868b}
+.dt td .lnk{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:4px;border-radius:50%;color:var(--text3);opacity:0;vertical-align:middle}
+.dt td .lnk svg{width:14px;height:14px}
+.dt tr:hover td .lnk{opacity:1}
+.dt td .lnk:hover{background:rgba(60,64,67,.1);color:var(--blue)}
+.dt td .lnk.has{opacity:.9;color:var(--blue)}
+#lnkPop{position:fixed;z-index:7000;width:360px;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:12px;display:none}
+#lnkPop.open{display:block}
+#lnkPop .lt{font-size:12px;color:var(--text2);margin-bottom:6px}
+#lnkPop input{width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;outline:none;font-size:12.5px}
+#lnkPop input:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light)}
+#lnkPop .lb{display:flex;gap:8px;margin-top:10px;align-items:center}
 .f input,.f textarea,.f select{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 9px;outline:none;background:#fff}
 .f textarea{min-height:64px;resize:vertical}
 .f input:focus,.f textarea:focus,.f select:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light)}
@@ -403,7 +415,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v9</span>
+    <span id="verBadge" title="Page version">v10</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -617,6 +629,7 @@ tr.hidden-row td{opacity:.45}
 <aside id="drawer"><button class="dr-x" id="drX" title="Close">&times;</button><div class="dr-h" id="drH"></div><div class="dr-b" id="drB"></div><div class="dr-f" id="drF"></div></aside>
 <div id="modal"><div class="mbox" id="mbox"></div></div>
 <div id="hlPop"></div>
+<div id="lnkPop"></div>
 <div class="tip" id="tip"></div>
 <div id="toast"></div>
 
@@ -1061,6 +1074,13 @@ function coerce(col, raw) {
 }
 /* set a field; returns false when the value is not valid for the column */
 function setField(slug, row, col, raw) {
+  var sh0 = S.sheets[slug], rawT = String(raw == null ? "" : raw).trim();
+  if (sh0 && sh0.colKeys[col.key + "Url"] && /^https?:\/\/\S+$/i.test(rawT)) {
+    var ops = [{t: "set", k: rk(slug, row), f: col.key + "Url", v: rawT === String(row[col.key + "Url"] || "") ? null : rawT}];
+    if (!String(val(slug, row, col.key) || "").trim()) ops.push({t: "set", k: rk(slug, row), f: col.key, v: col.key === "foia" ? "FOIA" : "Link"});
+    sendOps(ops, "Link saved");
+    return true;
+  }
   var v = coerce(col, raw);
   if (v === undefined) { toast(col.label + ": that is not a valid " + (col.type === "date" ? "date" : "number"), true); return false; }
   var base = row[col.key] == null ? "" : row[col.key];
@@ -1664,8 +1684,11 @@ function cellHtml(slug, r, c) {
   else if (t === "money") txt = fmtMoney(v);
   else if (t === "int") txt = typeof v === "number" ? fmtInt(v) : esc(v);
   else txt = esc(v);
+  if (c.key === "foia" && /greysteel/i.test(String(v || ""))) txt = '<span class="gs-foia">' + txt + "</span>";
   var url = !c.computed && val(slug, r, c.key + "Url");
   if (url && /^(https?:|mailto:)/i.test(url)) txt = '<a href="' + esc(url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="' + esc(url) + '">' + (txt || "link") + "</a>";
+  var sh0 = S.sheets[slug];
+  if (sh0 && sh0.colKeys && sh0.colKeys[c.key + "Url"]) txt += '<button class="lnk' + (url ? " has" : "") + '" data-lnk="' + c.key + '" title="' + (url ? "Change or remove the link" : "Add a link (paste a Box or other URL)") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>';
   if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
   if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
   if (c.key === "date" && isNewRow(r)) txt += ' <span class="pill new" title="New in the ' + esc(latestWeek().label) + ' report">NEW</span>';
@@ -1715,10 +1738,35 @@ function renderTable(soft) {
 function tableClick(e) {
   var td = e.target.closest("td"), tr = e.target.closest("tr[data-id]"); if (!td || !tr) return;
   var slug = tr.dataset.s, id = tr.dataset.id;
+  var lb = e.target.closest(".lnk");
+  if (lb) { e.stopPropagation(); openLinkPop(lb, slug, id, lb.dataset.lnk); return; }
   if (td.classList.contains("hlc")) { openHlPop(td, slug, id); return; }
   if (td.classList.contains("opn")) { openRow(slug, id); return; }
 }
+/* add / change / remove the link behind a cell (FOIA -> Box). Stored as <field>Url in the shared overlay. */
+function openLinkPop(anchor, slug, id, field) {
+  var r = findRow(slug, id), pop = $("lnkPop"), cur = val(slug, r, field + "Url") || "", label = colOf(slug, field).label;
+  pop.innerHTML = '<div class="lt">' + esc(label) + " link for <b>" + esc(val(slug, r, "address")) + '</b></div><input id="lnkIn" type="url" placeholder="Paste the Box (or any) link" value="' + esc(cur) + '">' +
+    '<div class="lb">' + (cur ? '<a href="' + esc(cur) + '" target="_blank" rel="noopener" class="small">Open &#8599;</a><button class="btn sm danger" id="lnkDel">Remove</button>' : "") +
+    '<span class="ml-auto"></span><button class="btn sm" id="lnkX">Cancel</button><button class="btn sm primary" id="lnkOk">Save</button></div>';
+  var b = anchor.getBoundingClientRect();
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - 372, b.left - 160)) + "px"; pop.style.top = (b.bottom + 6) + "px"; pop.classList.add("open");
+  var inp = $("lnkIn"); inp.focus(); inp.select();
+  function close() { pop.classList.remove("open"); }
+  function save() {
+    var u = inp.value.trim();
+    if (u && !/^(https?:\/\/|mailto:)/i.test(u)) { toast("Paste a full link starting with https://", true); return; }
+    var ops = [{t: "set", k: rk(slug, r), f: field + "Url", v: u === String(r[field + "Url"] || "") ? null : (u || "")}];
+    if (u && !String(val(slug, r, field) || "").trim()) ops.push({t: "set", k: rk(slug, r), f: field, v: field === "foia" ? "FOIA" : "Link"});
+    close(); sendOps(ops, u ? "Link saved" : "Link removed");
+  }
+  $("lnkOk").onclick = save; $("lnkX").onclick = close;
+  if ($("lnkDel")) $("lnkDel").onclick = function () { inp.value = ""; save(); };
+  inp.onkeydown = function (e) { if (e.key === "Enter") save(); if (e.key === "Escape") close(); };
+}
+document.addEventListener("mousedown", function (e) { if (!e.target.closest("#lnkPop") && !e.target.closest(".lnk")) $("lnkPop").classList.remove("open"); });
 function tableDbl(e) {
+  if (e.target.closest(".lnk") || e.target.closest("a")) return;
   var td = e.target.closest("td.ed"), tr = e.target.closest("tr[data-id]"); if (!td || !tr || td.classList.contains("editing")) return;
   startEdit(td, tr.dataset.s, tr.dataset.id, td.dataset.f);
 }
