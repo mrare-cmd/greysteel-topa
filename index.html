@@ -292,6 +292,8 @@ table.dt{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%
 .dt th .ar{font-size:10px;margin-left:3px}
 .dt td{padding:0 10px;height:36px;border-bottom:1px solid var(--border2);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;position:relative}
 .dt td.num{text-align:right;font-variant-numeric:tabular-nums}
+.dt td.adr{max-width:none;overflow:visible}
+.dt td.adr .adt{display:inline-block;max-width:300px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 .dt th.num{text-align:right}
 .dt td.ed{cursor:text}
 .dt td.ed:hover{box-shadow:inset 0 0 0 1px #c6dafc;background:#fafcff}
@@ -431,7 +433,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v16</span>
+    <span id="verBadge" title="Page version">v17</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1771,10 +1773,12 @@ function cellHtml(slug, r, c) {
   if (sh0 && sh0.colKeys && sh0.colKeys[c.key + "Url"]) txt += '<button class="lnk' + (url ? " has" : "") + '" data-lnk="' + c.key + '" title="' + (url ? "Change or remove the link" : "Add a link (paste a Box or other URL)") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>';
   if (c.key === "foia" && slug === "ofs5" && needsFoia(r)) txt += '<button class="cpy" data-cpy="' + r.id + '" title="Copy the FOIA request text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy request</button>';
   if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
-  if (c.key === "address" && slug === "ofs5") txt += tenantPill(r) + redevPill(r);
-  if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
+  /* only the address truncates; its badges (Closed first) always show in full */
+  var badges = "";
+  if (c.key === "address" && slug === "ofs5") badges = (compsFor(slug, r).length ? ' <span class="pill green" title="Closed per CoStar">Closed</span>' : "") + tenantPill(r) + redevPill(r);
+  if (badges) txt = '<span class="adt">' + txt + "</span>" + badges;
   if (c.key === "date" && isNewRow(r)) txt += ' <span class="pill new" title="New in the ' + esc(latestWeek().label) + ' report">NEW</span>';
-  var cls = (t === "int" || t === "money" ? "num " : "") + (c.computed ? "" : "ed ") + (e ? "edited" : "");
+  var cls = (t === "int" || t === "money" ? "num " : "") + (c.computed ? "" : "ed ") + (e ? "edited" : "") + (badges ? " adr" : "");
   var title = e ? ' title="' + esc("Edited by " + who(e.by) + " " + ago(e.at) + (r[c.key] != null && r[c.key] !== "" ? " · was: " + r[c.key] : " · was blank")) + '"' : (String(v || "").length > 40 ? ' title="' + esc(v) + '"' : "");
   return '<td class="' + cls + '" data-f="' + c.key + '"' + title + ">" + txt + "</td>";
 }
