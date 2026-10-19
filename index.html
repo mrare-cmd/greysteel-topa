@@ -296,6 +296,8 @@ tr.hl-blue td{background:var(--blue-light)!important}
 tr.hl-red td{background:var(--red-light)!important}
 tr.hl-purple td{background:var(--purple-light)!important}
 tr.hl-orange td{background:var(--orange-light)!important}
+tr.hl-gray td{background:#eceff1!important}
+tr.hl-gray td:first-child{box-shadow:inset 4px 0 0 #9aa0a6}
 tr.hl-yellow td:first-child{box-shadow:inset 4px 0 0 var(--yellow)}
 tr.hl-green td:first-child{box-shadow:inset 4px 0 0 var(--green)}
 tr.hl-blue td:first-child{box-shadow:inset 4px 0 0 var(--blue)}
@@ -304,7 +306,7 @@ tr.hl-purple td:first-child{box-shadow:inset 4px 0 0 var(--purple)}
 tr.hl-orange td:first-child{box-shadow:inset 4px 0 0 var(--orange)}
 tr.hidden-row td{opacity:.45}
 .sw{display:inline-block;width:14px;height:14px;border-radius:50%}
-.sw.yellow{background:var(--yellow)}.sw.green{background:var(--green)}.sw.blue{background:var(--blue)}.sw.red{background:var(--red)}.sw.purple{background:var(--purple)}.sw.orange{background:var(--orange)}
+.sw.yellow{background:var(--yellow)}.sw.green{background:var(--green)}.sw.blue{background:var(--blue)}.sw.red{background:var(--red)}.sw.purple{background:var(--purple)}.sw.orange{background:var(--orange)}.sw.gray{background:#9aa0a6}
 #hlPop{position:fixed;z-index:7000;background:var(--white);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow-lg);padding:6px 8px;display:none;gap:6px;align-items:center}
 #hlPop.open{display:flex}
 #hlPop button{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center}
@@ -397,7 +399,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v7</span>
+    <span id="verBadge" title="Page version">v8</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -761,6 +763,59 @@ function parseDhcdItems(pages) {
   });
   return out;
 }
+/* ---- duplicate matching for imports ----
+   The master list often shortens multi-building addresses ("1600-1608 28th Place SE" ->
+   "1600 28th Place SE"), DHCD sometimes transposes digits ("5145" for "5415") and re-posts one
+   filing several times over a few weeks. A filing counts as already tracked when a row on the tab:
+     1. has the same normalized address and date, or
+     2. is on the same street the same day with the same house number, transposed digits or the same price, or
+     3. is on the same street within 45 days with the same (or digit-transposed) house number AND the same price, or
+     4. has the identical address within 45 days and the same price (or no price on one side).
+   Different unit numbers (#201 vs #301) never match. */
+function addrParts(a) {
+  var t = normAddr(a).replace(/&/g, " ").replace(/\band\b/g, " ").split(/\s+/).filter(Boolean), num = "", unit = "", street = [], wantUnit = false;
+  t.forEach(function (tok) {
+    if (wantUnit) { unit = tok; wantUnit = false; return; }
+    if (tok === "#") { wantUnit = true; return; }
+    if (/^#/.test(tok)) { unit = tok.slice(1); return; }
+    if (/^\d+(st|nd|rd|th)$/.test(tok)) { if (street.length < 2) street.push(tok); return; }
+    var m = /^(\d+)([a-z].*)?$/.exec(tok.replace(/^(\d+)[-\d]*/, "$1"));
+    if (m) { if (!num) num = m[1]; if (m[2] && m[2].length > 1 && street.length < 2) street.push(m[2]); return; }
+    if (/^-/.test(tok)) return;
+    if (street.length < 2) street.push(tok);
+  });
+  return {num: num, unit: unit, street: street.join(" ")};
+}
+function matchIndex(rows, get) {
+  get = get || function (r, f) { return r[f]; };
+  var idx = {exact: {}, street: {}};
+  rows.forEach(function (r) {
+    var a = get(r, "address"), d = get(r, "date"); if (!a) return;
+    matchAdd(idx, {address: a, date: d, price: get(r, "price")}, r);
+  });
+  return idx;
+}
+function matchAdd(idx, rec, row) {
+  row = row || rec;
+  idx.exact[rec.date + "|" + normAddr(rec.address)] = row;
+  var p = addrParts(rec.address);
+  if (p.street) (idx.street[p.street] = idx.street[p.street] || []).push({r: row, d: rec.date || "", num: p.num, unit: p.unit, norm: normAddr(rec.address), price: +rec.price || 0});
+}
+function matchExisting(idx, rec) {
+  var hit = idx.exact[rec.date + "|" + normAddr(rec.address)];
+  if (hit) return hit;
+  var p = addrParts(rec.address), cands = p.street ? idx.street[p.street] || [] : [], price = +rec.price || 0, na = normAddr(rec.address);
+  var perm = function (a, b) { return a && b && a.length === b.length && a.split("").sort().join("") === b.split("").sort().join(""); };
+  var dd = function (a, b) { var x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(a || ""), y = /^(\d{4})-(\d{2})-(\d{2})$/.exec(b || ""); return x && y ? Math.abs(Date.UTC(+x[1], x[2] - 1, +x[3]) - Date.UTC(+y[1], y[2] - 1, +y[3])) / 864e5 : 1e9; };
+  for (var pass = 2; pass <= 4; pass++) for (var i = 0; i < cands.length; i++) {
+    var c = cands[i];
+    if (p.unit && c.unit && p.unit !== c.unit) continue;
+    if (pass === 2 && c.d === rec.date && ((p.num && c.num === p.num) || perm(c.num, p.num) || (price && c.price === price))) return c.r;
+    if (pass === 3 && p.num && (c.num === p.num || perm(c.num, p.num)) && price && c.price === price && dd(c.d, rec.date) <= 45) return c.r;
+    if (pass === 4 && c.norm === na && (!price || !c.price || c.price === price) && dd(c.d, rec.date) <= 45) return c.r;
+  }
+  return null;
+}
 /* pdf.js document -> parseDhcdItems input */
 function pdfItems(pdf) {
   var pages = [], chain = Promise.resolve();
@@ -867,7 +922,17 @@ function isHidden(slug, row) { var v = val(slug, row, "hidden"); return v === "1
 function hlOf(slug, row) { var h = S.overlay.hl[rk(slug, row)]; return h && h.c; }
 /* what the row shows: a colour someone picked, else yellow while it came in with the newest weekly report.
    The auto-yellow is never stored, so it moves to the next report's rows by itself. */
-function hlShown(slug, row) { return hlOf(slug, row) || (isNewRow(row) ? "yellow" : null); }
+function hlShown(slug, row) { return hlOf(slug, row) || ruleHl(slug, row) || (isNewRow(row) ? "yellow" : null); }
+/* 5+ offers of sale: red until a FOIA is submitted, light gray when Greysteel is the source */
+function ruleHl(slug, row) {
+  if (slug !== "ofs5") return null;
+  var f = String(val(slug, row, "foia") || "").trim();
+  if (/^need to submit$/i.test(f)) return "red";
+  if (/greysteel/i.test(f)) return "gray";
+  return null;
+}
+/* tabs that record the same kind of filing: DHCD sometimes files a 4-unit building as 5+, and the team files it on 2-4 */
+var SIBLINGS = {ofs5: ["ofs24", "dopa"], ofs24: ["ofs5"], dopa: ["ofs5"], not: ["sfdofs"], sfdofs: ["not", "rofr"], rofr: ["sfdofs"]};
 
 /* computed columns */
 var COMPUTED = {ppu: 1, status: 1, days: 1, saleDate: 1, uc: 1, sheetTitle: 1};
@@ -1233,7 +1298,7 @@ function renderCmp() {
 /* ---------- map tab (modelled on the original TOPA dashboard's map) ---------- */
 var _map = null, _mLayer = null, _cLayer = null, _dcLayer = null, _mk = {}, _mSel = null;
 var STATUS_COLOR = {active: "#188038", closed: "#f29900", archived: "#9aa0a6", undated: "#9aa0a6", comp: "#9334e6"};
-var HL_HEX = {yellow: "#f9ab00", green: "#188038", blue: "#1a73e8", red: "#d93025", purple: "#9334e6", orange: "#fa7b17"};
+var HL_HEX = {yellow: "#f9ab00", green: "#188038", blue: "#1a73e8", red: "#d93025", purple: "#9334e6", orange: "#fa7b17", gray: "#9aa0a6"};
 function mStatus(r) {
   if (compsFor("ofs5", r).length) return "closed";
   var d = val("ofs5", r, "date"), n = d ? daysBetween(d, todayISO()) : null;
@@ -1591,6 +1656,8 @@ function cellHtml(slug, r, c) {
   else if (t === "money") txt = fmtMoney(v);
   else if (t === "int") txt = typeof v === "number" ? fmtInt(v) : esc(v);
   else txt = esc(v);
+  var url = !c.computed && val(slug, r, c.key + "Url");
+  if (url && /^(https?:|mailto:)/i.test(url)) txt = '<a href="' + esc(url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="' + esc(url) + '">' + (txt || "link") + "</a>";
   if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
   if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
   if (c.key === "date" && isNewRow(r)) txt += ' <span class="pill new" title="New in the ' + esc(latestWeek().label) + ' report">NEW</span>';
@@ -1602,7 +1669,7 @@ function renderTable(soft) {
   renderSide();
   var f = S.f, sh = S.sheets[S.sheet];
   if (!sh && !f.all) return;
-  var cols = f.all ? ALLCOLS : sh.columns;
+  var cols = f.all ? ALLCOLS : sh.columns.filter(function (c) { return !c.hidden; });
   $("tTitle").textContent = f.all ? "All tabs" : sh.title;
   var hasType = !f.all && sh.colKeys.type, hasUnits = !f.all && sh.colKeys.units && sh.colKeys.units.type === "int";
   $("tTypeWrap").hidden = !hasType; $("tUnitsWrap").hidden = !hasUnits; $("tStatusWrap").hidden = f.all || S.sheet !== "ofs5";
@@ -1689,7 +1756,7 @@ function openHlPop(anchor, slug, id) {
 }
 document.addEventListener("click", function (e) { if (!e.target.closest("#hlPop") && !e.target.closest("td.hlc") && !e.target.closest(".swrow")) $("hlPop").classList.remove("open"); });
 function exportCsv() {
-  var rows = currentRows(), cols = S.f.all ? ALLCOLS : S.sheets[S.sheet].columns;
+  var rows = currentRows(), cols = S.f.all ? ALLCOLS : S.sheets[S.sheet].columns;   /* CSV keeps hidden link columns */
   var lines = [["Highlight"].concat(cols.map(function (c) { return c.label; }))].concat(rows.map(function (x) {
     return [hlShown(x.slug, x.r) || ""].concat(cols.map(function (c) { var v = anyVal(x.slug, x.r, c.key); return v == null ? "" : v; }));
   }));
@@ -1734,7 +1801,8 @@ function renderDrawer() {
   sh.columns.forEach(function (col) {
     if (col.computed && col.key !== "ppu") return;
     var v = col.key === "ppu" ? cval(slug, r, "ppu") : val(slug, r, col.key), e = ed(slug, r, col.key);
-    h += '<div class="f"><label>' + esc(col.label) + (e ? '<span class="who">edited by ' + esc(who(e.by)) + " " + ago(e.at) + "</span>" : "") + "</label>";
+    var lnk = col.type === "url" ? val(slug, r, col.key) : val(slug, r, col.key + "Url");
+    h += '<div class="f"><label>' + esc(col.label) + (lnk && /^(https?:|mailto:)/i.test(lnk) ? ' <a href="' + esc(lnk) + '" target="_blank" rel="noopener">open &#8599;</a>' : "") + (e ? '<span class="who">edited by ' + esc(who(e.by)) + " " + ago(e.at) + "</span>" : "") + "</label>";
     if (col.key === "ppu") h += '<div class="ro">' + (v ? fmtMoney(v) : "-") + "</div>";
     else {
       var shown = v == null ? "" : col.type === "money" && typeof v === "number" ? fmtMoney(v) : v;
@@ -1780,7 +1848,7 @@ function renderNewRow() {
   var sh = S.sheets[S.drawer.slug];
   $("drH").innerHTML = '<div class="t">New row</div><div class="s">' + esc(sh.title) + " · for a filing the weekly reports missed</div>";
   $("drB").innerHTML = sh.columns.filter(function (c) { return !c.computed; }).map(function (c) {
-    return '<div class="f"><label>' + esc(c.label) + "</label>" + (c.key === "notes" ? '<textarea data-f="notes"></textarea>' : '<input data-f="' + c.key + '" type="' + (c.type === "date" ? "date" : "text") + '"' + (c.key === "date" ? ' value="' + todayISO() + '"' : "") + ">") + "</div>";
+    return '<div class="f"><label>' + esc(c.label) + "</label>" + (c.key === "notes" ? '<textarea data-f="notes"></textarea>' : '<input data-f="' + c.key + '" type="' + (c.type === "date" ? "date" : "text") + '"' + (c.key === "date" ? ' value="' + todayISO() + '"' : c.key === "foia" && sh.slug === "ofs5" ? ' value="NEED TO SUBMIT"' : "") + ">") + "</div>";
   }).join("");
   $("drF").innerHTML = '<button class="btn sm" id="drClose">Cancel</button><button class="btn sm primary" id="drSave">Add row</button>';
   $("drClose").onclick = closeDrawer;
@@ -2039,13 +2107,16 @@ function weekLabel(a, b) {
 async function previewImport(batches) {
   var slugs = {};
   batches.forEach(function (b) { b.recs.forEach(function (r) { var m = categoryToSheet(r.category); r._sheet = m.sheet; r._extra = m.extra; slugs[m.sheet] = 1; }); });
-  await Promise.all(Object.keys(slugs).map(ensureSheet));
-  var keys = {};
-  Object.keys(slugs).forEach(function (s) { keys[s] = {}; (S.sheets[s] ? S.sheets[s].rows : []).forEach(function (r) { keys[s][r.date + "|" + normAddr(r.address)] = r; }); });
+  var need = {};
+  Object.keys(slugs).forEach(function (s) { need[s] = 1; (SIBLINGS[s] || []).forEach(function (x) { need[x] = 1; }); });
+  await Promise.all(Object.keys(need).filter(function (s) { return sheetMeta(s).title !== s; }).map(ensureSheet));
+  var idx = {};
+  Object.keys(need).forEach(function (s) { idx[s] = matchIndex(S.sheets[s] ? S.sheets[s].rows : [], function (r, f) { return val(s, r, f); }); });
   var nNew = 0;
   batches.forEach(function (b) { b.recs.forEach(function (r) {
-    var k = r.date + "|" + normAddr(r.address);
-    r._dup = keys[r._sheet][k] || null; if (!r._dup) { keys[r._sheet][k] = {pending: 1}; nNew++; }
+    r._dup = matchExisting(idx[r._sheet], r); r._dupTab = r._dup ? r._sheet : null;
+    if (!r._dup) (SIBLINGS[r._sheet] || []).some(function (x) { var m = idx[x] && matchExisting(idx[x], r); if (m) { r._dup = m; r._dupTab = x; } return !!m; });
+    if (!r._dup) { matchAdd(idx[r._sheet], r, {pending: 1, address: r.address, date: r.date}); nNew++; }
   }); });
   var groups = {};
   batches.forEach(function (b, bi) { b.recs.forEach(function (r, ri) { (groups[r._sheet] = groups[r._sheet] || []).push({b: bi, i: ri, r: r}); }); });
@@ -2055,7 +2126,7 @@ async function previewImport(batches) {
       var g = groups[s], nn = g.filter(function (x) { return !x.r._dup; }).length;
       return '<tr class="grp"><td colspan="7">' + esc(sheetMeta(s).title) + ' <span class="muted" style="font-weight:400">· ' + nn + " new of " + g.length + "</span></td></tr>" + g.map(function (x) {
         var r = x.r;
-        return '<tr class="' + (r._dup ? "dup" : "") + '"><td><input type="checkbox" data-b="' + x.b + '" data-i="' + x.i + '"' + (r._dup ? "" : " checked") + "></td><td>" + fmtDate(r.date) + "</td><td>" + esc(r.address) + (r._dup ? ' <span class="pill gray">already tracked</span>' : "") + (r.remark ? '<div class="small" style="color:var(--orange)">' + esc(r.remark) + "</div>" : "") + (r.flag ? '<div class="small" style="color:var(--red)">' + esc(r.flag) + "</div>" : "") + "</td><td class=\"small muted\">" + esc(r.category) + "</td><td>" + fmtInt(r.units) + "</td><td>" + fmtShort(r.price) + "</td><td class=\"small muted\">" + esc(r.dhcdId) + "</td></tr>";
+        return '<tr class="' + (r._dup ? "dup" : "") + '"><td><input type="checkbox" data-b="' + x.b + '" data-i="' + x.i + '"' + (r._dup ? "" : " checked") + "></td><td>" + fmtDate(r.date) + "</td><td>" + esc(r.address) + (r._dup ? ' <span class="pill gray">already tracked' + (r._dupTab && r._dupTab !== r._sheet ? " on " + esc(sheetMeta(r._dupTab).title) : r._dup.pending ? " (repeated in this import)" : "") + "</span>" + (r._dup.address && !r._dup.pending && normAddr(r._dup.address) !== normAddr(r.address) ? '<div class="small muted">as &ldquo;' + esc(r._dup.address) + "&rdquo; " + fmtDate(r._dup.date) + "</div>" : "") : "") + (r.remark ? '<div class="small" style="color:var(--orange)">' + esc(r.remark) + "</div>" : "") + (r.flag ? '<div class="small" style="color:var(--red)">' + esc(r.flag) + "</div>" : "") + "</td><td class=\"small muted\">" + esc(r.category) + "</td><td>" + fmtInt(r.units) + "</td><td>" + fmtShort(r.price) + "</td><td class=\"small muted\">" + esc(r.dhcdId) + "</td></tr>";
       }).join("");
     }).join("") + "</tbody></table></div>" +
     '<div class="mf"><span class="small muted">New 5+ offers of sale are geocoded for the map. The import is logged with your name.</span><span class="ml-auto"></span><button class="btn sm" onclick="closeModal()">Cancel</button><button class="btn sm primary" id="mGo">Add ' + nNew + " rows</button></div>";
@@ -2111,6 +2182,7 @@ async function saveImport(batches, pick) {
           if (r.dhcdId) row.dhcdId = r.dhcdId;
           ["units", "price"].forEach(function (f) { if (r[f] != null) { if (cols[f] === "int" || cols[f] === "money") row[f] = r[f]; else row.notes = ((row.notes || "") + " " + f.charAt(0).toUpperCase() + f.slice(1) + ": " + fmtInt(r[f])).trim(); } });
           Object.assign(row, r._extra);
+          if (s === "ofs5") row.foia = "NEED TO SUBMIT";
           if (r.remark) row.notes = ((row.notes ? row.notes + "; " : "") + "DHCD: " + r.remark);
           if (r.flag) row.notes = ((row.notes ? row.notes + "; " : "") + r.flag);
           row.src = "dhcd:" + b.label; row.addedBy = S.me.email;
