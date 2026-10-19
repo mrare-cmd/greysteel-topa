@@ -386,7 +386,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v3</span>
+    <span id="verBadge" title="Page version">v4</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1209,12 +1209,13 @@ function renderCmp() {
 }
 /* ---------- map tab (modelled on the original TOPA dashboard's map) ---------- */
 var _map = null, _mLayer = null, _cLayer = null, _dcLayer = null, _mk = {}, _mSel = null;
-var STATUS_COLOR = {active: "#188038", closed: "#f29900", archived: "#9aa0a6", comp: "#9334e6"};
+var STATUS_COLOR = {active: "#188038", closed: "#f29900", archived: "#9aa0a6", undated: "#9aa0a6", comp: "#9334e6"};
 var HL_HEX = {yellow: "#f9ab00", green: "#188038", blue: "#1a73e8", red: "#d93025", purple: "#9334e6", orange: "#fa7b17"};
 function mStatus(r) {
   if (compsFor("ofs5", r).length) return "closed";
   var d = val("ofs5", r, "date"), n = d ? daysBetween(d, todayISO()) : null;
-  return n != null && n > 420 ? "archived" : "active";
+  if (n == null) return "undated";            /* no TOPA date: never counted as active */
+  return n > 420 ? "archived" : "active";
 }
 function mapRows() {
   var f = S.mf, q = normAddr(f.q), t = todayISO();
