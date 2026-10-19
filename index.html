@@ -231,7 +231,7 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .pu-ms .row span:last-child{margin-left:auto}
 .pu-f{display:flex;gap:10px;margin-top:10px}
 .pill.gsp{background:linear-gradient(135deg,#1a73e8 0%,#5b5bd6 58%,#7b4fd0 100%);color:#fff;font-weight:700}
-.mdot.g{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font:700 9px/1 'Google Sans',Arial,sans-serif;box-shadow:0 0 0 2px #5b5bd6}
+.mdot.g{display:inline-flex;align-items:center;justify-content:center;color:#fff;font:700 7px/1 Arial,sans-serif;border-color:#5b5bd6}
 
 /* ---------- table view ---------- */
 #vTable{overflow:hidden}
@@ -423,7 +423,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v13</span>
+    <span id="verBadge" title="Page version">v15</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -513,8 +513,8 @@ tr.hidden-row td{opacity:.45}
   <section class="view" id="vDash"><div class="wrap">
     <div class="card-h" style="padding:0 2px 12px">
       <div>
-        <div class="card-t" style="font-size:22px">5+ unit offers of sale</div>
-        <div class="card-s" id="dashSub">Year to date</div>
+        <div class="card-t" style="font-size:28px">5+ unit offers of sale</div>
+        <div class="card-s" id="dashSub" style="font-size:16px;margin-top:4px">Year to date</div>
       </div>
       <div class="ml-auto card-s" id="latestReport"></div>
     </div>
@@ -539,7 +539,7 @@ tr.hidden-row td{opacity:.45}
     <div class="card mt">
       <div class="card-h">
         <div><div class="card-t">Offer of Sale comparison</div><div class="card-s">Rebuilt from the master list's comparison tab - unique addresses filed Jan 1 through today's date in each year</div></div>
-        <label class="ucap ml-auto">Max units <input type="number" id="unitCap" value="10000" min="5"></label>
+        <label class="ucap ml-auto" title="Leave blank for no limit">Units <input type="number" id="unitMin" min="0" placeholder="Min"> &ndash; <input type="number" id="unitMax" min="0" placeholder="Max"></label>
         <div class="seg" id="cmpYears"><button data-n="7" class="on">7 yrs</button><button data-n="13">All</button></div>
       </div>
       <div class="scroll-x"><table class="cmp" id="cmpTable"></table></div>
@@ -928,7 +928,7 @@ var S = {
   me: null, manifest: {}, index: {sheets: []}, sheets: {}, overlay: {edits: {}, hl: {}}, comps: [], imports: [],
   view: "table", sheet: "ofs5", sort: {key: "date", dir: -1}, page: 0, pageSize: 100,
   f: {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false},
-  dash: {metric: "count", years: 7, cap: 10000, pipeSort: "date"},
+  dash: {metric: "count", years: 7, cap: {min: null, max: null}, pipeSort: "date"},
   comps_f: {q: "", link: ""}, drawer: null,
   mf: {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", comps: true, dc: true}
 };
@@ -1206,6 +1206,8 @@ function readHash() {
 /* ---------- dashboard ---------- */
 function ofsRows() { var sh = S.sheets.ofs5; return sh ? sh.rows.filter(function (r) { return !isHidden("ofs5", r); }) : []; }
 /* one year's window [Jan 1, same month/day) like the Excel tab; unique addresses, earliest filing wins */
+/* cap = {min, max} unit range from the comparison card; null = no limit */
+function inUnits(u, cap) { return (cap.min == null || u >= cap.min) && (cap.max == null || u <= cap.max); }
 function ytdStats(year, full, cap) {
   var t = new Date(), start = year + "-01-01";
   var endD = full ? new Date(year + 1, 0, 1) : new Date(year, t.getMonth(), t.getDate());
@@ -1215,7 +1217,7 @@ function ytdStats(year, full, cap) {
     .sort(function (a, b) { return a.d.localeCompare(b.d); })
     .forEach(function (x) {
       var u = +val("ofs5", x.r, "units") || 0;
-      if (u > cap) return;
+      if (!inUnits(u, cap)) return;
       var k = normAddr(val("ofs5", x.r, "address"));
       if (seen[k]) return; seen[k] = 1; rows.push(x.r);
     });
@@ -1223,7 +1225,7 @@ function ytdStats(year, full, cap) {
   var byType = {"w/o contract": {}, "w/ contract": {}};
   ofsRows().forEach(function (r) {
     var d = val("ofs5", r, "date"), ty = String(val("ofs5", r, "type") || "").toLowerCase();
-    if (d && d >= start && d < end && byType[ty] && (+val("ofs5", r, "units") || 0) <= cap) byType[ty][normAddr(val("ofs5", r, "address"))] = 1;
+    if (d && d >= start && d < end && byType[ty] && inUnits(+val("ofs5", r, "units") || 0, cap)) byType[ty][normAddr(val("ofs5", r, "address"))] = 1;
   });
   var wo = Object.keys(byType["w/o contract"]).length, w = Object.keys(byType["w/ contract"]).length;
   var price = [], units = [], ppu = [], pp = 0, uu = 0;
@@ -1415,11 +1417,12 @@ function mapHl(r) { var h = hlShown("ofs5", r); return h === "gray" ? null : h; 
 function markerFor(r, sel) { var hl = mapHl(r); return dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, sel, isGs(r)); }
 function dotIcon(color, ring, sel, gs) {
   if (gs) {
-    var gz = sel ? 26 : 21;
+    /* same size as every other dot; the purple border marks Greysteel, the G is SVG so it stays centered */
+    var gz = sel ? 20 : 15;
     return L.divIcon({className: "", iconSize: [gz, gz], iconAnchor: [gz / 2, gz / 2], popupAnchor: [0, -gz / 2],
-      html: '<div style="width:' + gz + "px;height:" + gz + "px;border-radius:50%;background:" + color + ";border:2.5px solid " + (ring || "#fff") +
-        ";box-shadow:0 0 0 2px #5b5bd6,0 1px 5px rgba(0,0,0,.4)" + (sel ? ",0 0 0 6px rgba(26,115,232,.35)" : "") +
-        ";display:flex;align-items:center;justify-content:center;color:#fff;font:700 " + (sel ? 13 : 11) + "px/1 'Google Sans',Arial,sans-serif;cursor:pointer\">G</div>"});
+      html: '<div style="width:' + gz + "px;height:" + gz + "px;border-radius:50%;background:" + color + ";border:2px solid " + (ring || "#5b5bd6") +
+        ";box-shadow:0 1px 4px rgba(0,0,0,.35)" + (sel ? ",0 0 0 4px rgba(26,115,232,.35)" : "") + ';cursor:pointer;overflow:hidden">' +
+        '<svg viewBox="0 0 10 10" width="100%" height="100%" style="display:block"><text x="5" y="5.15" text-anchor="middle" dominant-baseline="central" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="8" fill="#fff">G</text></svg></div>'});
   }
   var sz = sel ? 20 : 15;
   return L.divIcon({className: "", iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2], popupAnchor: [0, -sz / 2],
@@ -2563,7 +2566,12 @@ function wire() {
   $("pNext").onclick = function () { S.page++; renderTable(); $("tScroll").scrollTop = 0; };
   $("ytdMetric").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.metric = b.dataset.m; $("ytdMetric").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderYtdChart(); }; });
   $("cmpYears").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.years = +b.dataset.n; $("cmpYears").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderCmp(); }; });
-  $("unitCap").addEventListener("change", function () { S.dash.cap = +this.value || 10000; renderDash(); });
+  ["unitMin", "unitMax"].forEach(function (id) {
+    $(id).addEventListener("change", function () {
+      var v = function (x) { return $(x).value === "" ? null : +$(x).value; };
+      S.dash.cap = {min: v("unitMin"), max: v("unitMax")}; renderDash();
+    });
+  });
   var cq; $("cq").addEventListener("input", function () { clearTimeout(cq); cq = setTimeout(function () { S.comps_f.q = $("cq").value; renderComps(); }, 160); });
   $("cLink").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.comps_f.link = b.dataset.l; $("cLink").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderComps(); }; });
   $("addComp").onclick = function () { openComp(null); };
