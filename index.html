@@ -156,18 +156,97 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .pi .m{font-size:12px;color:var(--text2)}
 .pbar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--border2);overflow:hidden}
 .pbar i{display:block;height:100%;background:var(--blue);border-radius:2px}
-#map{height:440px;border-top:1px solid var(--border2)}
+/* map tab */
+#vMap{overflow:hidden}
+.mv{position:absolute;inset:0;display:flex}
+.mside{width:380px;flex-shrink:0;display:flex;flex-direction:column;background:var(--white);border-right:1px solid var(--border);min-height:0}
+.ms-stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border2)}
+.ms-stat{padding:12px 12px 10px;border-right:1px solid var(--border2)}
+.ms-stat:last-child{border-right:none}
+.ms-stat .v{font-family:'Google Sans',sans-serif;font-size:18px;color:var(--text)}
+.ms-stat .l{font-size:11px;color:var(--text2);margin-top:1px}
+.ms-ctl{padding:10px 12px;border-bottom:1px solid var(--border2);display:flex;flex-direction:column;gap:8px}
+.ms-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ms-row .fld{flex:1;min-width:0}
+.ms-row .fld.search{min-width:0}
+.ms-more{font-size:12.5px;color:var(--blue);cursor:pointer;user-select:none}
+.ms-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.ms-filters[hidden]{display:none}
+.ms-f label{display:block;font-size:11px;color:var(--text2);margin-bottom:3px}
+.ms-f .rr{display:flex;align-items:center;gap:4px}
+.ms-f input,.ms-f select{width:100%;height:30px;border:1px solid var(--border);border-radius:6px;padding:0 7px;font-size:12.5px;outline:none;background:#fff;min-width:0}
+.ms-f input:focus,.ms-f select:focus{border-color:var(--blue)}
+.ms-f.wide{grid-column:1/-1}
+.ms-count{padding:8px 14px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border2);display:flex;gap:8px;align-items:center}
+.ms-list{flex:1;overflow:auto}
+.mc{padding:11px 14px 10px;border-bottom:1px solid var(--border2);cursor:pointer;position:relative}
+.mc:hover{background:#f8f9fa}
+.mc.sel{background:#f6f9fe;box-shadow:inset 3px 0 0 var(--blue)}
+.mc .r1{display:flex;align-items:flex-start;gap:8px}
+.mc .ad{font-weight:500;flex:1;min-width:0;line-height:1.3}
+.mc .pr{font-weight:500;white-space:nowrap}
+.mc .nm{font-size:12px;color:var(--text2);margin-top:1px}
+.mc .r2{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:5px;font-size:12px;color:var(--text2)}
+.mc .r3{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11.5px;color:var(--text2)}
+.segbar{display:inline-flex;gap:2px;width:96px;height:5px}
+.segbar i{flex:1;border-radius:1px;background:var(--border2)}
+.mc .det{margin-left:auto;font-size:12px;color:var(--blue)}
+.mmap{flex:1;position:relative;min-width:0}
+#map{position:absolute;inset:0}
+.mlegend{position:absolute;left:12px;bottom:24px;z-index:500;background:rgba(255,255,255,.97);border:1px solid var(--border);border-radius:10px;padding:10px 12px;box-shadow:var(--shadow);font-size:12px}
+.mlegend .lt{font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.mlegend .lr{display:flex;align-items:center;gap:8px;margin:3px 0;color:var(--text)}
+.mdot{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.18);flex-shrink:0;display:inline-block}
+.mtools{position:absolute;top:12px;right:12px;z-index:500;display:flex;gap:6px}
+.mtools .chk{box-shadow:var(--shadow)}
+.leaflet-popup-content-wrapper{border-radius:12px;box-shadow:var(--shadow-lg)}
+.leaflet-popup-content{margin:14px 16px;font-family:'Roboto',sans-serif;font-size:12.5px;color:var(--text);line-height:1.4}
+.pu-a{font-family:'Google Sans',sans-serif;font-size:15px;line-height:1.3}
+.pu-n{font-size:12px;color:var(--text2);margin-top:2px}
+.pu-g{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:10px 0}
+.pu-g label{display:block;font-size:10.5px;color:var(--text3)}
+.pu-g .w{grid-column:1/-1}
+.pu-ms{border-top:1px solid var(--border2);padding-top:8px;margin-top:4px}
+.pu-ms .row{display:flex;align-items:center;gap:7px;font-size:11.5px;margin:2px 0;color:var(--text3)}
+.pu-ms .row.past{color:var(--text2)}
+.pu-ms .row.cur{color:var(--text);font-weight:500}
+.pu-ms .row i{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+.pu-ms .row.past i{background:var(--text3)}
+.pu-ms .row.cur i{background:var(--blue);box-shadow:0 0 0 3px var(--blue-light)}
+.pu-ms .row span:last-child{margin-left:auto}
+.pu-f{display:flex;gap:10px;margin-top:10px}
 
 /* ---------- table view ---------- */
 #vTable{overflow:hidden}
 .tv{position:absolute;inset:0;display:flex}
 .side{width:248px;flex-shrink:0;border-right:1px solid var(--border);background:var(--white);overflow:auto;padding:10px 8px 24px}
-.side h4{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);padding:14px 12px 6px}
-.sh{width:100%;display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;border-radius:0 17px 17px 0;font-size:13px;color:var(--text);text-align:left}
+.side{padding:8px 8px 24px}
+.nav-sec{margin-bottom:2px}
+.nav-h{width:100%;display:flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 8px;border-radius:18px;font-family:'Google Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--text);text-align:left}
+button.nav-h:hover{background:#f1f3f4}
+.nav-h .chev{width:18px;height:18px;color:var(--text2);transition:transform .15s;flex-shrink:0}
+.nav-sec.closed .chev{transform:rotate(-90deg)}
+.nav-h .gc{margin-left:auto;font-family:'Roboto',sans-serif;font-size:11.5px;font-weight:400;color:var(--text3)}
+.nav-h .star-ic{width:18px;height:18px;color:var(--yellow);flex-shrink:0}
+.nav-items{padding:2px 0 6px}
+.nav-sec.closed .nav-items{display:none}
+.nav-empty{font-size:12px;color:var(--text3);padding:4px 12px 8px 34px;line-height:1.5}
+.sh{width:100%;display:flex;align-items:center;gap:6px;min-height:34px;padding:4px 6px 4px 34px;border-radius:17px;font-size:13px;color:var(--text);cursor:pointer;user-select:none}
 .sh:hover{background:#f1f3f4}
 .sh.on{background:var(--blue-light);color:var(--blue);font-weight:500}
-.sh .n{margin-left:auto;font-size:11.5px;color:var(--text3)}
+.sh .t{flex:1;min-width:0;line-height:1.25}
+.sh .n{font-size:11.5px;color:var(--text3);font-weight:400}
 .sh.on .n{color:var(--blue)}
+.nb{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:#fce8e6;color:#c5221f;font-size:11px;font-weight:700;flex-shrink:0}
+.star{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3);opacity:0;flex-shrink:0}
+.star svg{width:15px;height:15px}
+.sh:hover .star{opacity:1}
+.star:hover{background:rgba(60,64,67,.1);color:var(--text)}
+.star.on{color:var(--yellow);opacity:1}
+.fav .star.on{opacity:0}
+.fav .sh:hover .star.on{opacity:1}
+.nav-div{height:1px;background:var(--border2);margin:6px 8px 8px}
+.pill.new{background:#fce8e6;color:#c5221f;margin-left:6px;height:18px;font-size:10.5px;font-weight:700}
 .tmain{flex:1;min-width:0;display:flex;flex-direction:column}
 .tbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)}
 .tbar .ttl{font-family:'Google Sans',sans-serif;font-size:18px;margin-right:6px}
@@ -307,11 +386,12 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v1</span>
+    <span id="verBadge" title="Page version">v2</span>
   </div>
   <nav class="tabs">
-    <button class="tab active" data-view="dash"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span class="tl">Dashboard</span></button>
-    <button class="tab" data-view="table"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/></svg><span class="tl">Filings</span></button>
+    <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
+    <button class="tab" data-view="dash"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span class="tl">Dashboard</span></button>
+    <button class="tab active" data-view="table"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/></svg><span class="tl">Filings</span></button>
     <button class="tab" data-view="comps"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg><span class="tl">Sales Comps</span></button>
     <button class="tab" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg><span class="tl">Weekly Reports</span></button>
   </nav>
@@ -333,7 +413,56 @@ tr.hidden-row td{opacity:.45}
 
 <main>
   <!-- ======================= DASHBOARD ======================= -->
-  <section class="view active" id="vDash"><div class="wrap">
+  <section class="view" id="vMap"><div class="mv">
+    <aside class="mside">
+      <div class="ms-stats" id="mStats"></div>
+      <div class="ms-ctl">
+        <div class="ms-row">
+          <div class="seg" id="mStatus"><button data-v="active" class="on">Active</button><button data-v="closed">Closed</button><button data-v="archived">420+ days</button><button data-v="all">All</button></div>
+          <div class="seg" id="mType"><button data-v="" class="on">All</button><button data-v="w/ Contract">w/</button><button data-v="w/o Contract">w/o</button></div>
+        </div>
+        <div class="ms-row">
+          <span class="fld search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="mq" type="search" placeholder="Address, name, buyer, seller"></span>
+          <select id="mSort" class="fld" style="flex:0 0 auto;padding:0 8px">
+            <option value="date-desc">Newest</option><option value="date-asc">Oldest</option>
+            <option value="days-asc">Fewest days</option><option value="days-desc">Most days</option>
+            <option value="price-desc">Price high-low</option><option value="price-asc">Price low-high</option>
+            <option value="units-desc">Units high-low</option><option value="units-asc">Units low-high</option>
+            <option value="ppu-desc">$/unit high-low</option><option value="ppu-asc">$/unit low-high</option>
+          </select>
+        </div>
+        <div class="ms-row"><span class="ms-more" id="mMore">More filters</span><span class="ml-auto"></span><span class="ms-more" id="mReset">Reset</span></div>
+        <div class="ms-filters" id="mFilters" hidden>
+          <div class="ms-f"><label>Units</label><div class="rr"><input type="number" id="mUmin" placeholder="Min" min="0"><span>-</span><input type="number" id="mUmax" placeholder="Max" min="0"></div></div>
+          <div class="ms-f"><label>Price ($)</label><div class="rr"><input type="number" id="mPmin" placeholder="Min" min="0" step="100000"><span>-</span><input type="number" id="mPmax" placeholder="Max" min="0" step="100000"></div></div>
+          <div class="ms-f"><label>Price / unit ($)</label><div class="rr"><input type="number" id="mPPmin" placeholder="Min" min="0" step="5000"><span>-</span><input type="number" id="mPPmax" placeholder="Max" min="0" step="5000"></div></div>
+          <div class="ms-f"><label>Days in TOPA</label><div class="rr"><input type="number" id="mDmin" placeholder="Min" min="0"><span>-</span><input type="number" id="mDmax" placeholder="Max" min="0"></div></div>
+          <div class="ms-f"><label>TOPA date from</label><input type="date" id="mFrom"></div>
+          <div class="ms-f"><label>TOPA date to</label><input type="date" id="mTo"></div>
+          <div class="ms-f"><label>FOIA</label><select id="mFoia"><option value="">All</option></select></div>
+          <div class="ms-f"><label>Highlight</label><select id="mHl"><option value="">Any</option><option value="*">Highlighted only</option><option>yellow</option><option>green</option><option>blue</option><option>red</option><option>purple</option><option>orange</option></select></div>
+        </div>
+      </div>
+      <div class="ms-count" id="mCount"></div>
+      <div class="ms-list" id="mList"></div>
+    </aside>
+    <div class="mmap">
+      <div id="map"></div>
+      <div class="mtools">
+        <label class="chk on" id="mCompsChk" title="Sale comps not linked to an offer of sale"><input type="checkbox">Sale comps</label>
+        <label class="chk on" id="mDcChk"><input type="checkbox">DC boundary</label>
+      </div>
+      <div class="mlegend">
+        <div class="lt">Legend</div>
+        <div class="lr"><span class="mdot" style="background:#188038"></span>In TOPA (active)</div>
+        <div class="lr"><span class="mdot" style="background:#f29900"></span>Closed - TOPA + sale comp</div>
+        <div class="lr"><span class="mdot" style="background:#9aa0a6"></span>Past 420 days</div>
+        <div class="lr"><span class="mdot" style="background:#9334e6"></span>Sale comp only</div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="view" id="vDash"><div class="wrap">
     <div class="card-h" style="padding:0 2px 12px">
       <div>
         <div class="card-t" style="font-size:22px">5+ unit offers of sale</div>
@@ -368,36 +497,10 @@ tr.hidden-row td{opacity:.45}
       <div class="scroll-x"><table class="cmp" id="cmpTable"></table></div>
     </div>
 
-    <div class="grid g-2e mt">
-      <div class="card">
-        <div class="card-h">
-          <div><div class="card-t">Active TOPA pipeline</div><div class="card-s" id="pipeSub">Offers of sale inside the 420-day window</div></div>
-          <div class="seg ml-auto" id="pipeSort"><button data-s="date" class="on">Newest</button><button data-s="units">Units</button><button data-s="price">Price</button></div>
-        </div>
-        <div class="pipe" id="pipeList"></div>
-      </div>
-      <div class="card">
-        <div class="card-h">
-          <div><div class="card-t">Map</div><div class="card-s">Active pipeline · circle size = units · green = closed per CoStar</div></div>
-        </div>
-        <div id="map"></div>
-      </div>
-    </div>
-
-    <div class="grid g-2e mt">
-      <div class="card">
-        <div class="card-h"><div><div class="card-t">Recently closed</div><div class="card-s" id="closedSub">CoStar comps linked to an offer of sale</div></div></div>
-        <div class="scroll-x" style="max-height:360px;overflow:auto"><table class="list-t" id="closedTable"></table></div>
-      </div>
-      <div class="card">
-        <div class="card-h"><div><div class="card-t">Latest filings, all categories</div><div class="card-s" id="latestSub"></div></div></div>
-        <div class="scroll-x" style="max-height:360px;overflow:auto"><table class="list-t" id="latestTable"></table></div>
-      </div>
-    </div>
   </div></section>
 
   <!-- ======================= TABLE ======================= -->
-  <section class="view" id="vTable"><div class="tv">
+  <section class="view active" id="vTable"><div class="tv">
     <aside class="side" id="sideNav"></aside>
     <div class="tmain">
       <div class="tbar">
@@ -629,7 +732,10 @@ function parseDhcdItems(pages) {
       rec.address = prettyAddr(rec.address);
       rec.dhcdId = rec.dhcdId.join(" ");
       rec.units = parseNum(rec.units.join(" "));
-      rec.price = parseNum(rec.price.join(" "));
+      var rawPrice = rec.price.join(" ");
+      rec.price = parseNum(rawPrice);
+      /* DHCD sometimes mistypes the grouping ("535,5000"): keep the digits but flag it for a human */
+      if (/,/.test(rawPrice) && !/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(rawPrice.trim())) rec.flag = "DHCD printed the price as \"" + rawPrice.trim() + "\" - check it";
       if (rec.address) out.push(rec);
     });
   });
@@ -700,10 +806,11 @@ async function apiPost(path, body) {
 /* ---------------------------------------------------------------- state */
 var S = {
   me: null, manifest: {}, index: {sheets: []}, sheets: {}, overlay: {edits: {}, hl: {}}, comps: [], imports: [],
-  view: "dash", sheet: "ofs5", sort: {key: "date", dir: -1}, page: 0, pageSize: 100,
+  view: "table", sheet: "ofs5", sort: {key: "date", dir: -1}, page: 0, pageSize: 100,
   f: {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false},
   dash: {metric: "count", years: 7, cap: 10000, pipeSort: "date"},
-  comps_f: {q: "", link: ""}, drawer: null
+  comps_f: {q: "", link: ""}, drawer: null,
+  mf: {status: "active", type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", comps: true, dc: true}
 };
 async function loadManifest(fresh) {
   var j = await apiGet("/topa/manifest" + (fresh ? "?fresh=1" : (loadManifest.first ? "" : "?load=1")));
@@ -754,13 +861,16 @@ function cval(slug, row, f) {
   return null;
 }
 function anyVal(slug, row, f) { return COMPUTED[f] ? cval(slug, row, f) : val(slug, row, f); }
+var MILESTONES = [{day: 5, label: "Tenants notified"}, {day: 50, label: "TA formation window"}, {day: 185, label: "TA contract & deposit"},
+  {day: 305, label: "TA securing financing"}, {day: 420, label: "TA financing extension"}];
+var SEG_COLORS = ["#188038", "#34a853", "#f29900", "#fa7b17", "#d93025"];
 function phase(days) {
   if (days == null) return "";
-  if (days <= 45) return "TA formation window";
-  if (days <= 180) return "TA contract & deposit";
-  if (days <= 300) return "TA financing";
-  if (days <= 420) return "Financing extension";
+  for (var i = 0; i < MILESTONES.length; i++) if (days <= MILESTONES[i].day) return MILESTONES[i].label;
   return "Past 420 days";
+}
+function segBar(days) {
+  return '<span class="segbar">' + MILESTONES.map(function (m, i) { return "<i" + (days != null && days >= m.day ? ' style="background:' + SEG_COLORS[i] + '"' : "") + "></i>"; }).join("") + "</span>";
 }
 function prepSheet(sh) {
   sh.colKeys = {}; sh.columns.forEach(function (c) { sh.colKeys[c.key] = c; });
@@ -790,7 +900,7 @@ async function boot() {
   renderAll();
   setInterval(poll, 20000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) poll(); });
-  ensureAll().then(function () { if (S.view === "dash") renderLatest(); });
+  ensureAll().catch(function () {});
 }
 /* live sync: any file whose blob sha moved is re-read and the view redrawn */
 var _polling = false;
@@ -918,6 +1028,7 @@ async function newRowId(slug, row, taken) {
 
 /* ---------------------------------------------------------------- render */
 function renderAll(soft) {
+  if (S.view === "map") renderMapView();
   if (S.view === "dash") renderDash();
   if (S.view === "table") renderTable(soft);
   if (S.view === "comps") renderComps();
@@ -928,20 +1039,21 @@ function setView(v, noHash) {
   S.view = v;
   document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === v); });
   document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
-  $({dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[v]).classList.add("active");
+  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[v]).classList.add("active");
   if (!noHash) writeHash();
   renderAll();
   if (v === "reports") { loadDhcd(); loadActivity(); }
 }
 function writeHash() { var h = "#" + S.view + (S.view === "table" ? "/" + S.sheet : ""); if (location.hash !== h) history.replaceState(null, "", h); }
 function readHash() {
-  var m = /^#(dash|table|comps|reports)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
+  var m = /^#(map|dash|table|comps|reports)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
   if (m) { S.view = m[1]; if (m[2] && sheetMeta(m[2]).title !== m[2]) S.sheet = m[2]; }
   document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === S.view); });
   document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
-  $({dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[S.view]).classList.add("active");
+  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[S.view]).classList.add("active");
   if (S.view === "table") ensureSheet(S.sheet).then(function () { renderTable(); });
   if (S.view === "reports") { loadDhcd(); loadActivity(); }
+  writeHash();
 }
 
 /* ---------- dashboard ---------- */
@@ -995,7 +1107,7 @@ function renderDash() {
   ].map(function (k) { return '<div class="card kpi"><div class="k-l">' + k[0] + '</div><div class="k-v">' + k[1] + '</div><div class="k-d">' + (k[2] || "&nbsp;") + '</div><div class="k-d small" style="margin-top:2px;color:var(--text3)">' + k[3] + "</div></div>"; }).join("");
   var last = S.imports.filter(function (i) { return i.kind !== "excel" && i.week; }).sort(function (a, b) { return String(b.week).localeCompare(String(a.week)) || String(b.at).localeCompare(String(a.at)); })[0];
   $("latestReport").innerHTML = last ? "Latest report: <b>" + esc(last.label) + "</b> · <a href=\"#reports\" onclick=\"setView('reports');return false\">Check DHCD</a>" : "";
-  renderYtdChart(); renderWeekChart(); renderCmp(); renderPipe(); renderClosed(); renderLatest();
+  renderYtdChart(); renderWeekChart(); renderCmp();
 }
 function barChart(el, data, fmt, opts) {
   opts = opts || {};
@@ -1095,84 +1207,218 @@ function renderCmp() {
     row("Median units (annual)", function (y) { return ann[y] ? ann[y].medU : "TBD"; }, I)
   ].join("") + "</tbody>";
 }
-function pipelineRows() {
-  var t = todayISO();
-  return ofsRows().filter(function (r) { var d = val("ofs5", r, "date"); var n = d ? daysBetween(d, t) : null; return n != null && n >= 0 && n <= 420; });
+/* ---------- map tab (modelled on the original TOPA dashboard's map) ---------- */
+var _map = null, _mLayer = null, _cLayer = null, _dcLayer = null, _mk = {}, _mSel = null;
+var STATUS_COLOR = {active: "#188038", closed: "#f29900", archived: "#9aa0a6", comp: "#9334e6"};
+var HL_HEX = {yellow: "#f9ab00", green: "#188038", blue: "#1a73e8", red: "#d93025", purple: "#9334e6", orange: "#fa7b17"};
+function mStatus(r) {
+  if (compsFor("ofs5", r).length) return "closed";
+  var d = val("ofs5", r, "date"), n = d ? daysBetween(d, todayISO()) : null;
+  return n != null && n > 420 ? "archived" : "active";
 }
-function renderPipe() {
-  var rows = pipelineRows(), k = S.dash.pipeSort;
+function mapRows() {
+  var f = S.mf, q = normAddr(f.q), t = todayISO();
+  var num = function (x) { return x === "" || x == null ? null : +x; };
+  var rows = ofsRows().filter(function (r) {
+    if (f.status !== "all" && mStatus(r) !== f.status) return false;
+    if (f.type && String(val("ofs5", r, "type") || "") !== f.type) return false;
+    var d = val("ofs5", r, "date") || "", n = d ? daysBetween(d, t) : null;
+    var u = +val("ofs5", r, "units") || 0, p = +val("ofs5", r, "price") || 0, pp = cval("ofs5", r, "ppu") || 0;
+    if (num(f.umin) != null && u < num(f.umin)) return false; if (num(f.umax) != null && u > num(f.umax)) return false;
+    if (num(f.pmin) != null && p < num(f.pmin)) return false; if (num(f.pmax) != null && p > num(f.pmax)) return false;
+    if (num(f.ppmin) != null && pp < num(f.ppmin)) return false; if (num(f.ppmax) != null && pp > num(f.ppmax)) return false;
+    if (num(f.dmin) != null && (n == null || n < num(f.dmin))) return false; if (num(f.dmax) != null && (n == null || n > num(f.dmax))) return false;
+    if (f.from && d < f.from) return false; if (f.to && (!d || d > f.to)) return false;
+    if (f.foia) { var fo = String(val("ofs5", r, "foia") || ""); if (f.foia === "(none)" ? fo : fo !== f.foia) return false; }
+    if (f.hl) { var h = hlOf("ofs5", r); if (f.hl === "*" ? !h : h !== f.hl) return false; }
+    if (q) {
+      var hay = ["address", "name", "buyer", "seller", "ownerName", "broker", "notes"].map(function (k) { return normAddr(val("ofs5", r, k)); }).join(" | ");
+      if (hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+  var k = f.sort.split("-")[0], dir = f.sort.split("-")[1] === "asc" ? 1 : -1;
   rows.sort(function (a, b) {
-    if (k === "date") return String(val("ofs5", b, "date")).localeCompare(String(val("ofs5", a, "date")));
-    return (+val("ofs5", b, k) || 0) - (+val("ofs5", a, k) || 0);
+    var x, y;
+    if (k === "date") { x = val("ofs5", a, "date") || ""; y = val("ofs5", b, "date") || ""; return x.localeCompare(y) * dir; }
+    if (k === "days") { x = val("ofs5", a, "date") || ""; y = val("ofs5", b, "date") || ""; return y.localeCompare(x) * dir; }
+    x = k === "ppu" ? cval("ofs5", a, "ppu") : +val("ofs5", a, k); y = k === "ppu" ? cval("ofs5", b, "ppu") : +val("ofs5", b, k);
+    x = x || 0; y = y || 0; return (x - y) * dir;
   });
-  var open = rows.filter(function (r) { return !compsFor("ofs5", r).length; });
-  $("pipeSub").textContent = rows.length + " offers inside the 420-day window · " + fmtInt(sum(rows.map(function (r) { return +val("ofs5", r, "units") || 0; }))) + " units · " + (rows.length - open.length) + " already closed per CoStar";
-  $("pipeList").innerHTML = rows.map(function (r) {
-    var d = val("ofs5", r, "date"), n = daysBetween(d, todayISO()), c = compsFor("ofs5", r)[0], hl = hlOf("ofs5", r);
-    var name = val("ofs5", r, "name"), u = val("ofs5", r, "units"), p = val("ofs5", r, "price");
-    return '<div class="pi" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 var(--' + hl + ')"' : "") + '><div><div class="a">' + esc(val("ofs5", r, "address")) + (name ? ' <span class="muted" style="font-weight:400">· ' + esc(name) + "</span>" : "") + '</div><div class="m">' +
-      fmtDate(d) + " · " + esc(val("ofs5", r, "type") || "") + (u ? " · " + fmtInt(u) + " units" : "") + (p ? " · " + fmtShort(p) : "") + (u && p ? " (" + fmtShort(p / u) + "/unit)" : "") + '</div></div><div style="text-align:right">' +
-      (c ? '<span class="pill green">Closed ' + fmtDate(c.date) + "</span>" : '<span class="pill blue">' + phase(n) + "</span>") + '<div class="m" style="margin-top:3px">Day ' + n + ' of 420</div></div><div class="pbar"><i style="width:' + Math.min(100, n / 420 * 100) + "%" + (c ? ";background:var(--green)" : "") + '"></i></div></div>';
-  }).join("") || '<div class="empty">Nothing inside the window.</div>';
-  $("pipeList").querySelectorAll(".pi").forEach(function (el) { el.onclick = function () { openRow("ofs5", el.dataset.id); }; });
-  renderMap(rows);
+  return rows;
 }
-var _map, _layer;
-function renderMap(rows) {
-  if (!window.L) return;
-  if (!_map) {
-    _map = L.map("map", {zoomControl: true, scrollWheelZoom: false}).setView([38.9, -77.02], 11);
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {maxZoom: 16, attribution: "Tiles &copy; Esri"}).addTo(_map);
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {maxZoom: 16}).addTo(_map);
-    _layer = L.layerGroup().addTo(_map);
-  }
-  setTimeout(function () { _map.invalidateSize(); }, 50);
-  _layer.clearLayers();
+function initMap() {
+  if (_map || !window.L) return;
+  _map = L.map("map", {zoomControl: true}).setView([38.9072, -77.0169], 12);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18, attribution: "Tiles &copy; Esri"}).addTo(_map);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18}).addTo(_map);
+  _mLayer = L.layerGroup().addTo(_map); _cLayer = L.layerGroup().addTo(_map);
+  fetch("https://raw.githubusercontent.com/unitedstates/districts/gh-pages/states/DC/shape.geojson").then(function (r) { return r.json(); }).then(function (g) {
+    _dcLayer = L.geoJSON(g, {style: {color: "#3c4043", weight: 2.5, fillOpacity: 0, opacity: .75, dashArray: "6 4"}, interactive: false});
+    if (S.mf.dc) _dcLayer.addTo(_map);
+  }).catch(function () {});
+}
+function dotIcon(color, ring, sel) {
+  var sz = sel ? 20 : 15;
+  return L.divIcon({className: "", iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2], popupAnchor: [0, -sz / 2],
+    html: '<div style="width:' + sz + "px;height:" + sz + "px;border-radius:50%;background:" + color + ";border:2.5px solid " + (ring || "#fff") +
+      ";box-shadow:0 1px 4px rgba(0,0,0,.35)" + (sel ? ",0 0 0 4px rgba(26,115,232,.35)" : "") + ';cursor:pointer"></div>'});
+}
+function popupHtml(r) {
+  var d = val("ofs5", r, "date"), n = d ? daysBetween(d, todayISO()) : null, c = compsFor("ofs5", r)[0], st = mStatus(r);
+  var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
+  var f = function (l, v, w) { return v === "" || v == null ? "" : '<div class="' + (w ? "w" : "") + '"><label>' + l + "</label>" + esc(v) + "</div>"; };
+  var ms = MILESTONES.map(function (m, i) {
+    var prev = i ? MILESTONES[i - 1].day : 0, cls = n == null ? "" : n > m.day ? "past" : n >= prev ? "cur" : "";
+    return '<div class="row ' + cls + '"><i></i><span>' + m.label + "</span><span>Day " + m.day + "</span></div>";
+  }).join("");
+  return '<div style="min-width:270px"><div class="pu-a">' + esc(val("ofs5", r, "address")) + "</div>" + (val("ofs5", r, "name") ? '<div class="pu-n">' + esc(val("ofs5", r, "name")) + "</div>" : "") +
+    '<div style="margin-top:6px"><span class="pill ' + (st === "closed" ? "orange" : st === "active" ? "green" : "gray") + '">' + (st === "closed" ? "Closed " + fmtDate(c.date) : st === "active" ? phase(n) : "Past 420 days") + '</span> <span class="pill gray">' + esc(val("ofs5", r, "type") || "") + "</span></div>" +
+    '<div class="pu-g">' + f("TOPA date", fmtDate(d)) + f("Units", u ? fmtInt(u) : "") + f("Price", p ? fmtMoney(p) : "") + f("Price / unit", pp ? fmtMoney(pp) : "") +
+    f("Buyer", val("ofs5", r, "buyer"), 1) + f("Seller / owner", val("ofs5", r, "seller"), 1) + f("FOIA", val("ofs5", r, "foia")) + f("Broker", val("ofs5", r, "broker")) +
+    (c ? f("Sold (CoStar)", fmtDate(c.date) + (c.price ? " · " + fmtMoney(c.price) : "")) + f("Days to close", daysBetween(d, c.date)) : "") + "</div>" +
+    '<div class="pu-ms"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' + segBar(c ? daysBetween(d, c.date) : n) + '<span class="small muted">' + (n == null ? "" : "Day " + n + (n <= 420 && !c ? " · " + (420 - n) + " days left" : "")) + "</span></div>" + ms + "</div>" +
+    '<div class="pu-f"><a href="#" onclick="openRow(\'ofs5\',\'' + r.id + '\');return false">Open details</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/' + encodeURIComponent((val("ofs5", r, "address") || "") + ", Washington, DC") + '">Google Maps &#8599;</a></div></div>';
+}
+function compPopup(c) {
+  return '<div style="min-width:240px"><div class="pu-a">' + esc(c.address) + "</div>" + (c.name ? '<div class="pu-n">' + esc(c.name) + "</div>" : "") +
+    '<div style="margin-top:6px"><span class="pill purple">Sale comp only</span></div><div class="pu-g">' +
+    '<div><label>Sold</label>' + fmtDate(c.date) + '</div><div><label>Price</label>' + fmtMoney(c.price) + "</div>" + (c.units ? "<div><label>Units</label>" + fmtInt(c.units) + "</div><div><label>$ / unit</label>" + (c.price ? fmtMoney(c.price / c.units) : "") + "</div>" : "") +
+    (c.buyer ? '<div class="w"><label>Buyer</label>' + esc(c.buyer) + "</div>" : "") + (c.seller ? '<div class="w"><label>Seller</label>' + esc(c.seller) + "</div>" : "") + "</div>" +
+    '<div class="pu-f"><a href="#" onclick="openComp(\'' + c.id + '\');return false">Open comp</a></div></div>';
+}
+function renderMapView() {
+  if (!S.sheets.ofs5) return;
+  initMap(); setTimeout(function () { if (_map) _map.invalidateSize(); }, 30);
+  var rows = mapRows(), units = 0, vol = 0, pu = 0, uu = 0, mapped = 0;
+  rows.forEach(function (r) { var u = +val("ofs5", r, "units") || 0, p = +val("ofs5", r, "price") || 0; units += u; vol += p; if (u && p) { pu += p; uu += u; } if (r.geo) mapped++; });
+  $("mStats").innerHTML = [[fmtInt(rows.length), "Offers"], [fmtInt(units), "Units"], [fmtShort(vol), "Volume"], [uu ? fmtShort(pu / uu) : "-", "Avg $ / unit"]].map(function (x) { return '<div class="ms-stat"><div class="v">' + x[0] + '</div><div class="l">' + x[1] + "</div></div>"; }).join("");
+  $("mCount").innerHTML = "<span>" + fmtInt(rows.length) + " properties</span>" + (rows.length - mapped ? '<span class="muted" title="These addresses could not be geocoded">· ' + (rows.length - mapped) + " not on map</span>" : "");
+  var foias = {}; ofsRows().forEach(function (r) { var v = val("ofs5", r, "foia"); if (v) foias[v] = (foias[v] || 0) + 1; });
+  var fsel = $("mFoia"), cur = S.mf.foia;
+  fsel.innerHTML = '<option value="">All</option>' + Object.keys(foias).sort(function (a, b) { return foias[b] - foias[a]; }).map(function (v) { return "<option" + (v === cur ? " selected" : "") + ">" + esc(v) + "</option>"; }).join("") + '<option value="(none)"' + (cur === "(none)" ? " selected" : "") + ">None</option>";
+  var t = todayISO();
+  $("mList").innerHTML = rows.map(function (r) {
+    var d = val("ofs5", r, "date"), n = d ? daysBetween(d, t) : null, c = compsFor("ofs5", r)[0], st = mStatus(r), hl = hlOf("ofs5", r);
+    var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
+    return '<div class="mc' + (r.id === _mSel ? " sel" : "") + '" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 ' + HL_HEX[hl] + '"' : "") + '>' +
+      '<div class="r1"><span class="mdot" style="background:' + STATUS_COLOR[st] + ';margin-top:3px"></span><div class="ad">' + esc(val("ofs5", r, "address")) + (val("ofs5", r, "name") ? '<div class="nm">' + esc(val("ofs5", r, "name")) + "</div>" : "") + '</div><div class="pr">' + (p ? fmtShort(p) : "") + "</div></div>" +
+      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + "</div>" +
+      '<div class="r3">' + segBar(c ? daysBetween(d, c.date) : n) + "<span>" + (c ? "Closed " + fmtDate(c.date) + " · " + daysBetween(d, c.date) + " days" : n == null ? "" : "<b>" + n + "</b> days · " + (n > 420 ? "past 420" : phase(n))) + '</span><a class="det" href="#" data-open="' + r.id + '">Details</a></div></div>';
+  }).join("") || '<div class="empty">No offers match these filters.</div>';
+  _mLayer.clearLayers(); _mk = {};
   rows.forEach(function (r) {
-    var g = r.geo; if (!g) return;
-    var u = +val("ofs5", r, "units") || 5, c = compsFor("ofs5", r)[0];
-    var m = L.circleMarker(g, {radius: Math.max(4, Math.min(16, Math.sqrt(u) * 1.1)), color: "#fff", weight: 1.5, fillColor: c ? "#188038" : "#1a73e8", fillOpacity: .8});
-    m.bindTooltip("<b>" + esc(val("ofs5", r, "address")) + "</b><br>" + fmtDate(val("ofs5", r, "date")) + " · " + fmtInt(u) + " units" + (val("ofs5", r, "price") ? " · " + fmtShort(val("ofs5", r, "price")) : ""));
-    m.on("click", function () { openRow("ofs5", r.id); });
-    m.addTo(_layer);
+    if (!r.geo) return;
+    var hl = hlOf("ofs5", r), m = L.marker(r.geo, {icon: dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, r.id === _mSel), riseOnHover: true, zIndexOffset: r.id === _mSel ? 1000 : 0});
+    m.bindPopup(function () { return popupHtml(r); }, {maxWidth: 340, autoPanPadding: [40, 40]});
+    m.bindTooltip(esc(val("ofs5", r, "address")), {direction: "top", offset: [0, -8]});
+    m.on("click", function () { selectMapRow(r.id, true); });
+    m.addTo(_mLayer); _mk[r.id] = m;
+  });
+  _cLayer.clearLayers();
+  if (S.mf.comps) S.comps.forEach(function (c) {
+    if (c.link || !c.geo) return;
+    if (S.mf.q && normAddr(c.address).indexOf(normAddr(S.mf.q)) < 0) return;
+    L.marker(c.geo, {icon: dotIcon(STATUS_COLOR.comp)}).bindPopup(function () { return compPopup(c); }, {maxWidth: 320}).bindTooltip(esc(c.address), {direction: "top", offset: [0, -8]}).addTo(_cLayer);
+  });
+  $("mList").querySelectorAll(".mc").forEach(function (el) {
+    el.onclick = function (e) { if (e.target.closest("[data-open]")) { e.preventDefault(); openRow("ofs5", el.dataset.id); return; } selectMapRow(el.dataset.id, false); };
   });
 }
-function renderClosed() {
-  var rows = [];
-  (S.sheets.ofs5 ? S.sheets.ofs5.rows : []).forEach(function (r) {
-    compsFor("ofs5", r).forEach(function (c) { rows.push({r: r, c: c, uc: daysBetween(val("ofs5", r, "date"), c.date)}); });
+function selectMapRow(id, fromMarker) {
+  var prev = _mSel; _mSel = id;
+  [prev, id].forEach(function (x) {
+    var r = x && findRow("ofs5", x), m = x && _mk[x];
+    if (r && m) { var hl = hlOf("ofs5", r); m.setIcon(dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, x === id)); m.setZIndexOffset(x === id ? 1000 : 0); }
   });
-  rows.sort(function (a, b) { return String(b.c.date || "").localeCompare(String(a.c.date || "")); });
-  var ucs = rows.map(function (x) { return x.uc; }).filter(function (x) { return x != null && x >= 0; });
-  $("closedSub").textContent = rows.length + " closings linked · median " + (median(ucs) == null ? "-" : Math.round(median(ucs))) + " days from TOPA filing to sale";
-  $("closedTable").innerHTML = "<thead><tr><th>Address</th><th>TOPA date</th><th>Sold</th><th style=text-align:right>Price</th><th style=text-align:right>Days</th><th>Buyer</th></tr></thead><tbody>" +
-    rows.slice(0, 60).map(function (x) { return '<tr data-id="' + x.r.id + '" style="cursor:pointer"><td>' + esc(val("ofs5", x.r, "address")) + "</td><td>" + fmtDate(val("ofs5", x.r, "date")) + "</td><td>" + fmtDate(x.c.date) + '</td><td style="text-align:right">' + fmtShort(x.c.price) + '</td><td style="text-align:right">' + (x.uc == null ? "" : x.uc) + "</td><td>" + esc(x.c.buyer || "") + "</td></tr>"; }).join("") + "</tbody>";
-  $("closedTable").querySelectorAll("tr[data-id]").forEach(function (tr) { tr.onclick = function () { openRow("ofs5", tr.dataset.id); }; });
+  document.querySelectorAll("#mList .mc").forEach(function (el) { el.classList.toggle("sel", el.dataset.id === id); });
+  var card = document.querySelector('#mList .mc[data-id="' + id + '"]');
+  if (fromMarker) { if (card) card.scrollIntoView({block: "nearest", behavior: "smooth"}); return; }
+  var r = findRow("ofs5", id);
+  if (!r.geo) { toast("No map location for this address"); return; }
+  _map.once("moveend", function () { if (_mk[id]) _mk[id].openPopup(); });
+  _map.flyTo(r.geo, 15, {duration: .8});
 }
-function renderLatest() {
-  var all = [];
-  Object.keys(S.sheets).forEach(function (slug) { S.sheets[slug].rows.forEach(function (r) { var d = val(slug, r, "date"); if (d && d <= todayISO()) all.push({slug: slug, r: r, d: d}); }); });
-  all.sort(function (a, b) { return b.d.localeCompare(a.d); });
-  var top = all.slice(0, 80);
-  var loaded = Object.keys(S.sheets).length, total = S.index.sheets.length;
-  $("latestSub").textContent = loaded < total ? "Loading every tab..." : "Newest 80 filings across all " + total + " tabs";
-  $("latestTable").innerHTML = "<thead><tr><th>Date</th><th>Address</th><th>Tab</th><th>Detail</th></tr></thead><tbody>" + top.map(function (x) {
-    var det = [val(x.slug, x.r, "type"), val(x.slug, x.r, "units") ? fmtInt(val(x.slug, x.r, "units")) + (x.slug === "not" ? "" : " units") : "", val(x.slug, x.r, "price") ? fmtShort(val(x.slug, x.r, "price")) : ""].filter(Boolean).join(" · ");
-    return '<tr data-s="' + x.slug + '" data-id="' + x.r.id + '" style="cursor:pointer"><td>' + fmtDate(x.d) + "</td><td>" + esc(val(x.slug, x.r, "address")) + '</td><td><span class="pill gray">' + esc(sheetMeta(x.slug).title) + "</span></td><td>" + esc(det) + "</td></tr>";
-  }).join("") + "</tbody>";
-  $("latestTable").querySelectorAll("tr[data-id]").forEach(function (tr) { tr.onclick = function () { openRow(tr.dataset.s, tr.dataset.id); }; });
+function wireMap() {
+  function seg(id, key) {
+    $(id).querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.mf[key] = b.dataset.v; $(id).querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderMapView(); }; });
+  }
+  seg("mStatus", "status"); seg("mType", "type");
+  var qt; $("mq").addEventListener("input", function () { clearTimeout(qt); qt = setTimeout(function () { S.mf.q = $("mq").value; renderMapView(); }, 160); });
+  [["mSort", "sort"], ["mUmin", "umin"], ["mUmax", "umax"], ["mPmin", "pmin"], ["mPmax", "pmax"], ["mPPmin", "ppmin"], ["mPPmax", "ppmax"], ["mDmin", "dmin"], ["mDmax", "dmax"], ["mFrom", "from"], ["mTo", "to"], ["mFoia", "foia"], ["mHl", "hl"]].forEach(function (p) {
+    $(p[0]).addEventListener("change", function () { S.mf[p[1]] = this.value; renderMapView(); });
+  });
+  $("mMore").onclick = function () { var h = $("mFilters").hidden = !$("mFilters").hidden; this.textContent = h ? "More filters" : "Fewer filters"; };
+  $("mReset").onclick = function () {
+    Object.assign(S.mf, {status: "active", type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: ""});
+    ["mq", "mUmin", "mUmax", "mPmin", "mPmax", "mPPmin", "mPPmax", "mDmin", "mDmax", "mFrom", "mTo"].forEach(function (id) { $(id).value = ""; });
+    $("mSort").value = "date-desc"; $("mHl").value = "";
+    ["mStatus", "mType"].forEach(function (id) { $(id).querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === 0); }); });
+    renderMapView(); if (_map) _map.setView([38.9072, -77.0169], 12);
+  };
+  $("mCompsChk").onclick = function (e) { e.preventDefault(); S.mf.comps = !S.mf.comps; this.classList.toggle("on", S.mf.comps); renderMapView(); };
+  $("mDcChk").onclick = function (e) { e.preventDefault(); S.mf.dc = !S.mf.dc; this.classList.toggle("on", S.mf.dc); if (_dcLayer) { if (S.mf.dc) _dcLayer.addTo(_map); else _map.removeLayer(_dcLayer); } };
 }
 
-/* ---------- table ---------- */
+/* Favorites are per person but follow them across computers: stored as an overlay
+   edit under "fav/<mailbox>", field "sheets" = comma list of tab slugs. */
+var DEFAULT_FAVS = ["ofs5", "not", "loi", "torg", "tassoc"];
+function favKey() { return "fav/" + String((S.me && S.me.email) || "me").split("@")[0].toLowerCase().replace(/[^a-z0-9_-]/g, "-").slice(0, 40); }
+function favs() {
+  var e = S.overlay.edits[favKey()], v = e && e.sheets && e.sheets.v;
+  var known = {}; S.index.sheets.forEach(function (m) { known[m.slug] = 1; });
+  return (v != null ? String(v).split(",") : DEFAULT_FAVS).filter(function (x) { return known[x]; });
+}
+function toggleFav(slug) {
+  var f = favs(), i = f.indexOf(slug);
+  if (i > -1) f.splice(i, 1); else f.push(slug);
+  sendOps([{t: "set", k: favKey(), f: "sheets", v: f.join(",") || ","}], i > -1 ? "Removed from favorites" : "Added to favorites");
+}
+/* The newest weekly report's additions, per tab. Badges stay until a newer week is imported. */
+var _lw = {src: null};
+function latestWeek() {
+  if (_lw.src === S.imports) return _lw;
+  var reps = S.imports.filter(function (i) { return (i.kind === "dhcd" || i.kind === "upload") && i.week; });
+  var wk = reps.reduce(function (m, i) { return i.week > m ? i.week : m; }, "");
+  var added = {}, labels = {}, label = "";
+  reps.filter(function (i) { return i.week === wk; }).forEach(function (i) {
+    labels[i.label] = 1; if (!label || i.kind === "dhcd") label = i.label;
+    Object.keys(i.added || {}).forEach(function (k) { added[k] = (added[k] || 0) + i.added[k]; });
+  });
+  _lw = {src: S.imports, week: wk, added: added, labels: labels, label: label};
+  return _lw;
+}
+function isNewRow(r) { var s = String(r.src || ""); return s.indexOf("dhcd:") === 0 && !!latestWeek().labels[s.slice(5)]; }
+var STAR = {on: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
+  off: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>'};
+var CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+function navState() { try { return JSON.parse(localStorage.getItem("topa_nav") || "{}"); } catch (e) { return {}; } }
 function renderSide() {
-  var groups = {};
-  S.index.sheets.forEach(function (m) { (groups[m.group] = groups[m.group] || []).push(m); });
-  $("sideNav").innerHTML = ["Sale & Transfer", "Single Family", "Tenants", "Conversion", "Other"].filter(function (g) { return groups[g]; }).map(function (g) {
-    return "<h4>" + esc(g) + "</h4>" + groups[g].map(function (m) {
-      return '<button class="sh' + (m.slug === S.sheet && !S.f.all ? " on" : "") + '" data-s="' + m.slug + '"><span>' + esc(m.title) + '</span><span class="n">' + fmtInt(m.count) + "</span></button>";
-    }).join("");
+  var lw = latestWeek(), fav = favs(), favSet = {}, st = navState();
+  fav.forEach(function (x) { favSet[x] = 1; });
+  function badge(n) { return n ? '<span class="nb" title="' + n + " new in the " + esc(lw.label) + ' report">' + n + "</span>" : ""; }
+  function item(m) {
+    return '<div class="sh' + (m.slug === S.sheet && !S.f.all && S.view === "table" ? " on" : "") + '" data-s="' + m.slug + '" role="button" tabindex="0"><span class="t">' + esc(m.title) + "</span>" + badge(lw.added[m.slug] || 0) +
+      '<span class="n">' + fmtInt(m.count) + '</span><button class="star' + (favSet[m.slug] ? " on" : "") + '" data-fav="' + m.slug + '" title="' + (favSet[m.slug] ? "Remove from favorites" : "Add to favorites") + '">' + (favSet[m.slug] ? STAR.on : STAR.off) + "</button></div>";
+  }
+  var bySlug = {}, groups = {};
+  S.index.sheets.forEach(function (m) { bySlug[m.slug] = m; (groups[m.group] = groups[m.group] || []).push(m); });
+  var html = '<div class="nav-sec fav"><div class="nav-h"><span class="star-ic">' + STAR.on + "</span>Favorites</div><div class=\"nav-items\">" +
+    (fav.length ? fav.map(function (s) { return item(bySlug[s]); }).join("") : '<div class="nav-empty">Click the star on any tab to pin it here.</div>') + '</div></div><div class="nav-div"></div>';
+  html += ["Sale & Transfer", "Single Family", "Tenants", "Conversion", "Other"].filter(function (g) { return groups[g]; }).map(function (g) {
+    var open = st[g] != null ? st[g] : groups[g].some(function (m) { return m.slug === S.sheet && !favSet[m.slug]; });
+    var newSum = groups[g].reduce(function (a, m) { return a + (lw.added[m.slug] || 0); }, 0);
+    return '<div class="nav-sec' + (open ? "" : " closed") + '"><button class="nav-h" data-g="' + esc(g) + '">' + CHEV + "<span>" + esc(g) + "</span>" + (open ? "" : badge(newSum)) +
+      '<span class="gc">' + groups[g].length + "</span></button><div class=\"nav-items\">" + groups[g].map(item).join("") + "</div></div>";
   }).join("");
-  $("sideNav").querySelectorAll(".sh").forEach(function (b) { b.onclick = function () { selectSheet(b.dataset.s); }; });
+  $("sideNav").innerHTML = html;
+  $("sideNav").querySelectorAll(".sh").forEach(function (el) {
+    el.onclick = function (e) { if (e.target.closest(".star")) { e.stopPropagation(); toggleFav(el.dataset.s); return; } selectSheet(el.dataset.s); };
+    el.onkeydown = function (e) { if (e.key === "Enter") selectSheet(el.dataset.s); };
+  });
+  $("sideNav").querySelectorAll("button.nav-h").forEach(function (b) {
+    b.onclick = function () { var s2 = navState(), sec = b.parentNode, open = sec.classList.contains("closed"); s2[b.dataset.g] = open; try { localStorage.setItem("topa_nav", JSON.stringify(s2)); } catch (e) {} renderSide(); };
+  });
 }
 function selectSheet(slug) {
   S.sheet = slug; S.page = 0; S.f.all = false; $("allSheetsChk").classList.remove("on");
@@ -1230,6 +1476,7 @@ function cellHtml(slug, r, c) {
   else txt = esc(v);
   if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
   if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
+  if (c.key === "date" && isNewRow(r)) txt += ' <span class="pill new" title="New in the ' + esc(latestWeek().label) + ' report">NEW</span>';
   var cls = (t === "int" || t === "money" ? "num " : "") + (c.computed ? "" : "ed ") + (e ? "edited" : "");
   var title = e ? ' title="' + esc("Edited by " + who(e.by) + " " + ago(e.at) + (r[c.key] != null && r[c.key] !== "" ? " · was: " + r[c.key] : " · was blank")) + '"' : (String(v || "").length > 40 ? ' title="' + esc(v) + '"' : "");
   return '<td class="' + cls + '" data-f="' + c.key + '"' + title + ">" + txt + "</td>";
@@ -1581,7 +1828,9 @@ function previewComps(comps, hdr, map, fname) {
   $("mGo").onclick = async function () {
     var pick = Array.prototype.slice.call(document.querySelectorAll("#mbox input[data-i]:checked")).map(function (x) { return comps[+x.dataset.i]; });
     if (!pick.length) { closeModal(); return; }
-    $("mGo").disabled = true; $("mGo").textContent = "Saving...";
+    $("mGo").disabled = true; $("mGo").textContent = "Locating...";
+    await geocodeRows(pick.filter(function (c) { return !c._link; }).map(function (c) { return {address: c.address, set geo(g) { c._geo = g; }}; }));
+    $("mGo").textContent = "Saving...";
     try {
       await commitFiles(["comps.json"], function (o) {
         var list = o["comps.json"].comps, at = new Date().toISOString(), seen = {};
@@ -1592,6 +1841,7 @@ function previewComps(comps, hdr, map, fname) {
           var x = {}; Object.keys(c).forEach(function (f) { if (f[0] !== "_") x[f] = c[f]; });
           x.id = "c" + Date.now().toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 5);
           if (c._link) x.link = c._link; x.src = "costar"; x.addedBy = S.me.email; x.addedAt = at; x.file = fname;
+          if (c._geo) x.geo = c._geo;
           list.push(x); n++;
         });
         return "CoStar comps from " + fname + " (" + n + " added)";
@@ -1681,7 +1931,7 @@ async function previewImport(batches) {
       var g = groups[s], nn = g.filter(function (x) { return !x.r._dup; }).length;
       return '<tr class="grp"><td colspan="7">' + esc(sheetMeta(s).title) + ' <span class="muted" style="font-weight:400">· ' + nn + " new of " + g.length + "</span></td></tr>" + g.map(function (x) {
         var r = x.r;
-        return '<tr class="' + (r._dup ? "dup" : "") + '"><td><input type="checkbox" data-b="' + x.b + '" data-i="' + x.i + '"' + (r._dup ? "" : " checked") + "></td><td>" + fmtDate(r.date) + "</td><td>" + esc(r.address) + (r._dup ? ' <span class="pill gray">already tracked</span>' : "") + (r.remark ? '<div class="small" style="color:var(--orange)">' + esc(r.remark) + "</div>" : "") + "</td><td class=\"small muted\">" + esc(r.category) + "</td><td>" + fmtInt(r.units) + "</td><td>" + fmtShort(r.price) + "</td><td class=\"small muted\">" + esc(r.dhcdId) + "</td></tr>";
+        return '<tr class="' + (r._dup ? "dup" : "") + '"><td><input type="checkbox" data-b="' + x.b + '" data-i="' + x.i + '"' + (r._dup ? "" : " checked") + "></td><td>" + fmtDate(r.date) + "</td><td>" + esc(r.address) + (r._dup ? ' <span class="pill gray">already tracked</span>' : "") + (r.remark ? '<div class="small" style="color:var(--orange)">' + esc(r.remark) + "</div>" : "") + (r.flag ? '<div class="small" style="color:var(--red)">' + esc(r.flag) + "</div>" : "") + "</td><td class=\"small muted\">" + esc(r.category) + "</td><td>" + fmtInt(r.units) + "</td><td>" + fmtShort(r.price) + "</td><td class=\"small muted\">" + esc(r.dhcdId) + "</td></tr>";
       }).join("");
     }).join("") + "</tbody></table></div>" +
     '<div class="mf"><span class="small muted">New 5+ offers of sale are geocoded for the map. The import is logged with your name.</span><span class="ml-auto"></span><button class="btn sm" onclick="closeModal()">Cancel</button><button class="btn sm primary" id="mGo">Add ' + nNew + " rows</button></div>";
@@ -1738,6 +1988,7 @@ async function saveImport(batches, pick) {
           ["units", "price"].forEach(function (f) { if (r[f] != null) { if (cols[f] === "int" || cols[f] === "money") row[f] = r[f]; else row.notes = ((row.notes || "") + " " + f.charAt(0).toUpperCase() + f.slice(1) + ": " + fmtInt(r[f])).trim(); } });
           Object.assign(row, r._extra);
           if (r.remark) row.notes = ((row.notes ? row.notes + "; " : "") + "DHCD: " + r.remark);
+          if (r.flag) row.notes = ((row.notes ? row.notes + "; " : "") + r.flag);
           row.src = "dhcd:" + b.label; row.addedBy = S.me.email;
           var id = await newRowId(s, row, taken[s]);
           var full = Object.assign({id: id}, row);
@@ -1780,7 +2031,7 @@ async function openPdf(path) {
 async function loadActivity() {
   try {
     var j = await apiGet("/topa/history");
-    $("actTable").innerHTML = "<thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>" + j.commits.slice(0, 80).map(function (c) {
+    $("actTable").innerHTML = "<thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>" + j.commits.filter(function (c) { return c.msg.indexOf("[fav/") < 0; }).slice(0, 80).map(function (c) {
       var m = c.msg.replace(/^TOPA (edit|import): /, "");
       m = m.replace(/\[([a-z0-9]+)\/([A-Za-z0-9_-]+)( [A-Za-z]+)?\]/, function (_, s, id, f) { var r = findRow(s, id); return "· " + (r ? val(s, r, "address") : sheetMeta(s).title) + (f ? " (" + f.trim() + ")" : ""); });
       return '<tr><td class="small">' + ago(c.date) + "</td><td>" + esc(c.by ? who(c.by) : "setup") + "</td><td>" + esc(m) + "</td></tr>";
@@ -1832,7 +2083,6 @@ function wire() {
   $("pNext").onclick = function () { S.page++; renderTable(); $("tScroll").scrollTop = 0; };
   $("ytdMetric").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.metric = b.dataset.m; $("ytdMetric").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderYtdChart(); }; });
   $("cmpYears").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.years = +b.dataset.n; $("cmpYears").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderCmp(); }; });
-  $("pipeSort").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.dash.pipeSort = b.dataset.s; $("pipeSort").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderPipe(); }; });
   $("unitCap").addEventListener("change", function () { S.dash.cap = +this.value || 10000; renderDash(); });
   var cq; $("cq").addEventListener("input", function () { clearTimeout(cq); cq = setTimeout(function () { S.comps_f.q = $("cq").value; renderComps(); }, 160); });
   $("cLink").querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.comps_f.link = b.dataset.l; $("cLink").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderComps(); }; });
@@ -1856,7 +2106,8 @@ function wire() {
     importDhcd(miss);
   };
   $("actRefresh").onclick = loadActivity;
-  window.addEventListener("resize", function () { clearTimeout(wire._r); wire._r = setTimeout(function () { if (S.view === "dash") { renderYtdChart(); renderWeekChart(); } }, 150); });
+  wireMap();
+  window.addEventListener("resize", function () { clearTimeout(wire._r); wire._r = setTimeout(function () { if (S.view === "dash") { renderYtdChart(); renderWeekChart(); } if (_map) _map.invalidateSize(); }, 150); });
 }
 
 /* ---------------------------------------------------------------- sign-in */
