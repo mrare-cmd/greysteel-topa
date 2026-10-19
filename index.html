@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.18.3/dist/leaflet-geoman.css">
+<script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.18.3/dist/leaflet-geoman.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
@@ -198,6 +200,15 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .mlegend .lr{display:flex;align-items:center;gap:8px;margin:3px 0;color:var(--text)}
 .mdot{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.18);flex-shrink:0;display:inline-block}
 .mtools{position:absolute;top:12px;right:12px;z-index:500;display:flex;gap:6px}
+.mdraw{position:absolute;top:10px;left:54px;z-index:500;display:flex;align-items:center;background:var(--white);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.mdraw button{height:34px;padding:0 12px;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text);border-right:1px solid var(--border2)}
+.mdraw button:last-child{border-right:none}
+.mdraw button:hover{background:#f1f3f4}
+.mdraw button.on{background:var(--blue-light);color:var(--blue);font-weight:500}
+.mdraw button svg{width:15px;height:15px}
+.marea{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--blue-light);border-bottom:1px solid #c6dafc;font-size:12.5px;color:var(--blue)}
+.marea input{width:64px;height:26px;border:1px solid #c6dafc;border-radius:6px;padding:0 6px;font-size:12.5px;outline:none}
+.marea a{margin-left:auto;cursor:pointer}
 .mtools .chk{box-shadow:var(--shadow)}
 .leaflet-popup-content-wrapper{border-radius:12px;box-shadow:var(--shadow-lg)}
 .leaflet-popup-content{margin:14px 16px;font-family:'Roboto',sans-serif;font-size:12.5px;color:var(--text);line-height:1.4}
@@ -386,7 +397,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v5</span>
+    <span id="verBadge" title="Page version">v7</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -445,11 +456,18 @@ tr.hidden-row td{opacity:.45}
           <div class="ms-f"><label>Highlight</label><select id="mHl"><option value="">Any</option><option value="*">Highlighted only</option><option>yellow</option><option>green</option><option>blue</option><option>red</option><option>purple</option><option>orange</option></select></div>
         </div>
       </div>
+      <div class="marea" id="mArea" hidden></div>
       <div class="ms-count" id="mCount"></div>
       <div class="ms-list" id="mList"></div>
     </aside>
     <div class="mmap">
       <div id="map"></div>
+      <div class="mdraw" id="mDraw">
+        <button data-d="Circle" title="Click a center, then drag out a radius"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>Radius</button>
+        <button data-d="Polygon" title="Click points around an area; click the first point to finish"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="4 7 11 3 20 8 17 20 6 17"/></svg>Boundary</button>
+        <button data-d="Rectangle" title="Drag a box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>Rectangle</button>
+        <button data-d="clear" title="Remove every drawn area" hidden>Clear</button>
+      </div>
       <div class="mtools">
         <label class="chk on" id="mCompsChk" title="Sale comps not linked to an offer of sale"><input type="checkbox">Sale comps</label>
         <label class="chk on" id="mDcChk"><input type="checkbox">DC boundary</label>
@@ -847,6 +865,9 @@ function val(slug, row, f) {
 }
 function isHidden(slug, row) { var v = val(slug, row, "hidden"); return v === "1" || v === 1 || v === true; }
 function hlOf(slug, row) { var h = S.overlay.hl[rk(slug, row)]; return h && h.c; }
+/* what the row shows: a colour someone picked, else yellow while it came in with the newest weekly report.
+   The auto-yellow is never stored, so it moves to the next report's rows by itself. */
+function hlShown(slug, row) { return hlOf(slug, row) || (isNewRow(row) ? "yellow" : null); }
 
 /* computed columns */
 var COMPUTED = {ppu: 1, status: 1, days: 1, saleDate: 1, uc: 1, sheetTitle: 1};
@@ -1223,6 +1244,7 @@ function mapRows() {
   var f = S.mf, q = normAddr(f.q), t = todayISO();
   var num = function (x) { return x === "" || x == null ? null : +x; };
   var rows = ofsRows().filter(function (r) {
+    if (_shapes.length && !inShapes(r.geo)) return false;
     var stt = mStatus(r);
     if (stt === "undated" ? !mAllStatuses() : !f.status[stt]) return false;
     if (f.type && String(val("ofs5", r, "type") || "") !== f.type) return false;
@@ -1234,7 +1256,7 @@ function mapRows() {
     if (num(f.dmin) != null && (n == null || n < num(f.dmin))) return false; if (num(f.dmax) != null && (n == null || n > num(f.dmax))) return false;
     if (f.from && d < f.from) return false; if (f.to && (!d || d > f.to)) return false;
     if (f.foia) { var fo = String(val("ofs5", r, "foia") || ""); if (f.foia === "(none)" ? fo : fo !== f.foia) return false; }
-    if (f.hl) { var h = hlOf("ofs5", r); if (f.hl === "*" ? !h : h !== f.hl) return false; }
+    if (f.hl) { var h = hlShown("ofs5", r); if (f.hl === "*" ? !h : h !== f.hl) return false; }
     if (q) {
       var hay = ["address", "name", "buyer", "seller", "ownerName", "broker", "notes"].map(function (k) { return normAddr(val("ofs5", r, k)); }).join(" | ");
       if (hay.indexOf(q) < 0) return false;
@@ -1257,6 +1279,7 @@ function initMap() {
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18, attribution: "Tiles &copy; Esri"}).addTo(_map);
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18}).addTo(_map);
   _mLayer = L.layerGroup().addTo(_map); _cLayer = L.layerGroup().addTo(_map);
+  initDraw();
   fetch("https://raw.githubusercontent.com/unitedstates/districts/gh-pages/states/DC/shape.geojson").then(function (r) { return r.json(); }).then(function (g) {
     _dcLayer = L.geoJSON(g, {style: {color: "#3c4043", weight: 2.5, fillOpacity: 0, opacity: .75, dashArray: "6 4"}, interactive: false});
     if (S.mf.dc) _dcLayer.addTo(_map);
@@ -1297,13 +1320,14 @@ function renderMapView() {
   var rows = mapRows(), units = 0, vol = 0, pu = 0, uu = 0, mapped = 0;
   rows.forEach(function (r) { var u = +val("ofs5", r, "units") || 0, p = +val("ofs5", r, "price") || 0; units += u; vol += p; if (u && p) { pu += p; uu += u; } if (r.geo) mapped++; });
   $("mStats").innerHTML = [[fmtInt(rows.length), "Offers"], [fmtInt(units), "Units"], [fmtShort(vol), "Volume"], [uu ? fmtShort(pu / uu) : "-", "Avg $ / unit"]].map(function (x) { return '<div class="ms-stat"><div class="v">' + x[0] + '</div><div class="l">' + x[1] + "</div></div>"; }).join("");
-  $("mCount").innerHTML = "<span>" + fmtInt(rows.length) + " properties</span>" + (rows.length - mapped ? '<span class="muted" title="These addresses could not be geocoded">· ' + (rows.length - mapped) + " not on map</span>" : "");
+  renderArea();
+  $("mCount").innerHTML = "<span>" + fmtInt(rows.length) + " properties" + (_shapes.length ? " in the drawn area" : "") + "</span>" + (rows.length - mapped ? '<span class="muted" title="These addresses could not be geocoded">· ' + (rows.length - mapped) + " not on map</span>" : "");
   var foias = {}; ofsRows().forEach(function (r) { var v = val("ofs5", r, "foia"); if (v) foias[v] = (foias[v] || 0) + 1; });
   var fsel = $("mFoia"), cur = S.mf.foia;
   fsel.innerHTML = '<option value="">All</option>' + Object.keys(foias).sort(function (a, b) { return foias[b] - foias[a]; }).map(function (v) { return "<option" + (v === cur ? " selected" : "") + ">" + esc(v) + "</option>"; }).join("") + '<option value="(none)"' + (cur === "(none)" ? " selected" : "") + ">None</option>";
   var t = todayISO();
   $("mList").innerHTML = rows.map(function (r) {
-    var d = val("ofs5", r, "date"), n = d ? daysBetween(d, t) : null, c = compsFor("ofs5", r)[0], st = mStatus(r), hl = hlOf("ofs5", r);
+    var d = val("ofs5", r, "date"), n = d ? daysBetween(d, t) : null, c = compsFor("ofs5", r)[0], st = mStatus(r), hl = hlShown("ofs5", r);
     var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
     return '<div class="mc' + (r.id === _mSel ? " sel" : "") + '" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 ' + HL_HEX[hl] + '"' : "") + '>' +
       '<div class="r1"><span class="mdot" style="background:' + STATUS_COLOR[st] + ';margin-top:3px"></span><div class="ad">' + esc(val("ofs5", r, "address")) + (val("ofs5", r, "name") ? '<div class="nm">' + esc(val("ofs5", r, "name")) + "</div>" : "") + '</div><div class="pr">' + (p ? fmtShort(p) : "") + "</div></div>" +
@@ -1313,7 +1337,7 @@ function renderMapView() {
   _mLayer.clearLayers(); _mk = {};
   rows.forEach(function (r) {
     if (!r.geo) return;
-    var hl = hlOf("ofs5", r), m = L.marker(r.geo, {icon: dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, r.id === _mSel), riseOnHover: true, zIndexOffset: r.id === _mSel ? 1000 : 0});
+    var hl = hlShown("ofs5", r), m = L.marker(r.geo, {icon: dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, r.id === _mSel), riseOnHover: true, zIndexOffset: r.id === _mSel ? 1000 : 0});
     m.bindPopup(function () { return popupHtml(r); }, {maxWidth: 340, autoPanPadding: [40, 40]});
     m.bindTooltip(esc(val("ofs5", r, "address")), {direction: "top", offset: [0, -8]});
     m.on("click", function () { selectMapRow(r.id, true); });
@@ -1322,7 +1346,7 @@ function renderMapView() {
   _cLayer.clearLayers();
   /* comps with no offer of sale are closings, so they belong with Closed, never with Active alone */
   if (S.mf.comps && S.mf.status.closed) S.comps.forEach(function (c) {
-    if (c.link || !c.geo) return;
+    if (c.link || !c.geo || (_shapes.length && !inShapes(c.geo))) return;
     if (S.mf.q && normAddr(c.address).indexOf(normAddr(S.mf.q)) < 0) return;
     L.marker(c.geo, {icon: dotIcon(STATUS_COLOR.comp)}).bindPopup(function () { return compPopup(c); }, {maxWidth: 320}).bindTooltip(esc(c.address), {direction: "top", offset: [0, -8]}).addTo(_cLayer);
   });
@@ -1334,7 +1358,7 @@ function selectMapRow(id, fromMarker) {
   var prev = _mSel; _mSel = id;
   [prev, id].forEach(function (x) {
     var r = x && findRow("ofs5", x), m = x && _mk[x];
-    if (r && m) { var hl = hlOf("ofs5", r); m.setIcon(dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, x === id)); m.setZIndexOffset(x === id ? 1000 : 0); }
+    if (r && m) { var hl = hlShown("ofs5", r); m.setIcon(dotIcon(STATUS_COLOR[mStatus(r)], hl ? HL_HEX[hl] : null, x === id)); m.setZIndexOffset(x === id ? 1000 : 0); }
   });
   document.querySelectorAll("#mList .mc").forEach(function (el) { el.classList.toggle("sel", el.dataset.id === id); });
   var card = document.querySelector('#mList .mc[data-id="' + id + '"]');
@@ -1344,12 +1368,83 @@ function selectMapRow(id, fromMarker) {
   _map.once("moveend", function () { if (_mk[id]) _mk[id].openPopup(); });
   _map.flyTo(r.geo, 15, {duration: .8});
 }
+/* ---- CoStar-style area filters: radius, freehand boundary, rectangle (Leaflet-Geoman) ----
+   Several shapes can be drawn; a property counts if it falls inside any of them.
+   Shapes stay editable: drag the vertices, the center or the radius handle. */
+var _shapes = [], MI = 1609.344;
+function pip(ll, ring) {
+  var x = ll.lng, y = ll.lat, inside = false;
+  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    var xi = ring[i].lng, yi = ring[i].lat, xj = ring[j].lng, yj = ring[j].lat;
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+function inShapes(geo) {
+  if (!_shapes.length) return true;
+  if (!geo) return false;
+  var ll = L.latLng(geo[0], geo[1]);
+  return _shapes.some(function (l) {
+    if (l instanceof L.Circle) return _map.distance(l.getLatLng(), ll) <= l.getRadius();
+    var r = l.getLatLngs();
+    while (Array.isArray(r[0])) r = r[0];
+    return pip(ll, r);
+  });
+}
+function shapeLabel(l) {
+  if (l instanceof L.Circle) return (l.getRadius() / MI).toFixed(2) + " mi radius";
+  return l instanceof L.Rectangle ? "rectangle" : "boundary";
+}
+function renderArea() {
+  var el = $("mArea"), clr = document.querySelector('#mDraw [data-d="clear"]');
+  if (clr) clr.hidden = !_shapes.length;
+  if (!_shapes.length) { el.hidden = true; el.innerHTML = ""; return; }
+  if (document.activeElement && document.activeElement.id === "mRad") return;   /* don't rebuild under the cursor */
+  el.hidden = false;
+  var circles = _shapes.filter(function (l) { return l instanceof L.Circle; });
+  el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg><span>Area: ' +
+    _shapes.map(shapeLabel).join(" + ") + "</span>" +
+    (circles.length === 1 ? '<span>· radius (mi)</span><input type="number" id="mRad" min="0.05" step="0.05" value="' + (circles[0].getRadius() / MI).toFixed(2) + '">' : "") +
+    '<a id="mAreaClr">Clear</a>';
+  var rad = $("mRad");
+  if (rad) rad.onchange = function () { var v = +rad.value; if (v > 0) { circles[0].setRadius(v * MI); rad.blur(); renderMapView(); } };
+  $("mAreaClr").onclick = clearShapes;
+}
+function clearShapes() { _shapes.forEach(function (l) { _map.removeLayer(l); }); _shapes = []; renderMapView(); }
+function setDrawBtn(mode) { document.querySelectorAll("#mDraw button[data-d]").forEach(function (b) { b.classList.toggle("on", b.dataset.d === mode); }); }
+function initDraw() {
+  if (!_map || !_map.pm || initDraw.done) return;
+  initDraw.done = true;
+  var style = {color: "#1a73e8", weight: 2, fillColor: "#1a73e8", fillOpacity: .06};
+  _map.pm.setGlobalOptions({pathOptions: style, templineStyle: {color: "#1a73e8"}, hintlineStyle: {color: "#1a73e8", dashArray: [5, 5]}, snappable: false});
+  _map.on("pm:create", function (e) {
+    var l = e.layer;
+    if (l.setStyle) l.setStyle(style);
+    _shapes.push(l);
+    l.pm.enable({allowSelfIntersection: false});
+    l.on("pm:edit pm:update pm:dragend pm:markerdragend", function () { renderMapView(); });
+    l.bindTooltip(function () { return shapeLabel(l); }, {sticky: true});
+    setDrawBtn(null); renderMapView();
+  });
+  _map.on("pm:drawend", function () { setDrawBtn(null); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && _map.pm.globalDrawModeEnabled()) { _map.pm.disableDraw(); setDrawBtn(null); } });
+}
 function mAllStatuses() { var st = S.mf.status; return !!(st.active && st.closed && st.archived); }
 function paintStatus() {
   var all = mAllStatuses();
   $("mStatus").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", b.dataset.v === "all" ? all : !all && !!S.mf.status[b.dataset.v]); });
 }
 function wireMap() {
+  document.querySelectorAll("#mDraw button[data-d]").forEach(function (b) {
+    b.onclick = function () {
+      initMap(); initDraw();
+      if (!_map.pm) { toast("Drawing tools did not load - refresh the page", true); return; }
+      var d = b.dataset.d;
+      if (d === "clear") { _map.pm.disableDraw(); setDrawBtn(null); clearShapes(); return; }
+      if (b.classList.contains("on")) { _map.pm.disableDraw(); setDrawBtn(null); return; }
+      _map.pm.disableDraw(); _map.pm.enableDraw(d); setDrawBtn(d);
+    };
+  });
   function seg(id, key) {
     $(id).querySelectorAll("button").forEach(function (b) { b.onclick = function () { S.mf[key] = b.dataset.v; $(id).querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); renderMapView(); }; });
   }
@@ -1375,6 +1470,7 @@ function wireMap() {
     ["mq", "mUmin", "mUmax", "mPmin", "mPmax", "mPPmin", "mPPmax", "mDmin", "mDmax", "mFrom", "mTo"].forEach(function (id) { $(id).value = ""; });
     $("mSort").value = "date-desc"; $("mHl").value = "";
     $("mType").querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === 0); }); paintStatus();
+    _shapes.forEach(function (l) { _map.removeLayer(l); }); _shapes = [];
     renderMapView(); if (_map) _map.setView([38.9072, -77.0169], 12);
   };
   $("mCompsChk").onclick = function (e) { e.preventDefault(); S.mf.comps = !S.mf.comps; this.classList.toggle("on", S.mf.comps); renderMapView(); };
@@ -1468,7 +1564,7 @@ function currentRows() {
         if (f.units && !((+val(slug, r, "units") || 0) >= +f.units)) return;
         if (f.status && cval(slug, r, "status") !== f.status) return;
       }
-      if (f.hl && !hlOf(slug, r)) return;
+      if (f.hl && !hlShown(slug, r)) return;
       if (f.ed && !S.overlay.edits[rk(slug, r)]) return;
       if (terms.length) {
         var hay = cols.map(function (c) { var v = anyVal(slug, r, c.key); return v == null ? "" : String(v); }).join(" ").toLowerCase() + " " + normAddr(val(slug, r, "address"));
@@ -1524,7 +1620,7 @@ function renderTable(soft) {
     return '<th data-k="' + c.key + '" class="' + (on ? "sorted " : "") + (c.type === "int" || c.type === "money" ? "num" : "") + '">' + esc(c.label) + (on ? '<span class="ar">' + (S.sort.dir > 0 ? "&#9650;" : "&#9660;") + "</span>" : "") + "</th>";
   }).join("") + '<th style="width:34px"></th></tr></thead>';
   var body = "<tbody>" + slice.map(function (x) {
-    var hl = hlOf(x.slug, x.r);
+    var hl = hlShown(x.slug, x.r);
     return '<tr data-s="' + x.slug + '" data-id="' + x.r.id + '" class="' + (hl ? "hl-" + hl : "") + (isHidden(x.slug, x.r) ? " hidden-row" : "") + '"><td class="hlc" title="Highlight row">' + (hl ? '<span class="sw ' + hl + '"></span>' : '<span class="hdot"></span>') + "</td>" +
       cols.map(function (c) { return cellHtml(x.slug, x.r, c); }).join("") + '<td class="opn" title="Open details"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></td></tr>';
   }).join("") + "</tbody>";
@@ -1595,7 +1691,7 @@ document.addEventListener("click", function (e) { if (!e.target.closest("#hlPop"
 function exportCsv() {
   var rows = currentRows(), cols = S.f.all ? ALLCOLS : S.sheets[S.sheet].columns;
   var lines = [["Highlight"].concat(cols.map(function (c) { return c.label; }))].concat(rows.map(function (x) {
-    return [hlOf(x.slug, x.r) || ""].concat(cols.map(function (c) { var v = anyVal(x.slug, x.r, c.key); return v == null ? "" : v; }));
+    return [hlShown(x.slug, x.r) || ""].concat(cols.map(function (c) { var v = anyVal(x.slug, x.r, c.key); return v == null ? "" : v; }));
   }));
   var csv = lines.map(function (l) { return l.map(function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(","); }).join("\r\n");
   var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], {type: "text/csv"}));
