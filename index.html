@@ -236,7 +236,15 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 /* ---------- table view ---------- */
 #vTable{overflow:hidden}
 .tv{position:absolute;inset:0;display:flex}
-.side{width:248px;flex-shrink:0;border-right:1px solid var(--border);background:var(--white);overflow:auto;padding:10px 8px 24px}
+.tv{--sidew:248px}
+.side{width:var(--sidew);flex-shrink:0;border-right:1px solid var(--border);background:var(--white);overflow:auto;overflow-x:hidden;padding:10px 8px 24px;margin-left:0;opacity:1;
+  transition:margin-left .32s cubic-bezier(.2,.7,.3,1),opacity .24s ease,border-color .32s ease}
+.tv.side-off .side{margin-left:calc(-1 * var(--sidew));opacity:0;pointer-events:none;border-right-color:transparent}
+.tv.no-anim .side{transition:none}
+.sidetog{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:var(--text2);flex-shrink:0;margin-left:-6px}
+.sidetog:hover{background:#f1f3f4;color:var(--text)}
+.sidetog svg{width:20px;height:20px;transition:transform .32s cubic-bezier(.2,.7,.3,1)}
+.tv.side-off .sidetog svg{transform:scaleX(-1)}
 .side{padding:8px 8px 24px}
 .nav-sec{margin-bottom:2px}
 .nav-h{width:100%;display:flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 8px;border-radius:18px;font-family:'Google Sans',sans-serif;font-size:13.5px;font-weight:500;color:var(--text);text-align:left}
@@ -399,7 +407,7 @@ tr.hidden-row td{opacity:.45}
 .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 #boot{position:fixed;inset:var(--header) 0 0 0;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text2);z-index:150;background:var(--bg)}
-@media (max-width:1100px){.g-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.g-2,.g-2e{grid-template-columns:1fr}.gsearch{display:none}.side{width:200px}}
+@media (max-width:1100px){.g-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}.g-2,.g-2e{grid-template-columns:1fr}.gsearch{display:none}.tv{--sidew:200px}}
 @media (max-width:760px){nav.tabs .tl{display:none}.brand-name,.brand-sep,#syncDot span{display:none}.side{display:none}.wrap{padding:16px}}
 </style>
 </head>
@@ -423,7 +431,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v15</span>
+    <span id="verBadge" title="Page version">v16</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -480,6 +488,7 @@ tr.hidden-row td{opacity:.45}
           <div class="ms-f"><label>TOPA date from</label><input type="date" id="mFrom"></div>
           <div class="ms-f"><label>TOPA date to</label><input type="date" id="mTo"></div>
           <div class="ms-f"><label>FOIA</label><select id="mFoia"><option value="">All</option></select></div>
+          <div class="ms-f"><label>Redevelopment</label><select id="mRedev"><option value="">Any</option><option value="1">With a signal</option></select></div>
           <div class="ms-f"><label>Highlight</label><select id="mHl"><option value="">Any</option><option value="*">Highlighted only</option><option>yellow</option><option>green</option><option>blue</option><option>red</option><option>purple</option><option>orange</option></select></div>
         </div>
       </div>
@@ -497,6 +506,7 @@ tr.hidden-row td{opacity:.45}
       </div>
       <div class="mtools">
         <label class="chk on" id="mCompsChk" title="Sale comps not linked to an offer of sale"><input type="checkbox">Sale comps</label>
+        <label class="chk" id="mRedevChk" title="Condo registrations, not-a-housing and vacancy exemptions, raze permits since 2023"><input type="checkbox">Redevelopment</label>
         <label class="chk on" id="mDcChk"><input type="checkbox">DC boundary</label>
       </div>
       <div class="mlegend">
@@ -506,6 +516,7 @@ tr.hidden-row td{opacity:.45}
         <div class="lr"><span class="mdot" style="background:#9aa0a6"></span>Past 420 days</div>
         <div class="lr"><span class="mdot" style="background:#9334e6"></span>Sale comp only</div>
         <div class="lr"><span class="mdot g" style="background:#188038">G</span>Greysteel deal (FOIA or broker)</div>
+        <div class="lr" id="lgRedev" hidden><span style="width:10px;height:10px;background:#e8710a;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.2);display:inline-block;transform:rotate(45deg)"></span>Redevelopment filing</div>
       </div>
     </div>
   </div></section>
@@ -552,6 +563,7 @@ tr.hidden-row td{opacity:.45}
     <aside class="side" id="sideNav"></aside>
     <div class="tmain">
       <div class="tbar">
+        <button class="sidetog" id="sideTog" title="Hide tabs" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><polyline points="15 10 13 12 15 14"/></svg></button>
         <span class="ttl" id="tTitle">5+ Offer of Sale</span>
         <span class="fld search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="tq" type="search" placeholder="Search this tab"></span>
         <label class="chk" id="allSheetsChk" title="Search across every tab"><input type="checkbox">All tabs</label>
@@ -930,7 +942,7 @@ var S = {
   f: {q: "", from: "", to: "", type: "", units: "", status: "", hl: false, ed: false, hid: false, all: false},
   dash: {metric: "count", years: 7, cap: {min: null, max: null}, pipeSort: "date"},
   comps_f: {q: "", link: ""}, drawer: null,
-  mf: {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", comps: true, dc: true}
+  mf: {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", redev: "", redevLayer: false, comps: true, dc: true}
 };
 async function loadManifest(fresh) {
   var j = await apiGet("/topa/manifest" + (fresh ? "?fresh=1" : (loadManifest.first ? "" : "?load=1")));
@@ -1034,7 +1046,7 @@ async function boot() {
   renderAll();
   setInterval(poll, 20000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden) poll(); });
-  ensureAll().catch(function () {});
+  ensureAll().then(function () { if (!document.querySelector("td.editing")) renderAll(true); }).catch(function () {});
 }
 /* live sync: any file whose blob sha moved is re-read and the view redrawn */
 var _polling = false;
@@ -1357,6 +1369,7 @@ function renderCmp() {
   ].join("") + "</tbody>";
 }
 /* ---------- map tab (modelled on the original TOPA dashboard's map) ---------- */
+var _rLayer = null;
 var _map = null, _mLayer = null, _cLayer = null, _dcLayer = null, _mk = {}, _mSel = null;
 var STATUS_COLOR = {active: "#188038", closed: "#f29900", archived: "#9aa0a6", undated: "#9aa0a6", comp: "#9334e6"};
 var HL_HEX = {yellow: "#f9ab00", green: "#188038", blue: "#1a73e8", red: "#d93025", purple: "#9334e6", orange: "#fa7b17", gray: "#9aa0a6"};
@@ -1382,6 +1395,7 @@ function mapRows() {
     if (num(f.dmin) != null && (n == null || n < num(f.dmin))) return false; if (num(f.dmax) != null && (n == null || n > num(f.dmax))) return false;
     if (f.from && d < f.from) return false; if (f.to && (!d || d > f.to)) return false;
     if (f.foia) { var fo = String(val("ofs5", r, "foia") || ""); if (f.foia === "(none)" ? fo : fo !== f.foia) return false; }
+    if (f.redev && !redevSignals(r).length) return false;
     if (f.hl) { var h = hlShown("ofs5", r); if (f.hl === "*" ? !h : h !== f.hl) return false; }
     if (q) {
       var hay = ["address", "name", "buyer", "seller", "ownerName", "broker", "notes"].map(function (k) { return normAddr(val("ofs5", r, k)); }).join(" | ");
@@ -1404,7 +1418,7 @@ function initMap() {
   _map = L.map("map", {zoomControl: true}).setView([38.9072, -77.0169], 12);
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18, attribution: "Tiles &copy; Esri"}).addTo(_map);
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18}).addTo(_map);
-  _mLayer = L.layerGroup().addTo(_map); _cLayer = L.layerGroup().addTo(_map);
+  _mLayer = L.layerGroup().addTo(_map); _cLayer = L.layerGroup().addTo(_map); _rLayer = L.layerGroup().addTo(_map);
   initDraw();
   fetch("https://raw.githubusercontent.com/unitedstates/districts/gh-pages/states/DC/shape.geojson").then(function (r) { return r.json(); }).then(function (g) {
     _dcLayer = L.geoJSON(g, {style: {color: "#3c4043", weight: 2.5, fillOpacity: 0, opacity: .75, dashArray: "6 4"}, interactive: false});
@@ -1459,7 +1473,7 @@ function renderMapView() {
   rows.forEach(function (r) { var u = +val("ofs5", r, "units") || 0, p = +val("ofs5", r, "price") || 0; units += u; vol += p; if (u && p) { pu += p; uu += u; } if (r.geo) mapped++; });
   $("mStats").innerHTML = [[fmtInt(rows.length), "Offers"], [fmtInt(units), "Units"], [fmtShort(vol), "Volume"], [uu ? fmtShort(pu / uu) : "-", "Avg $ / unit"]].map(function (x) { return '<div class="ms-stat"><div class="v">' + x[0] + '</div><div class="l">' + x[1] + "</div></div>"; }).join("");
   renderArea();
-  var mf = S.mf, mOn = !!(_shapes.length || mf.type || mf.q || mf.umin || mf.umax || mf.pmin || mf.pmax || mf.ppmin || mf.ppmax || mf.dmin || mf.dmax || mf.from || mf.to || mf.foia || mf.hl ||
+  var mf = S.mf, mOn = !!(_shapes.length || mf.type || mf.q || mf.umin || mf.umax || mf.pmin || mf.pmax || mf.ppmin || mf.ppmax || mf.dmin || mf.dmax || mf.from || mf.to || mf.foia || mf.hl || mf.redev ||
     Object.keys(mf.status).join() !== "active");
   $("mReset").classList.toggle("on", mOn); $("mReset").title = mOn ? "Clear every map filter and drawn area" : "Nothing to clear";
   $("mCount").innerHTML = "<span>" + fmtInt(rows.length) + " properties" + (_shapes.length ? " in the drawn area" : "") + "</span>" + (rows.length - mapped ? '<span class="muted" title="These addresses could not be geocoded">· ' + (rows.length - mapped) + " not on map</span>" : "");
@@ -1472,7 +1486,7 @@ function renderMapView() {
     var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
     return '<div class="mc' + (r.id === _mSel ? " sel" : "") + '" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 ' + HL_HEX[hl] + '"' : "") + '>' +
       '<div class="r1"><span class="mdot" style="background:' + STATUS_COLOR[st] + ';margin-top:3px"></span><div class="ad">' + esc(val("ofs5", r, "address")) + (val("ofs5", r, "name") ? '<div class="nm">' + esc(val("ofs5", r, "name")) + "</div>" : "") + '</div><div class="pr">' + (p ? fmtShort(p) : "") + "</div></div>" +
-      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + (isGs(r) ? '<span class="pill gsp">Greysteel</span>' : "") + tenantPill(r) + "</div>" +
+      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + (isGs(r) ? '<span class="pill gsp">Greysteel</span>' : "") + tenantPill(r) + redevPill(r) + "</div>" +
       '<div class="r3">' + segBar(c ? daysBetween(d, c.date) : n) + "<span>" + (c ? "Closed " + fmtDate(c.date) + " · " + daysBetween(d, c.date) + " days" : n == null ? "" : "<b>" + n + "</b> days · " + (n > 420 ? "past 420" : phase(n))) + '</span><a class="det" href="#" data-open="' + r.id + '">Details</a></div></div>';
   }).join("") || '<div class="empty">No offers match these filters.</div>';
   _mLayer.clearLayers(); _mk = {};
@@ -1484,6 +1498,20 @@ function renderMapView() {
     m.on("click", function () { selectMapRow(r.id, true); });
     m.addTo(_mLayer); _mk[r.id] = m;
   });
+  _rLayer.clearLayers();
+  $("lgRedev").hidden = !S.mf.redevLayer;
+  if (S.mf.redevLayer) {
+    var since = new Date(Date.now() - 3 * 365 * DAY).toISOString().slice(0, 10);
+    Object.keys(REDEV).forEach(function (sl) {
+      (S.sheets[sl] ? S.sheets[sl].rows : []).forEach(function (x) {
+        var xd = val(sl, x, "date"); if (!x.geo || !xd || xd < since || isHidden(sl, x)) return;
+        if (_shapes.length && !inShapes(x.geo)) return;
+        var ic = L.divIcon({className: "", iconSize: [11, 11], iconAnchor: [5.5, 5.5], popupAnchor: [0, -6], html: '<div style="width:11px;height:11px;background:#e8710a;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25);transform:rotate(45deg);cursor:pointer"></div>'});
+        L.marker(x.geo, {icon: ic, zIndexOffset: -200}).bindTooltip(esc(REDEV[sl] + " · " + fmtDate(xd)) + "<br>" + esc(val(sl, x, "address")), {direction: "top", offset: [0, -6]})
+          .on("click", function () { openRow(sl, x.id); }).addTo(_rLayer);
+      });
+    });
+  }
   _cLayer.clearLayers();
   /* comps with no offer of sale are closings, so they belong with Closed, never with Active alone */
   if (S.mf.comps && S.mf.status.closed) S.comps.forEach(function (c) {
@@ -1608,7 +1636,8 @@ function wireMap() {
   $("mMore").onclick = function () { var h = $("mFilters").hidden = !$("mFilters").hidden; this.textContent = h ? "More filters" : "Fewer filters"; };
   $("mReset").onclick = function () {
     if (!this.classList.contains("on")) return;
-    Object.assign(S.mf, {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: ""});
+    Object.assign(S.mf, {status: {active: 1}, type: "", q: "", sort: "date-desc", umin: "", umax: "", pmin: "", pmax: "", ppmin: "", ppmax: "", dmin: "", dmax: "", from: "", to: "", foia: "", hl: "", redev: ""});
+    $("mRedev").value = "";
     ["mq", "mUmin", "mUmax", "mPmin", "mPmax", "mPPmin", "mPPmax", "mDmin", "mDmax", "mFrom", "mTo"].forEach(function (id) { $(id).value = ""; });
     $("mSort").value = "date-desc"; $("mHl").value = "";
     $("mType").querySelectorAll("button").forEach(function (b, i) { b.classList.toggle("on", i === 0); }); paintStatus();
@@ -1616,6 +1645,8 @@ function wireMap() {
     renderMapView(); if (_map) _map.setView([38.9072, -77.0169], 12);
   };
   $("mCompsChk").onclick = function (e) { e.preventDefault(); S.mf.comps = !S.mf.comps; this.classList.toggle("on", S.mf.comps); renderMapView(); };
+  $("mRedev").addEventListener("change", function () { S.mf.redev = this.value; renderMapView(); });
+  $("mRedevChk").onclick = function (e) { e.preventDefault(); S.mf.redevLayer = !S.mf.redevLayer; this.classList.toggle("on", S.mf.redevLayer); if (S.mf.redevLayer) ensureAll().then(renderMapView); else renderMapView(); };
   $("mDcChk").onclick = function (e) { e.preventDefault(); S.mf.dc = !S.mf.dc; this.classList.toggle("on", S.mf.dc); if (_dcLayer) { if (S.mf.dc) _dcLayer.addTo(_map); else _map.removeLayer(_dcLayer); } };
 }
 
@@ -1740,7 +1771,7 @@ function cellHtml(slug, r, c) {
   if (sh0 && sh0.colKeys && sh0.colKeys[c.key + "Url"]) txt += '<button class="lnk' + (url ? " has" : "") + '" data-lnk="' + c.key + '" title="' + (url ? "Change or remove the link" : "Add a link (paste a Box or other URL)") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>';
   if (c.key === "foia" && slug === "ofs5" && needsFoia(r)) txt += '<button class="cpy" data-cpy="' + r.id + '" title="Copy the FOIA request text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy request</button>';
   if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
-  if (c.key === "address" && slug === "ofs5") txt += tenantPill(r);
+  if (c.key === "address" && slug === "ofs5") txt += tenantPill(r) + redevPill(r);
   if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
   if (c.key === "date" && isNewRow(r)) txt += ' <span class="pill new" title="New in the ' + esc(latestWeek().label) + ' report">NEW</span>';
   var cls = (t === "int" || t === "money" ? "num " : "") + (c.computed ? "" : "ed ") + (e ? "edited" : "");
@@ -1902,6 +1933,7 @@ function renderDrawer() {
       '<div class="row"><span>Status</span><b>' + (c ? "Closed per CoStar" : n == null ? "-" : n > 420 ? "Past the 420-day window" : "In TOPA - " + phase(n)) + "</b></div>" +
       '<div class="row"><span>Days since filing</span><span>' + (n == null ? "-" : n) + "</span></div>" +
       (tenantsFormed(r) ? '<div class="row"><span>Tenants formed</span><b>' + fmtDate(tenantsFormed(r)) + "</b></div>" : "") +
+      redevSignals(r).map(function (x) { return '<div class="row"><span>' + REDEV[x.slug] + '</span><a href="#" onclick="openRow(\'' + x.slug + "','" + x.r.id + '\');return false">' + fmtDate(x.d) + "</a></div>"; }).join("") +
       (c ? '<div class="row"><span>Sold</span><span>' + fmtDate(c.date) + (c.price ? " · " + fmtMoney(c.price) : "") + '</span></div><div class="row"><span>Days under contract (TOPA date to sale)</span><b>' + daysBetween(d, c.date) + "</b></div>" : "") +
       '<div class="pbar" style="margin-top:8px"><i style="width:' + Math.min(100, (c ? daysBetween(d, c.date) : n || 0) / 420 * 100) + "%" + (c ? ";background:var(--green)" : "") + '"></i></div></div>';
     h += '<div class="dr-sec">CoStar sale comps</div>' + (cs.length ? cs.map(function (c) {
@@ -2302,7 +2334,7 @@ async function saveImport(batches, pick) {
           var id = await newRowId(s, row, taken[s]);
           var full = Object.assign({id: id}, row);
           sh.rows.unshift(full);
-          if (s === "ofs5" || s === "not" || s === "dopa") toGeo.push(full);
+          if (["ofs5", "not", "dopa", "condo", "nha", "vac", "raze"].indexOf(s) > -1) toGeo.push(full);
           added[s] = (added[s] || 0) + 1; total++;
         }
         var ds = b.recs.map(function (x) { return x.date; }).sort();
@@ -2521,6 +2553,161 @@ function wireReview() {
   $("rvIgnSel").onclick = function () { var k = rvPicked(); if (k.length && confirm("Ignore " + k.length + " filing" + (k.length > 1 ? "s" : "") + "?")) rvDecide(k, "ignore"); };
 }
 
+/* ---------- redevelopment signals ----------
+   Condo registrations, not-a-housing exemptions, vacancy exemptions and raze permits on the same
+   building (same street, overlapping house numbers) from a year before to two years after an offer of sale. */
+var REDEV = {condo: "Condo registration", nha: "Not-a-housing exemption", vac: "Vacancy exemption", raze: "Raze permit"};
+var REDEV_SHORT = {condo: "Condo reg.", nha: "NHA exemption", vac: "Vacancy exemption", raze: "Raze permit"};
+var _rdx = {v: null, idx: {}};
+function redevIndex() {
+  var v = Object.keys(REDEV).map(function (s) { return S.sheets[s] ? S.sheets[s]._v : "-"; }).join("|");
+  if (_rdx.v === v) return _rdx.idx;
+  var idx = {};
+  Object.keys(REDEV).forEach(function (s) {
+    (S.sheets[s] ? S.sheets[s].rows : []).forEach(function (r) {
+      var a = val(s, r, "address"), d = val(s, r, "date"); if (!a || !d || isHidden(s, r)) return;
+      var p = addrParts(a); if (!p.street) return;
+      (idx[p.street] = idx[p.street] || []).push({slug: s, r: r, d: d, nums: houseNums(a)});
+    });
+  });
+  _rdx = {v: v, idx: idx};
+  return idx;
+}
+function redevSignals(r) {
+  var d = val("ofs5", r, "date"), a = val("ofs5", r, "address"); if (!d || !a) return [];
+  var list = redevIndex()[addrParts(a).street]; if (!list) return [];
+  var nums = houseNums(a);
+  return list.filter(function (t) { var g = daysBetween(d, t.d); return g != null && g >= -365 && g <= 730 && numsOverlap(nums, t.nums); })
+    .sort(function (x, y) { return x.d.localeCompare(y.d); });
+}
+function redevPill(r) {
+  var s = redevSignals(r); if (!s.length) return "";
+  var first = s[0];
+  return ' <span class="pill orange" title="' + esc(s.map(function (x) { return REDEV[x.slug] + " " + fmtDate(x.d); }).join(" · ")) + '">' + REDEV_SHORT[first.slug] + " " + fmtDate(first.d) + (s.length > 1 ? " +" + (s.length - 1) : "") + "</span>";
+}
+
+/* ---------- Filings sidebar: slide it away to give the table the full width ---------- */
+function setSide(off, instant) {
+  var tv = document.querySelector("#vTable .tv"); if (!tv) return;
+  if (instant) tv.classList.add("no-anim");
+  tv.classList.toggle("side-off", off);
+  $("sideTog").title = off ? "Show tabs" : "Hide tabs";
+  $("sideTog").setAttribute("aria-expanded", String(!off));
+  try { localStorage.setItem("topa_side_off", off ? "1" : ""); } catch (e) {}
+  if (instant) setTimeout(function () { tv.classList.remove("no-anim"); }, 50);
+}
+
+/* ---------- admin panel behind the konami code (Up Up Down Down Left Right Left Right B A Enter) ----------
+   Same pattern as GreyHub: the keys only open the panel; the Worker's ADMIN_EMAILS decides what it shows. */
+var KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "KeyB", "KeyA", "Enter"], _kb = [];
+document.addEventListener("keydown", function (e) {
+  var t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
+  _kb.push(e.code === "NumpadEnter" ? "Enter" : e.code);
+  if (_kb.length > KONAMI.length) _kb = _kb.slice(-KONAMI.length);
+  if (_kb.length === KONAMI.length && _kb.every(function (c, i) { return c === KONAMI[i]; })) { _kb = []; openAdmin(); }
+});
+function openAdmin() {
+  if (!S.me) return;
+  openModal('<div class="mh"><div><div class="t">TOPA admin</div><div class="s">Signed in as ' + esc(S.me.email) + '</div></div><button class="dr-x" style="position:static;margin-left:auto" onclick="closeModal()">&times;</button></div>' +
+    '<div class="mb"><div class="card" style="padding:16px 18px;margin-bottom:14px"><div class="card-t">Full master list</div>' +
+    '<div class="card-s" style="margin:4px 0 12px">Every tab as one Excel workbook in the master list\'s layout, with everyone\'s edits applied, FOIA and owner links kept as hyperlinks, a Highlight column, the Offer of Sale comparison and the sales comps.</div>' +
+    '<label class="chk" id="admHid" style="margin-right:8px"><input type="checkbox">Include hidden rows</label><button class="btn sm primary" id="admXlsx" disabled>Checking access&hellip;</button><span class="small muted" id="admMsg" style="margin-left:10px"></span></div>' +
+    '<div class="card" style="padding:16px 18px"><div class="card-t">Usage, last 90 days</div><div id="admUse" class="small muted" style="margin-top:8px">Loading&hellip;</div></div></div>', true);
+  $("admHid").onclick = function (e) { e.preventDefault(); this.classList.toggle("on"); };
+  fetch(API + "/usage?days=90&prefix=topa:", {headers: authH(), cache: "no-store"}).then(function (r) {
+    if (r.status === 403) { $("admUse").textContent = "This panel is for TOPA admins."; $("admXlsx").textContent = "Admins only"; return null; }
+    return r.json();
+  }).then(function (j) {
+    if (!j) return;
+    var devApi = API !== "https://hap-update.mrareshide.workers.dev";   /* local preview has no usage log */
+    if (!j.ok && !devApi) { $("admUse").textContent = j.error || "Could not check access."; $("admXlsx").textContent = "Unavailable"; return; }
+    $("admXlsx").disabled = false; $("admXlsx").textContent = "Download master list (.xlsx)";
+    $("admXlsx").onclick = function () { downloadMasterList($("admHid").classList.contains("on")); };
+    if (!j.ok || !j.rows || !j.rows.length) { $("admUse").textContent = (j && j.error) || "No TOPA activity logged yet."; return; }
+    var A = function (r, k) { var n = 0; Object.keys(r.actions).forEach(function (a) { if (a.indexOf(k) === 0) n += r.actions[a]; }); return n; };
+    $("admUse").classList.remove("muted");
+    $("admUse").innerHTML = '<table class="list-t"><thead><tr><th>Person</th><th>Active days</th><th style=text-align:right>Visits</th><th style=text-align:right>Edits</th><th style=text-align:right>Highlights</th><th style=text-align:right>Imports</th><th>Last used</th></tr></thead><tbody>' +
+      j.rows.map(function (r) {
+        return "<tr><td>" + esc(who(r.email)) + '<div class="small muted">' + esc(r.email) + "</div></td><td>" + r.days + '</td><td style="text-align:right">' + A(r, "topa:load") + '</td><td style="text-align:right">' + A(r, "topa:edit") +
+          '</td><td style="text-align:right">' + A(r, "topa:highlight") + '</td><td style="text-align:right">' + (A(r, "topa:import") + A(r, "topa:review")) + "</td><td>" + ago(r.last) + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  }).catch(function () { $("admUse").textContent = "Could not load usage."; });
+}
+async function downloadMasterList(withHidden) {
+  if (!window.XLSX) { toast("Excel library did not load", true); return; }
+  var btn = $("admXlsx"); btn.disabled = true; $("admMsg").textContent = "Loading every tab...";
+  try {
+    await ensureAll();
+    $("admMsg").textContent = "Building workbook...";
+    var wb = XLSX.utils.book_new(), used = {};
+    function sheetName(n) { n = String(n).replace(/[\\\/?*\[\]:]/g, " ").slice(0, 31); var b = n, i = 2; while (used[n.toLowerCase()]) n = b.slice(0, 28) + " " + (i++); used[n.toLowerCase()] = 1; return n; }
+    function addSheet(name, header, rows, links, widths, fmts) {
+      var ws = XLSX.utils.aoa_to_sheet([header].concat(rows), {cellDates: true});
+      (links || []).forEach(function (l) { var ref = XLSX.utils.encode_cell({r: l[0] + 1, c: l[1]}); if (ws[ref]) ws[ref].l = {Target: l[2]}; });
+      (fmts || []).forEach(function (f) { for (var r = 1; r <= rows.length; r++) { var ref = XLSX.utils.encode_cell({r: r, c: f[0]}); if (ws[ref] && typeof ws[ref].v === "number") ws[ref].z = f[1]; } });
+      ws["!cols"] = widths.map(function (w) { return {wch: w}; });
+      ws["!autofilter"] = {ref: XLSX.utils.encode_range({s: {r: 0, c: 0}, e: {r: rows.length, c: header.length - 1}})};
+      XLSX.utils.book_append_sheet(wb, ws, sheetName(name));
+    }
+    var dt = function (s) { var d = dParse(s); return d || (s || ""); };
+    /* the comparison tab, as the dashboard shows it */
+    var Y = new Date().getFullYear(), ys = []; for (var y = Y; y >= 2014; y--) ys.push(y);
+    var none = {min: null, max: null}, ytd = {}, ann = {};
+    ys.forEach(function (y) { ytd[y] = ytdStats(y, false, none); ann[y] = y < Y ? ytdStats(y, true, none) : null; });
+    var proj = function (st, k) { return Math.floor(st[k] * 365 / st.days); };
+    var cmpRows = [["OFS without contract", function (y) { return ytd[y].wo; }], ["OFS with contract", function (y) { return ytd[y].w; }], ["Number of YTD contracts", function (y) { return ytd[y].n; }],
+      ["Projected annual count based on YTD", function (y) { return proj(ytd[y], "n"); }], ["Actual annual number of contracts", function (y) { return ann[y] ? ann[y].n : "TBD"; }],
+      ["Total YTD contract price", function (y) { return ytd[y].price; }], ["Projected annual contract price", function (y) { return proj(ytd[y], "price"); }], ["Actual annual contract price", function (y) { return ann[y] ? ann[y].price : "TBD"; }],
+      ["Average contract price (YTD)", function (y) { return ytd[y].avgP; }], ["Median contract price (YTD)", function (y) { return ytd[y].medP; }],
+      ["Weighted average $/unit (YTD)", function (y) { return ytd[y].wppu; }], ["Average $/unit (YTD)", function (y) { return ytd[y].avgPpu; }], ["Median $/unit (YTD)", function (y) { return ytd[y].medPpu; }],
+      ["Total units (YTD)", function (y) { return ytd[y].units; }], ["Average units (YTD)", function (y) { return ytd[y].avgU; }], ["Median units (YTD)", function (y) { return ytd[y].medU; }],
+      ["Total units (annual)", function (y) { return ann[y] ? ann[y].units : "TBD"; }]];
+    addSheet("TOPA Offer of Sale Comparison", ["As of " + fmtDate(todayISO())].concat(ys.map(function (y) { return y + " TOPA OFS"; })),
+      cmpRows.map(function (c) { return [c[0]].concat(ys.map(function (y) { var v = c[1](y); return v == null ? "" : typeof v === "number" ? Math.round(v * 100) / 100 : v; })); }), [], [44].concat(ys.map(function () { return 15; })),
+      ys.map(function (y, i) { return [i + 1, "#,##0"]; }));
+    /* every tab, in the sidebar's order */
+    var total = 0;
+    S.index.sheets.forEach(function (m) {
+      var sh = S.sheets[m.slug]; if (!sh) return;
+      var cols = sh.columns.filter(function (c) { return !c.hidden; });
+      var extra = m.slug === "ofs5" ? [["Tenants formed", function (r) { return dt(tenantsFormed(r)); }], ["Redevelopment signal", function (r) { return redevSignals(r).map(function (x) { return REDEV[x.slug] + " " + fmtDate(x.d); }).join("; "); }]] : [];
+      var header = cols.map(function (c) { return c.label; }).concat(extra.map(function (x) { return x[0]; })).concat(["Highlight", "Source"]);
+      var links = [], rows = [];
+      sh.rows.filter(function (r) { return withHidden || !isHidden(m.slug, r); }).forEach(function (r) {
+        var line = cols.map(function (c, ci) {
+          var v = anyVal(m.slug, r, c.key), u = !c.computed && val(m.slug, r, c.key + "Url");
+          if (u && /^(https?:|mailto:)/i.test(u)) links.push([rows.length, ci, u]);
+          if (c.type === "date") return dt(v);
+          if (c.key === "ppu" && v) return Math.round(v);
+          return v == null ? "" : v;
+        });
+        extra.forEach(function (x) { line.push(x[1](r)); });
+        var hl = hlShown(m.slug, r);
+        line.push(hl ? hl.charAt(0).toUpperCase() + hl.slice(1) : "");
+        line.push(String(r.src || "").replace(/^xlsx$/, "Master list").replace(/^dhcd:/, "DHCD ").replace(/^manual$/, "Added by hand"));
+        rows.push(line);
+      });
+      total += rows.length;
+      addSheet(m.title === sh.title && sh.excelSheet ? sh.excelSheet : m.title, header, rows, links,
+        header.map(function (h, i) { var c = cols[i]; return !c ? 22 : c.key === "address" ? 42 : c.type === "date" ? 11 : c.type === "money" ? 14 : c.key === "notes" ? 40 : 16; }),
+        cols.map(function (c, i) { return c.type === "money" ? [i, '"$"#,##0'] : c.type === "int" ? [i, "#,##0"] : null; }).filter(Boolean));
+    });
+    var ofs = {}; (S.sheets.ofs5 ? S.sheets.ofs5.rows : []).forEach(function (r) { ofs[r.id] = r; });
+    addSheet("Sales Comps", ["Address", "Property name", "Sale date", "Sale price", "Units", "Price / unit", "Buyer", "Seller", "Broker", "Linked offer of sale", "TOPA date", "Days to close", "Source", "Notes"],
+      S.comps.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); }).map(function (c) {
+        var r = c.link && ofs[c.link], td = r ? val("ofs5", r, "date") : "";
+        return [c.address || "", c.name || "", dt(c.date), c.price || "", c.units || "", c.price && c.units ? Math.round(c.price / c.units) : "", c.buyer || "", c.seller || "", c.broker || "",
+          r ? val("ofs5", r, "address") : "", dt(td), r && td && c.date ? daysBetween(td, c.date) : "", c.src || "", c.notes || ""];
+      }), [], [40, 26, 11, 14, 8, 12, 30, 30, 24, 40, 11, 10, 14, 50], [[3, '"$"#,##0'], [5, '"$"#,##0']]);
+    var t = new Date(), stamp = t.getFullYear() + "." + String(t.getMonth() + 1).padStart(2, "0") + "." + String(t.getDate()).padStart(2, "0");
+    XLSX.writeFile(wb, "Active TOPA Tracking Master List as of " + stamp + ".xlsx", {cellDates: true});
+    $("admMsg").textContent = fmtInt(total) + " rows across " + S.index.sheets.length + " tabs + comparison + comps.";
+    apiGet("/track?e=topa:master_download").catch(function () {});
+  } catch (e) { $("admMsg").textContent = ""; toast("Could not build the workbook: " + e.message, true); }
+  btn.disabled = false;
+}
+
 /* ---------- modal ---------- */
 function openModal(html, narrow) { $("mbox").className = "mbox" + (narrow ? " narrow" : ""); $("mbox").innerHTML = html; $("modal").classList.add("open"); }
 function closeModal() { $("modal").classList.remove("open"); $("mbox").innerHTML = ""; }
@@ -2596,6 +2783,8 @@ function wire() {
   $("actRefresh").onclick = loadActivity;
   wireMap();
   wireReview();
+  $("sideTog").onclick = function () { setSide(!document.querySelector("#vTable .tv").classList.contains("side-off")); };
+  try { if (localStorage.getItem("topa_side_off")) setSide(true, true); } catch (e) {}
   window.addEventListener("resize", function () { clearTimeout(wire._r); wire._r = setTimeout(function () { if (S.view === "dash") { renderYtdChart(); renderWeekChart(); } if (_map) _map.invalidateSize(); }, 150); });
 }
 
