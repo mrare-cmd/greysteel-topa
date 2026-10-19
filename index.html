@@ -254,7 +254,7 @@ button.nav-h:hover{background:#f1f3f4}
 .sh .t{flex:1;min-width:0;line-height:1.25}
 .sh .n{font-size:11.5px;color:var(--text3);font-weight:400}
 .sh.on .n{color:var(--blue)}
-.nb{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:#fce8e6;color:#c5221f;font-size:11px;font-weight:700;flex-shrink:0}
+.nb{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:#e6f4ea;color:#137333;font-size:11px;font-weight:700;flex-shrink:0}
 .star{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3);opacity:0;flex-shrink:0}
 .star svg{width:15px;height:15px}
 .sh:hover .star{opacity:1}
@@ -263,7 +263,7 @@ button.nav-h:hover{background:#f1f3f4}
 .fav .star.on{opacity:0}
 .fav .sh:hover .star.on{opacity:1}
 .nav-div{height:1px;background:var(--border2);margin:6px 8px 8px}
-.pill.new{background:#fce8e6;color:#c5221f;margin-left:6px;height:18px;font-size:10.5px;font-weight:700}
+.pill.new{background:#e6f4ea;color:#137333;margin-left:6px;height:18px;font-size:10.5px;font-weight:700}
 .tmain{flex:1;min-width:0;display:flex;flex-direction:column}
 .tbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)}
 .tbar .ttl{font-family:'Google Sans',sans-serif;font-size:18px;margin-right:6px}
@@ -336,6 +336,12 @@ tr.hidden-row td{opacity:.45}
 .f label{display:flex;font-size:11.5px;color:var(--text2);margin-bottom:3px;gap:6px}
 .f label .who{margin-left:auto;color:var(--blue);font-size:11px}
 .gs-foia{font-weight:700;font-style:italic;color:#80868b}
+.dt td .cpy{display:inline-flex;align-items:center;gap:4px;height:22px;margin-left:6px;padding:0 8px;border-radius:11px;background:var(--red-light);color:var(--red);font-size:11px;font-weight:500;vertical-align:middle}
+.dt td .cpy:hover{background:var(--red);color:#fff}
+.dt td .cpy svg{width:12px;height:12px}
+.foia-acts{display:flex;gap:8px;align-items:center;margin-top:6px}
+.rvc{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#e8eaed;color:var(--text2);font-size:11px;font-weight:700}
+.rv-bulk{display:flex;gap:8px;align-items:center;padding:0 18px 10px}
 .dt td .lnk{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:4px;border-radius:50%;color:var(--text3);opacity:0;vertical-align:middle}
 .dt td .lnk svg{width:14px;height:14px}
 .dt tr:hover td .lnk{opacity:1}
@@ -417,7 +423,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v12</span>
+    <span id="verBadge" title="Page version">v13</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -425,6 +431,7 @@ tr.hidden-row td{opacity:.45}
     <button class="tab active" data-view="table"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/></svg><span class="tl">Filings</span></button>
     <button class="tab" data-view="comps"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg><span class="tl">Sales Comps</span></button>
     <button class="tab" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg><span class="tl">Weekly Reports</span></button>
+    <button class="tab" data-view="review"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="tl">Review</span><span class="rvc" id="rvCount" hidden></span></button>
   </nav>
   <div class="gsearch">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -587,6 +594,24 @@ tr.hidden-row td{opacity:.45}
   </div></section>
 
   <!-- ======================= REPORTS ======================= -->
+  <section class="view" id="vReview"><div class="wrap">
+    <div class="card">
+      <div class="card-h">
+        <div style="max-width:760px"><div class="card-t">Data quality review</div><div class="card-s" id="rvSub"></div></div>
+        <span class="ml-auto"></span>
+        <span class="fld"><select id="rvTab"></select></span>
+        <span class="fld search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="rvQ" type="search" placeholder="Search address"></span>
+        <label class="chk" id="rvDoneChk"><input type="checkbox">Show resolved</label>
+      </div>
+      <div class="rv-bulk" id="rvBulk"><span class="small muted">Ticked rows:</span><button class="btn sm primary" id="rvAddSel">Add selected</button><button class="btn sm" id="rvIgnSel">Ignore selected</button></div>
+      <div class="scroll-x"><table class="list-t" id="rvTable"></table></div>
+    </div>
+    <div class="card mt" id="rvPriceCard" hidden>
+      <div class="card-h"><div><div class="card-t">Prices to check</div><div class="card-s">DHCD printed these prices with broken digit grouping (e.g. "535,5000"). Check the number on the row, fix it if needed, then mark it right.</div></div></div>
+      <div class="scroll-x"><table class="list-t" id="rvPrice"></table></div>
+    </div>
+  </div></section>
+
   <section class="view" id="vReports"><div class="wrap">
     <div class="grid g-2">
       <div class="card">
@@ -612,7 +637,7 @@ tr.hidden-row td{opacity:.45}
             <li>Import CoStar sale comps under <b>Sales Comps</b>; matching offers of sale are marked closed.</li>
           </ol>
           <div class="note"><b>Address style</b> (from the master list): street suffixes in full (Street, Avenue, Terrace), directions abbreviated (NW, NE, SE, SW). Imported addresses follow this automatically.<br>
-          <b>FOIA</b>: <a href="https://dc.govqa.us/WEBAPP/_rs/(S(0))/supporthome.aspx" target="_blank" rel="noopener">DC FOIA Center</a>. Request language: <i>"Please provide the offer of sale notice recorded in the weekly TOPA report dated xx/xx/xxxx for [address]."</i></div>
+          <b>FOIA</b>: <a href="https://myfoiadc.govqa.us/WEBAPP/_rs/supporthome.aspx" target="_blank" rel="noopener">DC FOIA Center</a>. Request language: <i>"Please provide the offer of sale notice recorded in the weekly TOPA report dated xx/xx/xxxx for [address]."</i></div>
         </div>
       </div>
     </div>
@@ -1002,7 +1027,8 @@ async function boot() {
   S.index = r[0]; S.overlay = r[1] || {edits: {}, hl: {}}; S.comps = (r[2] && r[2].comps) || []; S.imports = (r[3] && r[3].imports) || [];
   S.loaded = {"index.json": S.manifest["index.json"], "overlay.json": S.manifest["overlay.json"], "comps.json": S.manifest["comps.json"], "imports.json": S.manifest["imports.json"]};
   rebuildCompIndex();
-  await ensureSheet("ofs5");
+  await Promise.all([ensureSheet("ofs5"), ensureSheet("torg"), ensureSheet("tassoc")]);
+  if (S.manifest["review.json"]) { try { S.review = await loadFile("review.json"); S.loaded["review.json"] = S.manifest["review.json"]; } catch (e) {} }
   $("boot").hidden = true;
   readHash();
   renderAll();
@@ -1019,13 +1045,14 @@ async function poll() {
     var old = Object.assign({}, S.loaded);
     await loadManifest();
     var changed = [];
-    var jobs = ["index.json", "overlay.json", "comps.json", "imports.json"].filter(function (p) { return S.manifest[p] && S.manifest[p] !== old[p]; }).map(function (p) {
+    var jobs = ["index.json", "overlay.json", "comps.json", "imports.json", "review.json"].filter(function (p) { return S.manifest[p] && S.manifest[p] !== old[p]; }).map(function (p) {
       changed.push(p);
       return loadFile(p).then(function (d) {
         if (p === "index.json") S.index = d;
         if (p === "overlay.json") S.overlay = d;
         if (p === "comps.json") { S.comps = d.comps || []; rebuildCompIndex(); }
         if (p === "imports.json") S.imports = d.imports || [];
+        if (p === "review.json") S.review = d;
         S.loaded[p] = S.manifest[p];
       });
     });
@@ -1117,6 +1144,7 @@ async function commitFiles(paths, mutate, event, extraFiles) {
         if (p === "index.json") { S.index = d; S.loaded[p] = S.manifest[p]; }
         else if (p === "comps.json") { S.comps = d.comps; rebuildCompIndex(); S.loaded[p] = S.manifest[p]; }
         else if (p === "imports.json") { S.imports = d.imports; S.loaded[p] = S.manifest[p]; }
+        else if (p === "review.json") { S.review = d; S.loaded[p] = S.manifest[p]; }
         else if (p.indexOf("sheets/") === 0) { d._v = S.manifest[p]; prepSheet(d); S.sheets[d.slug] = d; }
       });
       return j;
@@ -1148,6 +1176,7 @@ function renderAll(soft) {
   if (S.view === "table") renderTable(soft);
   if (S.view === "comps") renderComps();
   if (S.view === "reports") renderReports();
+  if (S.view === "review") renderReview(); else rvBadge();
   if (S.drawer && !soft) refreshDrawerMeta();
 }
 function setView(v, noHash) {
@@ -1157,18 +1186,18 @@ function setView(v, noHash) {
   S.view = v;
   document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === v); });
   document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
-  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[v]).classList.add("active");
+  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports", review: "vReview"}[v]).classList.add("active");
   if (!noHash) writeHash();
   renderAll();
   if (v === "reports") { loadDhcd(); loadActivity(); }
 }
 function writeHash() { var h = "#" + S.view + (S.view === "table" ? "/" + S.sheet : ""); if (location.hash !== h) history.replaceState(null, "", h); }
 function readHash() {
-  var m = /^#(map|dash|table|comps|reports)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
+  var m = /^#(map|dash|table|comps|reports|review)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
   if (m) { S.view = m[1]; if (m[2] && sheetMeta(m[2]).title !== m[2]) S.sheet = m[2]; }
   document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === S.view); });
   document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
-  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports"}[S.view]).classList.add("active");
+  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports", review: "vReview"}[S.view]).classList.add("active");
   if (S.view === "table") ensureSheet(S.sheet).then(function () { renderTable(); });
   if (S.view === "reports") { loadDhcd(); loadActivity(); }
   writeHash();
@@ -1440,7 +1469,7 @@ function renderMapView() {
     var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
     return '<div class="mc' + (r.id === _mSel ? " sel" : "") + '" data-id="' + r.id + '"' + (hl ? ' style="box-shadow:inset 4px 0 0 ' + HL_HEX[hl] + '"' : "") + '>' +
       '<div class="r1"><span class="mdot" style="background:' + STATUS_COLOR[st] + ';margin-top:3px"></span><div class="ad">' + esc(val("ofs5", r, "address")) + (val("ofs5", r, "name") ? '<div class="nm">' + esc(val("ofs5", r, "name")) + "</div>" : "") + '</div><div class="pr">' + (p ? fmtShort(p) : "") + "</div></div>" +
-      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + (isGs(r) ? '<span class="pill gsp">Greysteel</span>' : "") + "</div>" +
+      '<div class="r2"><span class="pill ' + (String(val("ofs5", r, "type")).indexOf("w/o") > -1 ? "red" : "blue") + '">' + esc(val("ofs5", r, "type") || "-") + "</span>" + (u ? "<span>" + fmtInt(u) + " units</span>" : "") + (pp ? "<span>· " + fmtShort(pp) + "/unit</span>" : "") + "<span>· " + fmtDate(d) + "</span>" + (isNewRow(r) ? '<span class="pill new" style="margin:0">NEW</span>' : "") + (isGs(r) ? '<span class="pill gsp">Greysteel</span>' : "") + tenantPill(r) + "</div>" +
       '<div class="r3">' + segBar(c ? daysBetween(d, c.date) : n) + "<span>" + (c ? "Closed " + fmtDate(c.date) + " · " + daysBetween(d, c.date) + " days" : n == null ? "" : "<b>" + n + "</b> days · " + (n > 420 ? "past 420" : phase(n))) + '</span><a class="det" href="#" data-open="' + r.id + '">Details</a></div></div>';
   }).join("") || '<div class="empty">No offers match these filters.</div>';
   _mLayer.clearLayers(); _mk = {};
@@ -1706,7 +1735,9 @@ function cellHtml(slug, r, c) {
   if (url && /^(https?:|mailto:)/i.test(url)) txt = '<a href="' + esc(url) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="' + esc(url) + '">' + (txt || "link") + "</a>";
   var sh0 = S.sheets[slug];
   if (sh0 && sh0.colKeys && sh0.colKeys[c.key + "Url"]) txt += '<button class="lnk' + (url ? " has" : "") + '" data-lnk="' + c.key + '" title="' + (url ? "Change or remove the link" : "Add a link (paste a Box or other URL)") + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>';
+  if (c.key === "foia" && slug === "ofs5" && needsFoia(r)) txt += '<button class="cpy" data-cpy="' + r.id + '" title="Copy the FOIA request text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy request</button>';
   if (c.key === "status" && v) txt = '<span class="pill ' + (v === "Closed" ? "green" : v === "In TOPA" ? "blue" : "gray") + '">' + esc(v) + "</span>";
+  if (c.key === "address" && slug === "ofs5") txt += tenantPill(r);
   if (c.key === "address" && slug === "ofs5" && compsFor(slug, r).length) txt += ' <span class="pill green" title="Closed per CoStar">Closed</span>';
   if (c.key === "date" && isNewRow(r)) txt += ' <span class="pill new" title="New in the ' + esc(latestWeek().label) + ' report">NEW</span>';
   var cls = (t === "int" || t === "money" ? "num " : "") + (c.computed ? "" : "ed ") + (e ? "edited" : "");
@@ -1755,6 +1786,8 @@ function renderTable(soft) {
 function tableClick(e) {
   var td = e.target.closest("td"), tr = e.target.closest("tr[data-id]"); if (!td || !tr) return;
   var slug = tr.dataset.s, id = tr.dataset.id;
+  var cb = e.target.closest(".cpy");
+  if (cb) { e.stopPropagation(); copyFoia(cb.dataset.cpy); return; }
   var lb = e.target.closest(".lnk");
   if (lb) { e.stopPropagation(); openLinkPop(lb, slug, id, lb.dataset.lnk); return; }
   if (td.classList.contains("hlc")) { openHlPop(td, slug, id); return; }
@@ -1783,7 +1816,7 @@ function openLinkPop(anchor, slug, id, field) {
 }
 document.addEventListener("mousedown", function (e) { if (!e.target.closest("#lnkPop") && !e.target.closest(".lnk")) $("lnkPop").classList.remove("open"); });
 function tableDbl(e) {
-  if (e.target.closest(".lnk") || e.target.closest("a")) return;
+  if (e.target.closest(".lnk") || e.target.closest(".cpy") || e.target.closest("a")) return;
   var td = e.target.closest("td.ed"), tr = e.target.closest("tr[data-id]"); if (!td || !tr || td.classList.contains("editing")) return;
   startEdit(td, tr.dataset.s, tr.dataset.id, td.dataset.f);
 }
@@ -1865,6 +1898,7 @@ function renderDrawer() {
     h += '<div class="dr-sec">TOPA status</div><div class="statbox">' +
       '<div class="row"><span>Status</span><b>' + (c ? "Closed per CoStar" : n == null ? "-" : n > 420 ? "Past the 420-day window" : "In TOPA - " + phase(n)) + "</b></div>" +
       '<div class="row"><span>Days since filing</span><span>' + (n == null ? "-" : n) + "</span></div>" +
+      (tenantsFormed(r) ? '<div class="row"><span>Tenants formed</span><b>' + fmtDate(tenantsFormed(r)) + "</b></div>" : "") +
       (c ? '<div class="row"><span>Sold</span><span>' + fmtDate(c.date) + (c.price ? " · " + fmtMoney(c.price) : "") + '</span></div><div class="row"><span>Days under contract (TOPA date to sale)</span><b>' + daysBetween(d, c.date) + "</b></div>" : "") +
       '<div class="pbar" style="margin-top:8px"><i style="width:' + Math.min(100, (c ? daysBetween(d, c.date) : n || 0) / 420 * 100) + "%" + (c ? ";background:var(--green)" : "") + '"></i></div></div>';
     h += '<div class="dr-sec">CoStar sale comps</div>' + (cs.length ? cs.map(function (c) {
@@ -1884,6 +1918,7 @@ function renderDrawer() {
       if (col.key === "notes") h += '<textarea data-f="' + col.key + '">' + esc(shown) + "</textarea>";
       else h += '<input data-f="' + col.key + '" type="' + (col.type === "date" ? "date" : "text") + '" value="' + esc(shown) + '"' + (col.type === "money" ? ' placeholder="$"' : "") + ">";
     }
+    if (col.key === "foia" && slug === "ofs5" && needsFoia(r)) h += '<div class="foia-acts"><button class="btn sm primary" onclick="copyFoia(\'' + r.id + '\')">Copy FOIA request</button><a href="' + FOIA_PORTAL + '" target="_blank" rel="noopener" class="small">DC FOIA portal &#8599;</a></div>';
     if (e) h += '<div class="orig">Original: ' + esc(r[col.key] == null || r[col.key] === "" ? "(blank)" : col.type === "money" ? fmtMoney(r[col.key]) : col.type === "date" ? fmtDate(r[col.key]) : r[col.key]) + ' · <a data-revert="' + col.key + '">restore</a></div>';
     h += "</div>";
   });
@@ -2310,6 +2345,179 @@ async function loadActivity() {
   } catch (e) { $("actTable").innerHTML = '<tbody><tr><td class="empty">' + esc(e.message) + "</td></tr></tbody>"; }
 }
 
+/* ---------- FOIA request (only while a 5+ row still reads NEED TO SUBMIT) ---------- */
+var FOIA_PORTAL = "https://myfoiadc.govqa.us/WEBAPP/_rs/supporthome.aspx";
+function needsFoia(r) { return /^need to submit$/i.test(String(val("ofs5", r, "foia") || "").trim()); }
+function foiaText(r) {
+  var d = dParse(val("ofs5", r, "date"));
+  var ds = d ? String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0") + "/" + d.getFullYear() : "xx/xx/xxxx";
+  return "Please provide the offer of sale notice recorded in the weekly TOPA report dated " + ds + " for " + (val("ofs5", r, "address") || "") + ".";
+}
+function copyText(t) {
+  if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+  return new Promise(function (ok) { var a = document.createElement("textarea"); a.value = t; a.style.position = "fixed"; a.style.opacity = "0"; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); } catch (e) {} a.remove(); ok(); });
+}
+function copyFoia(id) {
+  var r = findRow("ofs5", id); if (!r) return;
+  copyText(foiaText(r)).then(function () { toast("FOIA request copied - paste it into the DC FOIA portal, then set FOIA to Requested"); }, function () { toast("Couldn't copy - your browser blocked the clipboard", true); });
+}
+
+/* ---------- "Tenants formed" flag: a tenant organization registered for the same building
+   (DHCD Tenant Org Registrations, or the DC corporate registry's tenant associations)
+   between 30 days before and 420 days after the offer of sale. ---------- */
+function houseNums(a) {
+  var out = [], stop = false;
+  normAddr(a).replace(/&/g, " ").split(/\s+/).forEach(function (tok) {
+    if (stop || !tok) return;
+    if (tok === "washington" || tok === "dc") { stop = true; return; }
+    var m = /^(\d+)(?:-(\d+))?$/.exec(tok), m2 = /^-(\d+)$/.exec(tok);
+    if (m) { var lo = +m[1], hi = m[2] ? +m[2] : lo; if (hi < lo || hi - lo > 400) hi = lo; if (lo < 20000) out.push([lo, hi]); }
+    else if (m2 && out.length) { var h = +m2[1], last = out[out.length - 1]; if (h > last[0] && h - last[0] <= 400) last[1] = h; }
+  });
+  return out;
+}
+function numsOverlap(a, b) { return a.some(function (x) { return b.some(function (y) { return x[0] <= y[1] && y[0] <= x[1]; }); }); }
+var _ten = {v: null, idx: {}};
+function tenantIndex() {
+  var v = (S.sheets.torg ? S.sheets.torg._v : "") + "|" + (S.sheets.tassoc ? S.sheets.tassoc._v : "");
+  if (_ten.v === v) return _ten.idx;
+  var idx = {};
+  ["torg", "tassoc"].forEach(function (s) {
+    (S.sheets[s] ? S.sheets[s].rows : []).forEach(function (r) {
+      var a = val(s, r, "address"), d = val(s, r, "date"); if (!a || !d || isHidden(s, r)) return;
+      var p = addrParts(a); if (!p.street) return;
+      (idx[p.street] = idx[p.street] || []).push({d: d, nums: houseNums(a)});
+    });
+  });
+  _ten = {v: v, idx: idx};
+  return idx;
+}
+function tenantsFormed(r) {
+  var d = val("ofs5", r, "date"), a = val("ofs5", r, "address"); if (!d || !a) return null;
+  var p = addrParts(a), list = tenantIndex()[p.street]; if (!list) return null;
+  var nums = houseNums(a), best = null;
+  list.forEach(function (t) {
+    var g = daysBetween(d, t.d);
+    if (g != null && g >= -30 && g <= 420 && numsOverlap(nums, t.nums) && (!best || t.d < best)) best = t.d;
+  });
+  return best;
+}
+function tenantPill(r) { var t = tenantsFormed(r); return t ? ' <span class="pill purple" title="A tenant organization registered for this building">Tenants formed ' + fmtDate(t) + "</span>" : ""; }
+
+/* ---------- data-quality review ----------
+   review.json holds DHCD filings the importer could not match (tools/make_review.js) and every
+   decision taken on them. Prices DHCD printed malformed are flagged live from row notes. */
+var RV = {tab: "", q: "", done: false};
+function rvOpen() {
+  var d = (S.review && S.review.decisions) || {};
+  var items = ((S.review && S.review.items) || []).filter(function (i) { return !d[i.key]; });
+  var prices = [];
+  Object.keys(S.sheets).forEach(function (s) {
+    S.sheets[s].rows.forEach(function (r) {
+      var n = String(val(s, r, "notes") || "");
+      if (n.indexOf("DHCD printed the price") > -1 && !d["price:" + s + "/" + r.id]) prices.push({slug: s, r: r, note: (/DHCD printed the price as "[^"]*"/.exec(n) || [n])[0]});
+    });
+  });
+  return {items: items, prices: prices};
+}
+function rvBadge() {
+  var o = rvOpen(), n = o.items.length + o.prices.length, el = $("rvCount");
+  if (el) { el.textContent = n ? fmtInt(n) : ""; el.hidden = !n; }
+}
+function renderReview() {
+  rvBadge();
+  var d = (S.review && S.review.decisions) || {}, all = (S.review && S.review.items) || [], o = rvOpen();
+  var tabs = {}; all.forEach(function (i) { tabs[i.sheet] = (tabs[i.sheet] || 0) + (d[i.key] ? 0 : 1); });
+  $("rvTab").innerHTML = '<option value="">All tabs</option>' + Object.keys(tabs).sort(function (a, b) { return tabs[b] - tabs[a]; }).map(function (s) { return '<option value="' + s + '"' + (s === RV.tab ? " selected" : "") + ">" + esc(sheetMeta(s).title) + " (" + tabs[s] + ")</option>"; }).join("");
+  var q = normAddr(RV.q);
+  var list = all.filter(function (i) { return (RV.done ? !!d[i.key] : !d[i.key]) && (!RV.tab || i.sheet === RV.tab) && (!q || normAddr(i.address).indexOf(q) > -1); });
+  var nDone = all.filter(function (i) { return d[i.key]; }).length;
+  $("rvSub").innerHTML = fmtInt(o.items.length) + " filings in DHCD's reports that don't match anything in the tracker · " + fmtInt(nDone) + " resolved. <b>Add</b> puts it on its tab, <b>Same as</b> links it to an existing row, <b>Ignore</b> drops it. Decisions are saved for everyone.";
+  $("rvBulk").hidden = RV.done;
+  $("rvTable").innerHTML = "<thead><tr><th style=width:28px>" + (RV.done ? "" : '<input type="checkbox" id="rvAll">') + "</th><th>Filed</th><th>Address</th><th>Tab</th><th style=text-align:right>Units</th><th style=text-align:right>Price</th><th>Report</th><th>Possible match</th><th></th></tr></thead><tbody>" +
+    list.slice(0, 400).map(function (i) {
+      var dc = d[i.key], sg = i.suggest;
+      var act = dc ? '<span class="small muted">' + ({added: "Added", ignore: "Ignored", same: "Same as existing row"}[dc.a] || dc.a) + " by " + esc(who(dc.by)) + " " + ago(dc.at) + "</span>" + (dc.a !== "added" ? ' <a href="#" data-undo="' + i.key + '">Undo</a>' : "")
+        : '<button class="btn sm primary" data-add="' + i.key + '">Add</button> <button class="btn sm" data-ign="' + i.key + '">Ignore</button>';
+      return "<tr><td>" + (dc ? "" : '<input type="checkbox" data-k="' + i.key + '">') + "</td><td>" + fmtDate(i.date) + "</td><td><b style=font-weight:500>" + esc(i.address) + '</b><div class="small muted">' + esc(i.category) + "</div>" +
+        (i.remark ? '<div class="small" style="color:var(--orange)">' + esc(i.remark) + "</div>" : "") + (i.flag ? '<div class="small" style="color:var(--red)">' + esc(i.flag) + "</div>" : "") + "</td><td>" + esc(sheetMeta(i.sheet).title) +
+        '</td><td style="text-align:right">' + fmtInt(i.units) + '</td><td style="text-align:right">' + (i.price ? fmtShort(i.price) : "") + '</td><td class="small">' + (i.pdf ? '<a href="' + esc(i.pdf) + '" target="_blank" rel="noopener">' + esc(i.report) + "</a>" : esc(i.report)) + "</td><td>" +
+        (sg ? '<a href="#" data-open-s="' + sg.sheet + '" data-open-id="' + sg.id + '">' + esc(sg.address) + '</a><div class="small muted">' + esc(sheetMeta(sg.sheet).title) + " · " + fmtDate(sg.date) + "</div>" + (dc ? "" : '<button class="btn sm ghost" data-same="' + i.key + '" style="padding:0 8px;height:26px">Same as this</button>') : '<span class="muted small">none found</span>') +
+        '</td><td style="white-space:nowrap">' + act + "</td></tr>";
+    }).join("") + "</tbody>" + (list.length ? "" : '<tbody><tr><td colspan="9" class="empty">' + (RV.done ? "Nothing resolved yet." : "All clear.") + "</td></tr></tbody>") + (list.length > 400 ? '<tbody><tr><td colspan="9" class="empty">Showing the first 400 - narrow by tab or search.</td></tr></tbody>' : "");
+  $("rvPriceCard").hidden = !o.prices.length;
+  $("rvPrice").innerHTML = "<thead><tr><th>Filed</th><th>Address</th><th>Tab</th><th style=text-align:right>Price on file</th><th>What DHCD printed</th><th></th></tr></thead><tbody>" + o.prices.map(function (x) {
+    return "<tr><td>" + fmtDate(val(x.slug, x.r, "date")) + "</td><td>" + esc(val(x.slug, x.r, "address")) + "</td><td>" + esc(sheetMeta(x.slug).title) + '</td><td style="text-align:right">' + fmtMoney(val(x.slug, x.r, "price")) + "</td><td class=small>" + esc(x.note) +
+      '</td><td style="white-space:nowrap"><a href="#" data-open-s="' + x.slug + '" data-open-id="' + x.r.id + '">Open row</a> <button class="btn sm" data-pok="' + x.slug + "/" + x.r.id + '">Price is right</button></td></tr>';
+  }).join("") + "</tbody>";
+  var T = $("rvTable");
+  T.querySelectorAll("[data-add]").forEach(function (b) { b.onclick = function () { rvAdd([b.dataset.add]); }; });
+  T.querySelectorAll("[data-ign]").forEach(function (b) { b.onclick = function () { rvDecide([b.dataset.ign], "ignore"); }; });
+  T.querySelectorAll("[data-same]").forEach(function (b) { b.onclick = function () { var it = all.filter(function (i) { return i.key === b.dataset.same; })[0]; rvDecide([it.key], "same", {sheet: it.suggest.sheet, id: it.suggest.id}); }; });
+  T.querySelectorAll("[data-undo]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); rvDecide([a.dataset.undo], null); }; });
+  document.querySelectorAll("#vReview [data-open-s]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); openRow(a.dataset.openS, a.dataset.openId); }; });
+  $("rvPrice").querySelectorAll("[data-pok]").forEach(function (b) { b.onclick = function () { rvDecide(["price:" + b.dataset.pok], "price_ok"); }; });
+  var all2 = $("rvAll"); if (all2) all2.onchange = function () { T.querySelectorAll("input[data-k]").forEach(function (c) { c.checked = all2.checked; }); };
+}
+function rvPicked() { return Array.prototype.slice.call(document.querySelectorAll("#rvTable input[data-k]:checked")).map(function (c) { return c.dataset.k; }); }
+async function rvDecide(keys, action, extra) {
+  if (!keys.length) { toast("Tick some rows first"); return; }
+  try {
+    await commitFiles(["review.json"], function (o) {
+      var rv = o["review.json"], at = new Date().toISOString();
+      rv.decisions = rv.decisions || {};
+      keys.forEach(function (k) { if (action) rv.decisions[k] = Object.assign({a: action, by: S.me.email, at: at}, extra || {}); else delete rv.decisions[k]; });
+      return "review: " + (action || "undo") + " " + keys.length + " item" + (keys.length > 1 ? "s" : "");
+    }, "topa:review");
+    S.review = JSON.parse(JSON.stringify(S.review)); renderAll(true);
+    toast(action ? (keys.length + " " + (action === "ignore" ? "ignored" : action === "same" ? "linked to an existing row" : "marked")) : "Undone");
+  } catch (e) { toast("Not saved: " + e.message, true); }
+}
+async function rvAdd(keys) {
+  if (!keys.length) { toast("Tick some rows first"); return; }
+  var items = S.review.items.filter(function (i) { return keys.indexOf(i.key) > -1; });
+  var slugs = {}; items.forEach(function (i) { slugs[i.sheet] = 1; });
+  var paths = Object.keys(slugs).map(function (s) { return "sheets/" + s + ".json"; }).concat(["index.json", "review.json"]);
+  var added = 0, already = 0;
+  try {
+    await commitFiles(paths, async function (o) {
+      added = 0; already = 0;
+      var rv = o["review.json"], at = new Date().toISOString(); rv.decisions = rv.decisions || {};
+      var idx = {}, taken = {};
+      Object.keys(slugs).forEach(function (s) { var sh = o["sheets/" + s + ".json"]; idx[s] = matchIndex(sh.rows); taken[s] = {}; sh.rows.forEach(function (r) { taken[s][r.id] = 1; }); });
+      for (var n = 0; n < items.length; n++) {
+        var it = items[n], s = it.sheet, sh = o["sheets/" + s + ".json"];
+        var ex = matchExisting(idx[s], it);
+        if (ex) { rv.decisions[it.key] = {a: "same", sheet: s, id: ex.id, by: S.me.email, at: at}; already++; continue; }
+        var cols = {}; sh.columns.forEach(function (c) { cols[c.key] = c.type; });
+        var row = {date: it.date, address: it.address};
+        if (it.dhcdId) row.dhcdId = it.dhcdId;
+        ["units", "price"].forEach(function (f) { if (it[f] != null) { if (cols[f] === "int" || cols[f] === "money") row[f] = it[f]; else row.notes = ((row.notes || "") + " " + f.charAt(0).toUpperCase() + f.slice(1) + ": " + fmtInt(it[f])).trim(); } });
+        Object.assign(row, categoryToSheet(it.category).extra);
+        if (it.remark) row.notes = ((row.notes ? row.notes + "; " : "") + "DHCD: " + it.remark);
+        if (it.flag) row.notes = ((row.notes ? row.notes + "; " : "") + it.flag);
+        row.notes = ((row.notes ? row.notes + "; " : "") + "Added from the review queue (missing from the master list)");
+        row.src = "dhcd:" + it.report; row.addedBy = S.me.email;
+        var id = await newRowId(s, row, taken[s]);
+        var full = Object.assign({id: id}, row);
+        sh.rows.push(full); matchAdd(idx[s], full);
+        rv.decisions[it.key] = {a: "added", sheet: s, id: id, by: S.me.email, at: at}; added++;
+      }
+      Object.keys(slugs).forEach(function (s) { var sh = o["sheets/" + s + ".json"]; sh.rows.sort(function (a, b) { return String(b.date || "0000").localeCompare(String(a.date || "0000")); }); reindex(o["index.json"], sh); });
+      return "review: add " + added + " missing filing" + (added === 1 ? "" : "s");
+    }, "topa:review_add");
+    toast(added + " added" + (already ? " · " + already + " were already there" : ""));
+    renderAll();
+  } catch (e) { toast("Not saved: " + e.message, true); }
+}
+function wireReview() {
+  $("rvTab").onchange = function () { RV.tab = this.value; renderReview(); };
+  var t; $("rvQ").addEventListener("input", function () { clearTimeout(t); t = setTimeout(function () { RV.q = $("rvQ").value; renderReview(); }, 160); });
+  $("rvDoneChk").onclick = function (e) { e.preventDefault(); RV.done = !RV.done; this.classList.toggle("on", RV.done); renderReview(); };
+  $("rvAddSel").onclick = function () { rvAdd(rvPicked()); };
+  $("rvIgnSel").onclick = function () { var k = rvPicked(); if (k.length && confirm("Ignore " + k.length + " filing" + (k.length > 1 ? "s" : "") + "?")) rvDecide(k, "ignore"); };
+}
+
 /* ---------- modal ---------- */
 function openModal(html, narrow) { $("mbox").className = "mbox" + (narrow ? " narrow" : ""); $("mbox").innerHTML = html; $("modal").classList.add("open"); }
 function closeModal() { $("modal").classList.remove("open"); $("mbox").innerHTML = ""; }
@@ -2379,6 +2587,7 @@ function wire() {
   };
   $("actRefresh").onclick = loadActivity;
   wireMap();
+  wireReview();
   window.addEventListener("resize", function () { clearTimeout(wire._r); wire._r = setTimeout(function () { if (S.view === "dash") { renderYtdChart(); renderWeekChart(); } if (_map) _map.invalidateSize(); }, 150); });
 }
 
