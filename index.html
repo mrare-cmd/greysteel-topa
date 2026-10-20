@@ -433,7 +433,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v18</span>
+    <span id="verBadge" title="Page version">v19</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -730,7 +730,13 @@ var CATEGORY_RULES = [
   ["equity share", "lies", {}],
   ["opportunity to purchase", "dopa", {type: "DOPA Notice"}],
   ["foreclosure", "nof", {}],
-  ["raze", "raze", {}]
+  ["raze", "raze", {}],
+  /* 2016-2018 sections that don't say which size / contract */
+  ["notice of transfer", "not", {}],
+  ["right of first refusal", "rofr", {}],
+  ["sfd offer of sale", "sfdofs", {}],
+  ["2-4 units offer of sale", "ofs24", {}],
+  ["5+ units offer of sale", "ofs5", {}]
 ];
 function categoryToSheet(cat) {
   var c = String(cat || "").toLowerCase();
@@ -753,7 +759,10 @@ function normAddr(a) {
 function parseNum(v) {
   if (v === null || v === undefined || v === "") return null;
   if (typeof v === "number") return isFinite(v) ? v : null;
-  var s = String(v).replace(/[$,\s]/g, "");
+  var s = String(v).trim().replace(/[$\s]/g, "").replace(/[.,]$/, "");
+  /* DHCD sometimes types periods as thousands separators ("3.900,000", "18.500,000") */
+  if (/^\d{1,3}([.,]\d{3})+(\.\d{1,2})?$/.test(s) && /\.\d{3}/.test(s)) s = s.replace(/\.\d{1,2}$/, "").replace(/[.,]/g, "");
+  s = s.replace(/,/g, "");
   var m = /^(-?\d*\.?\d+)([kKmM])?$/.exec(s);
   if (!m) return null;
   var n = parseFloat(m[1]);
@@ -763,9 +772,19 @@ function parseNum(v) {
 var DATE_RE = /\b(\d{2})-(\d{2})-(\d{4})\b/;
 /* items: [{s, x0, x1, y}] per page (y grows upward, as pdf.js reports it) -> [{category, date, address, dhcdId, units, price}] */
 function parseDhcdItems(pages) {
-  var out = [], cat = null, cols = null;
+  if (isLegacyReport(pages)) return parseLegacyItems(pages);
+  var out = [], cat = null, cols = null, lastYear = "";
   pages.forEach(function (items) {
     items = items.filter(function (i) { return i.s && i.s.trim(); }).map(function (i) { return {s: i.s.trim(), x0: i.x0, x1: i.x1, y: i.y}; });
+    /* narrow DATE columns wrap the year onto the next line ("07-18-" / "2022"): rejoin them */
+    items.forEach(function (it) {
+      if (!/^\d{2}-\d{2}-$/.test(it.s)) return;
+      var yr = items.filter(function (j) { return /^\d{4}$/.test(j.s) && Math.abs(j.x0 - it.x0) < 25 && j.y < it.y && it.y - j.y < 16; })[0];
+      if (yr) { it.s += yr.s; yr.s = ""; }
+      else if (lastYear) it.s += lastYear;          /* the year wrapped onto the next page */
+    });
+    items.forEach(function (it) { var m = /\b\d{2}-\d{2}-(\d{4})\b/.exec(it.s); if (m) lastYear = m[1]; });
+    items = items.filter(function (i) { return i.s; });
     items.sort(function (a, b) { return (b.y - a.y) || (a.x0 - b.x0); });
     var lines = [];
     items.forEach(function (it) {
@@ -783,13 +802,16 @@ function parseDhcdItems(pages) {
       var text = its.map(function (i) { return i.s; }).join(" ").replace(/\s+/g, " ").replace(/â€“/g, "–");
       var addrIt = its.filter(function (i) { return i.s.indexOf("ADDRESS") > -1; })[0];
       var totIt = its.filter(function (i) { return /^Total/.test(i.s); })[0];
-      if (addrIt && totIt) {
+      var dateHd = its.filter(function (i) { return i.s === "DATE"; })[0];
+      if (addrIt && (totIt || dateHd)) {
+        /* some older reports have no Total Units / Sales Price columns at all */
         var rel = its.filter(function (i) { return /^Address/.test(i.s); })[0];
         var sal = its.filter(function (i) { return /^Sales/.test(i.s); })[0];
-        cols = {relX0: rel ? rel.x0 : totIt.x0 - 50, relX1: rel ? rel.x1 : totIt.x0 - 8, units: totIt.x0, price: sal ? sal.x0 : totIt.x0 + 200};
+        if (totIt) cols = {relX0: rel ? rel.x0 : totIt.x0 - 50, relX1: rel ? rel.x1 : totIt.x0 - 8, units: totIt.x0, price: sal ? sal.x0 : totIt.x0 + 200};
+        else cols = {relX0: rel ? rel.x0 : Infinity, relX1: rel ? rel.x1 : Infinity, units: Infinity, price: Infinity};
         return;
       }
-      if (/^(Sale and Transfer|Conversion|\(empty\))\b/.test(text) && text.indexOf(" - ") > -1) {
+      if (/^(Sale and Transfer|Conversion|\(empty\))(?=\s|$)/.test(text) && text.indexOf(" - ") > -1) {
         var c = text.replace(/\s*\(\d+\s+Item.*$/, "");
         var parts = c.split(" - ").map(function (p) { return p.trim(); });
         var div = parts[0], conv = parts[1] || "", sale = parts.slice(2).join(" - ");
@@ -816,8 +838,11 @@ function parseDhcdItems(pages) {
       var rawPrice = rec.price.join(" ");
       rec.price = parseNum(rawPrice);
       /* DHCD sometimes mistypes the grouping ("535,5000"): keep the digits but flag it for a human */
-      if (/,/.test(rawPrice) && !/^\$?\d{1,3}(,\d{3})+(\.\d+)?$/.test(rawPrice.trim())) rec.flag = "DHCD printed the price as \"" + rawPrice.trim() + "\" - check it";
-      if (rec.address) out.push(rec);
+      if (/,/.test(rawPrice) && !/^\$?\d{1,3}(,\d{3})+(\.\d*)?$/.test(rawPrice.trim())) rec.flag = "DHCD printed the price as \"" + rawPrice.trim() + "\" - check it";
+      /* DHCD occasionally leaves the address blank (date + building ID only); keep the filing, flagged */
+      splitTail(rec);
+      if (!rec.address && rec.dhcdId) rec.noAddress = true;
+      if (rec.address || rec.dhcdId) out.push(rec);
     });
   });
   return out;
@@ -874,6 +899,112 @@ function matchExisting(idx, rec) {
     if (pass === 4 && c.norm === na && (!price || !c.price || c.price === price) && dd(c.d, rec.date) <= 45) return c.r;
   }
   return null;
+}
+/* ---- 2016-2018 reports ("TOPA-Related Filings: Weekly Report") ----
+   Sections are headed "<count> Filing Date <category>" (or "# Received: <count> ..."), rows are
+   "M/D/YYYY  address  [type]  [units/$price]". Each section + type is translated to the modern
+   DHCD category name so the rest of the pipeline (tabs, matching, import) is unchanged. */
+function legacyCategory(cat, type) {
+  var c = String(cat || "").toLowerCase().replace(/-/g, " ").replace(/\s+/g, " "), t = String(type || "").toLowerCase().replace(/\s*-\s*/g, "-");
+  var size = function (s) { return /sfd|single family/.test(s) ? "SFD" : /5\s*\+/.test(s) ? "5+" : /2\s*-\s*4|\b2 4\b/.test(s) ? "2-4" : ""; };
+  var deal = /w\s*\/\s*\/?\s*o|without/.test(t) ? " w/o Contract" : /w\s*\//.test(t) || /with contract/.test(t) ? " w/ Contract" : "";
+  if (/offers? of sale/.test(c)) {
+    var sz = /single family/.test(c) ? "SFD" : /5\s*\+/.test(c) ? "5+ Units" : /2 4|2\-4/.test(c) ? "2-4 Units" : "";
+    return (sz ? sz + " " : "") + "Offer of Sale" + deal;
+  }
+  if (/notices? of transfer/.test(c)) { var s1 = size(t); return s1 === "SFD" ? "SFD Notice of Transfer" : s1 ? s1 + " Units Notice of Transfer" : "Notice of Transfer"; }
+  if (/rights? of first refusal/.test(c)) { var s2 = size(t); return s2 === "SFD" ? "SFD Right of First Refusal" : s2 ? s2 + " Units Right of First Refusal" : "Right of First Refusal"; }
+  var map = [[/condominium/, "Condominium Registration Application"], [/housing accom/, "Not a Housing Accommodation Exemption Application"],
+    [/vacancy/, "Vacancy Exemption Application"], [/equity share/, "Low Income Equity Share Cooperative Conversion Application"],
+    [/tenant election/, "Tenant Election Application"], [/housing assistance payment/, "Housing Assistance Payment Application"],
+    [/tax abatement/, "Property Tax Abatement Application"], [/foreclosure/, "Notice of Foreclosure"],
+    [/opportunity to purchase|dopa/, "DC Opportunity to Purchase Notice"], [/raze/, "Raze Permit Application"],
+    [/declaratory/, "Petition for Declaratory Relief"], [/tenant organization/, "Tenant Organization Registration"],
+    [/letter of interest/, "Letter of Interest (TOPA)"], [/assign/, "Assignment of Rights (TOPA)"], [/compl[ai]+nt/, "Complaint (TOPA)"],
+    [/solicitation/, "SFD Notice of Solicitation of Offer & Notice of Intent to Sell"], [/elderly|disabled/, "SFD Claim of Elderly or Disabled Status"],
+    [/landlord/, "SFD Letter to Landlord"]];
+  for (var i = 0; i < map.length; i++) if (map[i][0].test(c)) return map[i][1];
+  return String(cat || "").trim();
+}
+/* pages printed without the units / price headers leave "… 30 $4,000,000" on the end of the address */
+function splitTail(rec) {
+  if (rec.units != null || rec.price != null || !rec.address) return;
+  var m = /^(.*?\S)\s+(?:(\d{1,4})\s*\/?\s*)?(\$[\d.,]+)$/.exec(rec.address) || /^(.*?\S)\s+(\d{1,4})\s*\/\s*([\d.,]+)$/.exec(rec.address);
+  if (!m) return;
+  var price = parseNum(m[3]);
+  if (price == null || price < 1000) return;
+  rec.address = m[1].replace(/[,;]\s*$/, "");
+  rec.price = price; if (m[2]) rec.units = +m[2];
+  if (!/^\$?\d{1,3}(,\d{3})+(\.\d*)?$/.test(m[3].trim())) rec.flag = "DHCD printed the price as \"" + m[3].trim() + "\" - check it";
+}
+var LDATE = /^(\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})(?!\d)(.*)$/;
+function parseLegacyItems(pages) {
+  var out = [], section = null, unitsX = null, addrX = null;
+  pages.forEach(function (items) {
+    items = items.filter(function (i) { return i.s && i.s.trim(); }).map(function (i) { return {s: i.s.replace(/\s+/g, " ").trim(), x0: i.x0, x1: i.x1, y: i.y}; });
+    items.sort(function (a, b) { return (b.y - a.y) || (a.x0 - b.x0); });
+    var lines = [];
+    items.forEach(function (it) { var L = lines[lines.length - 1]; if (L && Math.abs(L.y - it.y) <= 2.5) L.items.push(it); else lines.push({y: it.y, items: [it]}); });
+    var lineText = function (L) { return L.items.slice().sort(function (a, b) { return a.x0 - b.x0; }).map(function (i) { return i.s; }).join(" "); };
+    var isTitle = function (L) { var t = lineText(L); return t && !LDATE.test(t) && !/Filing Date|^(I|II|III|IV)\.|Conversion Data|Sale & Transfer|Page \d/.test(t); };
+    lines.forEach(function (L, li) {
+      var its = L.items.sort(function (a, b) { return a.x0 - b.x0; }), text = its.map(function (i) { return i.s; }).join(" ");
+      if (L.used) return;
+      var fd = /^(?:#\s*Received:?\s*)?(\d*)\s*Filing Date\s*(.*)$/.exec(text);
+      if (fd && !fd[2].replace(/\s*# Units.*$/, "").trim()) {
+        /* the section title wrapped onto the lines just above / below its "Filing Date" line */
+        var name = [];
+        for (var k = li - 1; k >= 0 && L.y - lines[k].y > -24 && lines[k].y - L.y < 24 && isTitle(lines[k]) && !lines[k].used; k--) { name.unshift(lineText(lines[k])); lines[k].used = true; }
+        for (k = li + 1; k < lines.length && L.y - lines[k].y < 24 && isTitle(lines[k]); k++) { name.push(lineText(lines[k])); lines[k].used = true; }
+        fd[2] = name.join(" ").replace(/\s+/g, " ");
+      }
+      if (fd) {
+        var u = its.filter(function (i) { return /# Units|Contract Sale Price/.test(i.s); })[0];
+        unitsX = u ? u.x0 : null;
+        var catIt = its.filter(function (i) { return i.x0 > (its.filter(function (j) { return /Filing Date/.test(j.s); })[0] || {x1: 0}).x1 && !/# Units|Contract Sale Price/.test(i.s); })[0];
+        addrX = catIt ? catIt.x0 : null;
+        section = {name: fd[2].replace(/\s*# Units.*$/, "").trim(), stated: fd[1] === "" ? null : +fd[1]};
+        return;
+      }
+      var m = LDATE.exec(its[0].s);
+      if (!m || !section) return;
+      var rest = its.slice(1);
+      if (m[4].trim()) rest.unshift({s: m[4].trim(), x0: its[0].x1 - 1, x1: its[0].x1, y: its[0].y});
+      /* columns: address, then (after a clear gap) type, then units / price */
+      var cols = [], prev = null;
+      rest.forEach(function (w) {
+        if (!prev || w.x0 - prev.x1 > 14) cols.push([w]); else cols[cols.length - 1].push(w);
+        prev = w;
+      });
+      var addr = cols.shift() || [], type = "", up = "";
+      /* a long address can run into the type column with no gap: split the type back off */
+      var at = addr.map(function (w) { return w.s; }).join(" ");
+      var tm = /\s((?:Offer of Sale|Right of First Refusal|DOPA\b|\(SFD\)|SFD\b|2\s*-\s*4 Units|5\s*\+\s*(?:More )?Units|w\/\s*contract|w\/o\s*contract).*)$/i.exec(at);
+      if (tm && tm.index > 4) { type = tm[1].trim(); addr = [{s: at.slice(0, tm.index)}]; }
+      cols.forEach(function (col) {
+        var t = col.map(function (w) { return w.s; }).join(" ");
+        if ((unitsX != null && col[0].x0 >= unitsX - 15) || /^\$?[\d,]+(\.\d+)?$|^\d+\s*\/|\/\s*\$/.test(t)) up += (up ? " " : "") + t; else type += (type ? " " : "") + t;
+      });
+      var units = null, price = null;
+      if (up) {
+        var parts = up.split("/").map(function (x) { return x.trim(); });
+        if (parts.length > 1) { units = parseNum(parts[0]); price = parseNum(parts.slice(1).join("")); }
+        else if (/\$/.test(up) || parseNum(up) > 500) price = parseNum(up); else units = parseNum(up);
+      }
+      var rec = {category: legacyCategory(section.name, type), section: section.name, date: (m[3].length === 2 ? "20" + m[3] : m[3]) + "-" + ("0" + m[1]).slice(-2) + "-" + ("0" + m[2]).slice(-2),
+        address: prettyAddr(addr.map(function (w) { return w.s; }).join(" ")), dhcdId: "", units: units, price: price, legacy: true};
+      if (type && !/^(offer of sale|right of first refusal|sfd|2\s*-\s*4|5\s*\+|dopa)/i.test(type.trim())) rec.remark = type.trim();
+      else if (type && /selling|%|portion/i.test(type)) rec.remark = type.trim();
+      splitTail(rec);
+      if (rec.address) out.push(rec);
+    });
+  });
+  return out;
+}
+function isLegacyReport(pages) {
+  var fd = false, addr = false;
+  pages.forEach(function (items) { items.forEach(function (i) { if (/Filing Date/.test(i.s)) fd = true; if (/ADDRESS/.test(i.s)) addr = true; }); });
+  return fd && !addr;
 }
 /* pdf.js document -> parseDhcdItems input */
 function pdfItems(pdf) {
