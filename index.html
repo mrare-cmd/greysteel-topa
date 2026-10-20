@@ -162,6 +162,167 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .pi .m{font-size:12px;color:var(--text2)}
 .pbar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--border2);overflow:hidden}
 .pbar i{display:block;height:100%;background:var(--blue);border-radius:2px}
+/* New to the Pipeline (dark, presentation-ready) */
+#vPipe{overflow:hidden;background:#070b16}
+.pp{position:absolute;inset:0;display:grid;color:#e8eaed;grid-template-columns:minmax(0,1fr) 420px;grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  grid-template-areas:"hd hd" "kp kp" "tk side" "map side" "tl side";
+  background:radial-gradient(1100px 560px at 8% -12%,rgba(91,91,214,.34),transparent 60%),radial-gradient(900px 520px at 108% 6%,rgba(26,115,232,.26),transparent 60%),radial-gradient(700px 400px at 60% 120%,rgba(197,138,249,.16),transparent 60%),#070b16}
+.pp-hd{grid-area:hd;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:18px 24px 4px}
+.pp-k{font-size:11px;letter-spacing:.24em;color:#8ab4f8;font-weight:500;text-transform:uppercase;animation:ppUp .6s both}
+.pp-t{font-family:'Google Sans',sans-serif;font-size:34px;font-weight:600;line-height:1.15;background:linear-gradient(90deg,#fff 0%,#aecbfa 45%,#c58af9 100%);-webkit-background-clip:text;background-clip:text;color:transparent;animation:ppUp .6s .08s both}
+.pp-s{font-size:13px;color:#9aa0a6;margin-top:3px;animation:ppUp .6s .16s both}
+.pp-go{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 22px;border-radius:21px;font-family:'Google Sans',sans-serif;font-size:15px;font-weight:500;color:#fff;
+  background:linear-gradient(90deg,#1a73e8,#5b5bd6 55%,#9334e6);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 8px 30px rgba(91,91,214,.55);transition:transform .2s,box-shadow .2s;flex-shrink:0}
+.pp-go:hover{transform:translateY(-1px) scale(1.03);box-shadow:0 0 0 1px rgba(255,255,255,.2) inset,0 10px 40px rgba(147,52,230,.7)}
+.pp-go svg{width:16px;height:16px}
+.pp-kpis{grid-area:kp;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:12px 24px 12px}
+.pp-kpi{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border-radius:14px;padding:12px 16px;animation:ppUp .7s both}
+.pp-kpi::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);transform:translateX(-100%);animation:ppShine 3.5s 1s ease-in-out infinite}
+.pp-kpi .v{font-family:'Google Sans',sans-serif;font-size:28px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums}
+.pp-kpi .l{font-size:11.5px;color:#9aa0a6;letter-spacing:.03em;margin-top:1px}
+.pp-tk{grid-area:tk;position:relative;margin:0 12px 10px 24px;height:34px;border-radius:17px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.pp-tkr{display:inline-flex;white-space:nowrap;height:100%;align-items:center;animation:ppTick var(--d,90s) linear infinite}
+.pp-tk:hover .pp-tkr{animation-play-state:paused}
+.pp-tkr span{font-size:12.5px;color:#bdc1c6;margin-right:40px}
+.pp-tkr b{color:#81c995;font-weight:600;letter-spacing:.1em;font-size:10px;margin-right:7px}
+.pp-tkr em{font-style:normal;color:#fff;font-weight:500}
+.pp-mapw{grid-area:map;position:relative;margin:0 12px 0 24px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.09);box-shadow:0 24px 70px rgba(0,0,0,.55);min-height:260px;animation:ppUp .8s .2s both}
+#pMap{position:absolute;inset:0;background:#0b0f1a}
+.pp-mapw::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:450;box-shadow:inset 0 0 120px rgba(7,11,22,.85)}
+#pMap .leaflet-control-attribution{background:rgba(7,11,22,.6);color:#80868b}
+#pMap .leaflet-control-attribution a{color:#8ab4f8}
+#pMap .leaflet-bar a{background:#1b2130;color:#e8eaed;border-color:#2c3446}
+.pdot{width:14px;height:14px;border-radius:50%;background:var(--c);position:relative;cursor:pointer;box-shadow:0 0 14px var(--c),0 0 0 2px rgba(255,255,255,.85);
+  animation:ppDrop .75s cubic-bezier(.2,1.5,.4,1) both;transition:scale .35s,opacity .35s,filter .35s}
+.pdot i{position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--c);animation:ppPulse 2.6s ease-out infinite}
+.pdot.dim{opacity:.18;filter:grayscale(.7)}
+.pdot.dim i{display:none}
+.pdot.hot{scale:1.7;box-shadow:0 0 22px var(--c),0 0 0 2px #fff}
+.pdot.hot i{border-color:#fff}
+.pp-arc{stroke-dasharray:7 9;animation:ppDash 1.1s linear infinite;filter:drop-shadow(0 0 5px #c58af9)}
+.pp-tt{background:#111827;color:#fff;border:1px solid rgba(255,255,255,.15);box-shadow:0 6px 20px rgba(0,0,0,.5);font-size:12px;font-weight:500}
+.pp-tt::before{border-top-color:#111827!important}
+.pp-pop .leaflet-popup-content-wrapper,.pp-pop .leaflet-popup-tip{background:#111827;color:#e8eaed;border:1px solid rgba(255,255,255,.12);box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.pp-pop a.leaflet-popup-close-button{color:#9aa0a6}
+.ppop .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.ppop .a{font-family:'Google Sans',sans-serif;font-size:16px;color:#fff;margin-top:3px}
+.ppop .b{color:#c58af9;font-weight:500;margin-top:2px}
+.ppop .g{color:#bdc1c6;margin-top:6px}
+.ppop .m{color:#9aa0a6;font-size:12px;margin-top:2px}
+.ppop a{display:inline-block;margin-top:8px;color:#8ab4f8}
+.pp-leg{position:absolute;left:12px;bottom:12px;z-index:460;display:flex;flex-direction:column;gap:3px;padding:8px 10px;border-radius:10px;background:rgba(7,11,22,.7);border:1px solid rgba(255,255,255,.08);font-size:11px;color:#bdc1c6;backdrop-filter:blur(6px)}
+.pp-leg div{display:flex;align-items:center;gap:7px}
+.pp-leg i{width:9px;height:9px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.pp-clock{position:absolute;right:18px;top:14px;z-index:460;text-align:right;opacity:0;transform:translateY(-8px);transition:opacity .4s,transform .4s;pointer-events:none}
+.pp-clock.on{opacity:1;transform:none}
+.pp-clock b{display:block;font-family:'Google Sans',sans-serif;font-size:34px;font-weight:500;color:#fff;text-shadow:0 0 24px rgba(138,180,248,.7);font-variant-numeric:tabular-nums}
+.pp-clock span{font-size:12px;color:#9aa0a6}
+.pp-side{grid-area:side;display:flex;flex-direction:column;min-height:0;padding:0 24px 16px 12px}
+.pp-sh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.pp-sh span{font-family:'Google Sans',sans-serif;font-size:15px;color:#fff}
+.pp-sh input{flex:1;max-width:210px;height:32px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;padding:0 13px;font-size:12.5px;outline:none}
+.pp-sh input:focus{border-color:#8ab4f8;box-shadow:0 0 0 3px rgba(138,180,248,.18)}
+#ppList{flex:1;overflow:auto;padding:2px 6px 2px 2px;scrollbar-width:thin;scrollbar-color:#2c3446 transparent}
+.pb{position:relative;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-radius:14px;padding:11px 14px 10px;margin-bottom:9px;cursor:pointer;
+  transition:transform .25s,border-color .25s,box-shadow .25s,background .25s;animation:ppIn .55s both}
+.pb:hover,.pb.on{transform:translateX(-4px);border-color:rgba(138,180,248,.55);background:linear-gradient(180deg,rgba(138,180,248,.12),rgba(255,255,255,.03));box-shadow:0 10px 30px rgba(26,115,232,.22)}
+.pb-h{display:flex;align-items:flex-start;gap:10px}
+.pb .rk{font-family:'Roboto Mono',monospace;font-size:12px;color:#5f6c86;padding-top:2px;min-width:20px}
+.pb-n{flex:1;min-width:0}
+.pb .nm{font-family:'Google Sans',sans-serif;font-size:14.5px;color:#fff;line-height:1.3}
+.pb .mt{font-size:12px;color:#9aa0a6;margin-top:2px}
+.pb .tag{flex-shrink:0;font-size:9.5px;font-weight:700;letter-spacing:.1em;padding:3px 7px;border-radius:10px;margin-top:1px}
+.pb .tag.new{color:#81c995;background:rgba(129,201,149,.12);border:1px solid rgba(129,201,149,.35)}
+.pb .tag.rep{color:#fdd663;background:rgba(253,214,99,.1);border:1px solid rgba(253,214,99,.3)}
+.pb .bar{height:4px;border-radius:2px;background:rgba(255,255,255,.07);margin:9px 0 7px 30px;overflow:hidden}
+.pb .bar i{display:block;height:100%;width:0;border-radius:2px;background:linear-gradient(90deg,#1a73e8,#c58af9);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.pb .dl{margin-left:30px;font-size:12px;color:#bdc1c6;display:flex;flex-direction:column;gap:2px}
+.pb .dl div{display:flex;align-items:center;gap:7px;min-width:0}
+.pb .dl div span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.pb .dl i{width:7px;height:7px;border-radius:50%;flex-shrink:0;box-shadow:0 0 6px currentColor}
+.pb .dl em{font-style:normal;color:#80868b;flex-shrink:0}
+.pp-foot{font-size:11.5px;color:#80868b;padding:8px 4px 0}
+.pp-tl{grid-area:tl;margin:12px 12px 16px 24px;padding:10px 14px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.pp-tlh{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9aa0a6;margin-bottom:6px}
+.pp-tlh button{height:26px;padding:0 12px;border-radius:13px;border:1px solid rgba(138,180,248,.4);color:#8ab4f8;font-size:12px;font-weight:500;background:rgba(138,180,248,.08)}
+.pp-tlh button:hover{background:rgba(138,180,248,.18)}
+.pp-bars{display:flex;align-items:flex-end;gap:6px;height:86px}
+.pp-bars .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.pp-bars .tb i{display:block;width:100%;max-width:44px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#aecbfa,#5b5bd6);transform-origin:bottom;animation:ppGrow 1s cubic-bezier(.2,.8,.2,1) both;box-shadow:0 0 14px rgba(138,180,248,.3)}
+.pp-bars .tb b{font-size:11px;color:#e8eaed;font-weight:500;margin-bottom:3px}
+.pp-bars .tb span{font-size:10px;color:#80868b;margin-top:4px;white-space:nowrap}
+/* presentation */
+.pp-stage,.pp-pc{display:none}
+body.pp-pres main{z-index:5000}
+.pp.pres{position:fixed;inset:0;z-index:5000;display:block}
+.pp.pres>:not(.pp-mapw){display:none}
+.pp.pres .pp-mapw{position:absolute;inset:0;margin:0;border-radius:0;border:0;animation:none}
+.pp.pres .pp-mapw::after{box-shadow:inset 0 0 220px rgba(7,11,22,.95)}
+.pp.pres .pp-stage,.pp.pres .pp-pc{display:block}
+.pp.pres .pp-leg{left:auto;right:24px;bottom:84px}
+.pp-stage{position:absolute;inset:0;z-index:600;pointer-events:none}
+.pp-stage>*{pointer-events:auto}
+.ps-full{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,rgba(7,11,22,.55),rgba(7,11,22,.85));backdrop-filter:blur(2px);pointer-events:none}
+.ps-full .k{font-size:13px;letter-spacing:.32em;color:#8ab4f8;text-transform:uppercase;animation:ppUp .8s both}
+.ps-full .t{font-family:'Google Sans',sans-serif;font-size:min(9vw,96px);font-weight:600;line-height:1.05;margin-top:12px;background:linear-gradient(90deg,#fff,#aecbfa 45%,#c58af9);-webkit-background-clip:text;background-clip:text;color:transparent;animation:ppZoom 1.1s .1s cubic-bezier(.2,.8,.2,1) both}
+.ps-full .s{font-size:18px;color:#bdc1c6;margin-top:14px;animation:ppUp .8s .35s both}
+.ps-nums{display:flex;gap:56px;margin-top:44px;flex-wrap:wrap;justify-content:center}
+.ps-nums div{animation:ppUp .8s both}
+.ps-nums b{display:block;font-family:'Google Sans',sans-serif;font-size:52px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(138,180,248,.45)}
+.ps-nums span{font-size:13px;color:#9aa0a6;letter-spacing:.06em;text-transform:uppercase}
+.ps-card{position:absolute;left:44px;top:50%;width:min(560px,44vw);max-height:calc(100% - 180px);overflow:auto;transform:translateY(-50%);padding:28px 30px 22px;border-radius:24px;
+  background:linear-gradient(160deg,rgba(23,30,48,.88),rgba(10,14,26,.9));border:1px solid rgba(255,255,255,.12);box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 0 1px rgba(138,180,248,.08) inset;backdrop-filter:blur(14px);
+  animation:ppCard .8s cubic-bezier(.2,.8,.2,1) both}
+.ps-card .k{font-size:12px;letter-spacing:.2em;color:#8ab4f8;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.ps-card .k .tag{font-size:10px;letter-spacing:.12em;padding:3px 8px;border-radius:10px;font-weight:700}
+.ps-card .k .tag.new{color:#81c995;background:rgba(129,201,149,.14);border:1px solid rgba(129,201,149,.4)}
+.ps-card .k .tag.rep{color:#fdd663;background:rgba(253,214,99,.1);border:1px solid rgba(253,214,99,.35)}
+.ps-card .nm{font-family:'Google Sans',sans-serif;font-size:clamp(28px,3.2vw,44px);font-weight:600;line-height:1.1;margin-top:10px;color:#fff;animation:ppUp .7s .15s both}
+.ps-chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 8px;animation:ppUp .7s .25s both}
+.ps-chips span{padding:6px 12px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);font-size:13px;color:#e8eaed}
+.ps-chips b{font-weight:600;color:#fff}
+.ps-d{padding:12px 0 10px;border-top:1px solid rgba(255,255,255,.08);animation:ppIn .6s both}
+.ps-d .a{font-family:'Google Sans',sans-serif;font-size:17px;color:#fff}
+.ps-d .m{font-size:13px;color:#9aa0a6;margin-top:2px}
+.ps-trk{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.1);margin-top:10px}
+.ps-trk i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:3px;background:var(--c);box-shadow:0 0 12px var(--c);transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+.ps-trk s{position:absolute;top:-3px;width:2px;height:12px;border-radius:1px;background:rgba(255,255,255,.3)}
+.ps-ph{display:flex;justify-content:space-between;font-size:12px;margin-top:6px;color:#9aa0a6}
+.ps-ph b{font-weight:600}
+.ps-more{font-size:12.5px;color:#80868b;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)}
+.pp-pc{position:absolute;inset:0;z-index:700;pointer-events:none}
+.pp-prog{position:absolute;left:0;right:0;top:0;height:3px;background:rgba(255,255,255,.08)}
+.pp-prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,#1a73e8,#c58af9);box-shadow:0 0 10px #8ab4f8}
+.pp-brand{position:absolute;left:44px;top:26px;font-size:12px;letter-spacing:.28em;color:#9aa0a6;text-transform:uppercase}
+.pp-brand b{color:#fff;font-weight:600}
+.pp-ctl{position:absolute;right:24px;bottom:24px;display:flex;align-items:center;gap:8px;pointer-events:auto;padding:6px;border-radius:26px;background:rgba(7,11,22,.7);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(8px)}
+.pp-ctl button{width:38px;height:38px;border-radius:50%;color:#e8eaed;font-size:16px;display:inline-flex;align-items:center;justify-content:center;transition:background .2s}
+.pp-ctl button:hover{background:rgba(255,255,255,.1)}
+.pp-ctl span{font-family:'Roboto Mono',monospace;font-size:12px;color:#9aa0a6;padding:0 6px;min-width:64px;text-align:center}
+.pp-dots{position:absolute;left:50%;bottom:36px;transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto;max-width:50vw;flex-wrap:wrap;justify-content:center}
+.pp-dots i{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);transition:width .3s,background .3s;cursor:pointer}
+.pp-dots i.on{width:22px;background:#8ab4f8}
+@keyframes ppPulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(3.4);opacity:0}}
+@keyframes ppDrop{0%{transform:translateY(-34px) scale(.2);opacity:0}100%{transform:none;opacity:1}}
+@keyframes ppDash{to{stroke-dashoffset:-32}}
+@keyframes ppUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes ppIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@keyframes ppCard{from{opacity:0;transform:translate(-40px,-50%);filter:blur(8px)}to{opacity:1;transform:translate(0,-50%);filter:none}}
+@keyframes ppZoom{from{opacity:0;transform:scale(.86);letter-spacing:.08em;filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+@keyframes ppGrow{from{transform:scaleY(0)}}
+@keyframes ppShine{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+@keyframes ppTick{to{transform:translateX(-50%)}}
+@keyframes ppFill{from{width:0}to{width:100%}}
+@media (max-width:900px){
+  .pp{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto 420px auto auto;grid-template-areas:"hd" "kp" "tk" "map" "tl" "side";overflow:auto}
+  .pp-hd{padding:14px 16px 4px;flex-wrap:wrap}.pp-t{font-size:26px}
+  .pp-kpis{grid-template-columns:repeat(2,1fr);padding:10px 16px}
+  .pp-tk,.pp-mapw,.pp-tl{margin-left:16px;margin-right:16px}
+  .pp-side{padding:0 16px 16px}#ppList{overflow:visible}
+  .ps-card{left:16px;right:16px;width:auto;top:auto;bottom:90px;transform:none;animation:ppUp .7s both}
+}
+@media (prefers-reduced-motion:reduce){.pp *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 /* map tab */
 #vMap{overflow:hidden}
 .mv{position:absolute;inset:0;display:flex}
@@ -433,11 +594,12 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v20</span>
+    <span id="verBadge" title="Page version">v21</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
     <button class="tab" data-view="dash"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg><span class="tl">Dashboard</span></button>
+    <button class="tab" data-view="pipe"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><span class="tl">New to the Pipeline</span></button>
     <button class="tab active" data-view="table"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="10" x2="9" y2="20"/></svg><span class="tl">Filings</span></button>
     <button class="tab" data-view="comps"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg><span class="tl">Sales Comps</span></button>
     <button class="tab" data-view="reports"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg><span class="tl">Weekly Reports</span></button>
@@ -461,6 +623,35 @@ tr.hidden-row td{opacity:.45}
 
 <main>
   <!-- ======================= DASHBOARD ======================= -->
+  <section class="view" id="vPipe"><div class="pp" id="ppRoot">
+    <div class="pp-hd">
+      <div><div class="pp-k">Greysteel &middot; DC TOPA buyer intelligence</div><div class="pp-t">New to the Pipeline</div><div class="pp-s" id="ppSub"></div></div>
+      <button class="pp-go" id="ppGo" title="Full-screen tour of every buyer under contract (arrows to step, space to pause, Esc to exit)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Present</button>
+    </div>
+    <div class="pp-kpis" id="ppKpis"></div>
+    <div class="pp-tk" title="Newest contracts"><div class="pp-tkr" id="ppTick"></div></div>
+    <div class="pp-mapw">
+      <div id="pMap"></div>
+      <div class="pp-clock" id="ppClock"></div>
+      <div class="pp-leg" id="ppLeg"></div>
+      <div class="pp-stage" id="ppStage"></div>
+      <div class="pp-pc">
+        <div class="pp-prog"><i id="ppProg"></i></div>
+        <div class="pp-brand"><b>Greysteel</b> &middot; New to the Pipeline</div>
+        <div class="pp-dots" id="ppDots"></div>
+        <div class="pp-ctl"><button id="ppPrev" title="Previous (Left arrow)">&#8249;</button><button id="ppPlay" title="Pause / play (Space)">&#10074;&#10074;</button><button id="ppNext" title="Next (Right arrow)">&#8250;</button><span id="ppCount"></span><button id="ppX" title="Exit (Esc)">&#10005;</button></div>
+      </div>
+    </div>
+    <div class="pp-side">
+      <div class="pp-sh"><span>Buyers under contract</span><input id="ppQ" placeholder="Search buyers or addresses" autocomplete="off"></div>
+      <div id="ppList"></div>
+      <div class="pp-foot" id="ppFoot"></div>
+    </div>
+    <div class="pp-tl">
+      <div class="pp-tlh"><span>Contracts entering the pipeline, by TOPA month</span><button id="ppReplay" title="Replay the pipeline filling up on the map">&#9654; Replay</button></div>
+      <div class="pp-bars" id="ppBars"></div>
+    </div>
+  </div></section>
   <section class="view" id="vMap"><div class="mv">
     <aside class="mside">
       <div class="ms-stats" id="mStats"></div>
@@ -1319,6 +1510,7 @@ async function newRowId(slug, row, taken) {
 function renderAll(soft) {
   if (S.view === "map") renderMapView();
   if (S.view === "dash") renderDash();
+  if (S.view === "pipe") renderPipe();
   if (S.view === "table") renderTable(soft);
   if (S.view === "comps") renderComps();
   if (S.view === "reports") renderReports();
@@ -1332,18 +1524,18 @@ function setView(v, noHash) {
   S.view = v;
   document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === v); });
   document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
-  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports", review: "vReview"}[v]).classList.add("active");
+  $({map: "vMap", dash: "vDash", pipe: "vPipe", table: "vTable", comps: "vComps", reports: "vReports", review: "vReview"}[v]).classList.add("active");
   if (!noHash) writeHash();
   renderAll();
   if (v === "reports") { loadDhcd(); loadActivity(); }
 }
 function writeHash() { var h = "#" + S.view + (S.view === "table" ? "/" + S.sheet : ""); if (location.hash !== h) history.replaceState(null, "", h); }
 function readHash() {
-  var m = /^#(map|dash|table|comps|reports|review)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
+  var m = /^#(map|dash|pipe|table|comps|reports|review)(?:\/([a-z0-9]+))?/.exec(location.hash || "");
   if (m) { S.view = m[1]; if (m[2] && sheetMeta(m[2]).title !== m[2]) S.sheet = m[2]; }
   document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t.dataset.view === S.view); });
   document.querySelectorAll(".view").forEach(function (s) { s.classList.remove("active"); });
-  $({map: "vMap", dash: "vDash", table: "vTable", comps: "vComps", reports: "vReports", review: "vReview"}[S.view]).classList.add("active");
+  $({map: "vMap", dash: "vDash", pipe: "vPipe", table: "vTable", comps: "vComps", reports: "vReports", review: "vReview"}[S.view]).classList.add("active");
   if (S.view === "table") ensureSheet(S.sheet).then(function () { renderTable(); });
   if (S.view === "reports") { loadDhcd(); loadActivity(); }
   writeHash();
@@ -1501,6 +1693,265 @@ function renderCmp() {
     row("Average units (annual)", function (y) { return ann[y] ? ann[y].avgU : "TBD"; }, function (v) { return v == null ? "-" : v.toFixed(1); }),
     row("Median units (annual)", function (y) { return ann[y] ? ann[y].medU : "TBD"; }, I)
   ].join("") + "</tbody>";
+}
+/* ---------- New to the Pipeline: buyers under contract (active 5+ offers of sale w/ contract, known buyer) ---------- */
+var _pmap = null, _pLayer = null, _pArc = null, _pmk = {}, _pSig = "", _pSel = null, _pres = null, _pRep = null;
+function pipeKey(b) { return String(b || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+function pv(r, f) { return val("ofs5", r, f); }
+function pipeData() {
+  var all = ofsRows(), rows = all.filter(function (r) { return mStatus(r) === "active" && /w\/ Contract/i.test(String(pv(r, "type") || "")); });
+  var past = {};
+  all.forEach(function (r) { var k = pipeKey(pv(r, "buyer")); if (k) (past[k] = past[k] || []).push(r); });
+  var by = {}, pending = 0;
+  rows.forEach(function (r) {
+    var k = pipeKey(pv(r, "buyer"));
+    if (!k) { pending++; return; }
+    var g = by[k] = by[k] || {key: k, rows: [], units: 0, vol: 0};
+    g.rows.push(r); g.units += +pv(r, "units") || 0; g.vol += +pv(r, "price") || 0;
+  });
+  var buyers = Object.keys(by).map(function (k) {
+    var g = by[k];
+    g.rows.sort(function (a, b) { return String(pv(b, "date") || "").localeCompare(String(pv(a, "date") || "")); });
+    g.name = String(pv(g.rows[0], "buyer")).trim(); g.latest = pv(g.rows[0], "date");
+    /* earlier deals by the same buyer at other buildings (refilings of the same building don't count) */
+    var here = {}; g.rows.forEach(function (r) { here[normAddr(pv(r, "address"))] = 1; });
+    var prior = {}; (past[k] || []).forEach(function (r) { var a = normAddr(pv(r, "address")); if (!here[a]) prior[a] = 1; });
+    g.prior = Object.keys(prior).length;
+    return g;
+  }).sort(function (a, b) { return b.units - a.units || b.rows.length - a.rows.length || a.name.localeCompare(b.name); });
+  var list = [], units = 0, vol = 0, pu = 0, pvv = 0;
+  buyers.forEach(function (g) { list = list.concat(g.rows); });
+  list.forEach(function (r) { var u = +pv(r, "units") || 0, p = +pv(r, "price") || 0; units += u; vol += p; if (u && p) { pu += u; pvv += p; } });
+  return {buyers: buyers, rows: list, pending: pending, units: units, vol: vol, ppu: pu ? pvv / pu : 0};
+}
+function fmtBig(n) {
+  n = +n || 0;
+  return n >= 1e9 ? "$" + (n / 1e9).toFixed(2) + "B" : n >= 1e6 ? "$" + (n / 1e6).toFixed(n >= 1e8 ? 0 : 1) + "M" : n >= 1e3 ? "$" + Math.round(n / 1e3) + "K" : "$" + Math.round(n);
+}
+function pipeDays(r) { var d = pv(r, "date"); return d ? daysBetween(d, todayISO()) : null; }
+function phaseColor(n) { for (var i = 0; i < MILESTONES.length; i++) if (n <= MILESTONES[i].day) return SEG_COLORS[i]; return SEG_COLORS[SEG_COLORS.length - 1]; }
+function countUp(el, to, fmt, ms) {
+  var t0 = performance.now(); ms = ms || 1500;
+  (function step(t) { var k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(to * e); if (k < 1 && el.isConnected) requestAnimationFrame(step); })(t0);
+}
+function initPipeMap() {
+  if (_pmap || !window.L) return;
+  _pmap = L.map("pMap", {zoomControl: false}).setView([38.9072, -77.0169], 12);
+  L.control.zoom({position: "topright"}).addTo(_pmap);
+  var base = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_";
+  L.tileLayer(base + "Base/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18, attribution: "Tiles &copy; Esri"}).addTo(_pmap);
+  L.tileLayer(base + "Reference/MapServer/tile/{z}/{y}/{x}", {maxNativeZoom: 15, maxZoom: 18}).addTo(_pmap);
+  _pArc = L.layerGroup().addTo(_pmap); _pLayer = L.layerGroup().addTo(_pmap);
+  fetch("https://raw.githubusercontent.com/unitedstates/districts/gh-pages/states/DC/shape.geojson").then(function (r) { return r.json(); }).then(function (g) {
+    L.geoJSON(g, {style: {color: "#8ab4f8", weight: 1.5, opacity: .5, fillColor: "#1a73e8", fillOpacity: .05, dashArray: "4 6"}, interactive: false}).addTo(_pmap).bringToBack();
+  }).catch(function () {});
+  $("ppLeg").innerHTML = MILESTONES.map(function (m, i) {
+    return '<div><i style="background:' + SEG_COLORS[i] + ";color:" + SEG_COLORS[i] + '"></i>' + m.label + " (to day " + m.day + ")</div>";
+  }).join("");
+}
+function pipeIcon(r, delay) {
+  var c = phaseColor(pipeDays(r)), d = delay || 0;
+  return L.divIcon({className: "", iconSize: [14, 14], iconAnchor: [7, 7], popupAnchor: [0, -9],
+    html: '<div class="pdot" style="--c:' + c + ";animation-delay:" + d + 'ms"><i style="animation-delay:' + (d + 750) + 'ms"></i></div>'});
+}
+function pipePopup(r) {
+  var n = pipeDays(r), u = pv(r, "units"), p = pv(r, "price");
+  return '<div class="ppop"><div class="k" style="color:' + phaseColor(n) + '">' + esc(phase(n)) + "</div>" +
+    '<div class="a">' + esc(pv(r, "address")) + "</div>" + '<div class="b">' + esc(pv(r, "buyer")) + "</div>" +
+    '<div class="g">' + [u ? fmtInt(u) + " units" : "", p ? fmtMoney(p) : "", u && p ? fmtBig(p / u) + " / unit" : ""].filter(Boolean).join(" &middot; ") + "</div>" +
+    '<div class="m">TOPA ' + fmtDate(pv(r, "date")) + " &middot; day " + n + " of 420" + (pv(r, "seller") ? " &middot; seller " + esc(pv(r, "seller")) : "") + "</div>" +
+    '<a href="#" onclick="openRow(\'ofs5\',\'' + r.id + '\');return false">Open details</a></div>';
+}
+function addPipeMarker(r, delay) {
+  var k = pipeKey(pv(r, "buyer"));
+  var m = L.marker(r.geo, {icon: pipeIcon(r, delay), riseOnHover: true}).bindPopup(function () { return pipePopup(r); }, {className: "pp-pop", maxWidth: 320})
+    .bindTooltip(esc(pv(r, "buyer")), {direction: "top", offset: [0, -9], className: "pp-tt"}).addTo(_pLayer);
+  m.on("click", function () {
+    if (_pres) return;
+    _pSel = k; focusBuyer(k, false);
+    var c = document.querySelector('#ppList .pb[data-k="' + k + '"]'); if (c) c.scrollIntoView({block: "nearest", behavior: "smooth"});
+  });
+  _pmk[r.id] = m;
+}
+function pipeMarkers(rows, stagger) {
+  _pLayer.clearLayers(); _pArc.clearLayers(); _pmk = {};
+  rows.filter(function (r) { return r.geo; }).sort(function (a, b) { return String(pv(a, "date")).localeCompare(String(pv(b, "date"))); })
+    .forEach(function (r, i) { addPipeMarker(r, stagger ? 250 + i * stagger : 0); });
+}
+function pipeBounds(rows) { var pts = rows.filter(function (r) { return r.geo; }).map(function (r) { return r.geo; }); return pts.length ? L.latLngBounds(pts) : null; }
+function fitAll(fly) {
+  var D = S.pipe, b = D && pipeBounds(D.rows); if (!b || !_pmap) return;
+  var o = {padding: _pres ? [110, 110] : [40, 40], maxZoom: 14};
+  if (fly) _pmap.flyToBounds(b, Object.assign({duration: 1.4}, o)); else _pmap.fitBounds(b, o);
+}
+/* a gentle curve between two of a buyer's buildings */
+function arcPts(a, b) {
+  var mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, cx = mx + (b[1] - a[1]) * .22, cy = my - (b[0] - a[0]) * .22, pts = [];
+  for (var t = 0; t <= 1.0001; t += .05) { var u = 1 - t; pts.push([u * u * a[0] + 2 * u * t * cx + t * t * b[0], u * u * a[1] + 2 * u * t * cy + t * t * b[1]]); }
+  return pts;
+}
+function focusBuyer(key, fly) {
+  var D = S.pipe; if (!D || !_pmap) return;
+  _pArc.clearLayers();
+  var g = key ? D.buyers.filter(function (b) { return b.key === key; })[0] : null, ids = {};
+  if (g) g.rows.forEach(function (r) { ids[r.id] = 1; });
+  Object.keys(_pmk).forEach(function (id) {
+    var el = _pmk[id].getElement(), d = el && el.querySelector(".pdot"); if (!d) return;
+    d.classList.toggle("dim", !!g && !ids[id]); d.classList.toggle("hot", !!g && !!ids[id]);
+    _pmk[id].setZIndexOffset(g && ids[id] ? 1000 : 0);
+  });
+  document.querySelectorAll("#ppList .pb").forEach(function (c) { c.classList.toggle("on", !!g && c.dataset.k === key); });
+  if (!g) return;
+  var seen = {}, pts = [];
+  g.rows.forEach(function (r) { if (r.geo && !seen[r.geo.join()]) { seen[r.geo.join()] = 1; pts.push(r.geo); } });
+  pts.sort(function (a, b) { return a[1] - b[1]; });
+  for (var i = 0; i < pts.length - 1; i++) L.polyline(arcPts(pts[i], pts[i + 1]), {className: "pp-arc", color: "#c58af9", weight: 2.5, opacity: .95, interactive: false}).addTo(_pArc);
+  if (fly) {
+    if (!pts.length) { fitAll(true); return; }
+    var side = _pres && innerWidth > 900 ? Math.min(660, innerWidth * .46) : 60;
+    _pmap.flyToBounds(L.latLngBounds(pts), {paddingTopLeft: [side, _pres ? 120 : 60], paddingBottomRight: [_pres ? 120 : 60, _pres ? 120 : 60], maxZoom: 15, duration: _pres ? 1.8 : 1.2});
+  }
+}
+function pipeTag(g) { return g.prior ? '<span class="tag rep" title="' + g.prior + ' other building' + (g.prior > 1 ? "s" : "") + ' under this buyer in the tracker">REPEAT &middot; ' + g.prior + "</span>" : '<span class="tag new" title="No other building under this buyer in the tracker">NEW BUYER</span>'; }
+function pipeList() {
+  var D = S.pipe, q = normAddr($("ppQ").value), max = D.buyers.length ? D.buyers[0].units || 1 : 1;
+  var bs = D.buyers.filter(function (g) { return !q || normAddr(g.name + " " + g.rows.map(function (r) { return pv(r, "address"); }).join(" ")).indexOf(q) >= 0; });
+  $("ppList").innerHTML = bs.map(function (g, i) {
+    var rk = D.buyers.indexOf(g) + 1;
+    return '<div class="pb" data-k="' + g.key + '" style="animation-delay:' + Math.min(i, 20) * 45 + 'ms"><div class="pb-h"><span class="rk">' + String(rk).padStart(2, "0") + '</span><div class="pb-n"><div class="nm">' + esc(g.name) + '</div><div class="mt">' +
+      g.rows.length + " contract" + (g.rows.length > 1 ? "s" : "") + " &middot; " + fmtInt(g.units) + " units" + (g.vol ? " &middot; " + fmtBig(g.vol) : "") + "</div></div>" + pipeTag(g) + "</div>" +
+      '<div class="bar"><i data-w="' + (100 * (g.units || 0) / max).toFixed(1) + '"></i></div><div class="dl">' +
+      g.rows.slice(0, 3).map(function (r) { var c = phaseColor(pipeDays(r)); return '<div><i style="background:' + c + ";color:" + c + '"></i><span>' + esc(pv(r, "address")) + "</span><em>day " + pipeDays(r) + "</em></div>"; }).join("") +
+      (g.rows.length > 3 ? '<div><em>+' + (g.rows.length - 3) + " more</em></div>" : "") + "</div></div>";
+  }).join("") || '<div class="pp-foot">No buyer matches.</div>';
+  requestAnimationFrame(function () { setTimeout(function () { document.querySelectorAll("#ppList .bar i").forEach(function (b) { b.style.width = b.dataset.w + "%"; }); }, 120); });
+  document.querySelectorAll("#ppList .pb").forEach(function (c) {
+    c.onmouseenter = function () { if (!_pSel) focusBuyer(c.dataset.k, false); };
+    c.onmouseleave = function () { if (!_pSel) focusBuyer(null); };
+    c.onclick = function () { _pSel = _pSel === c.dataset.k ? null : c.dataset.k; if (_pSel) focusBuyer(_pSel, true); else { focusBuyer(null); fitAll(true); } };
+  });
+  if (_pSel) focusBuyer(_pSel, false);
+}
+function renderPipe() {
+  if (!S.sheets.ofs5) return;
+  initPipeMap();
+  setTimeout(function () { if (_pmap) _pmap.invalidateSize(); }, 0);
+  var D = pipeData();
+  var sig = D.rows.map(function (r) { return [r.id, pv(r, "buyer"), pv(r, "units"), pv(r, "price"), pv(r, "address"), r.geo].join("~"); }).join("|") + D.pending;
+  if (sig === _pSig) return;
+  var first = !_pSig; _pSig = sig; S.pipe = D;
+  $("ppSub").textContent = "Every buyer under contract on a DC 5+ unit offer of sale still inside its 420-day TOPA window, as of " + fmtDate(todayISO()) + ".";
+  var K = [[D.buyers.length, "Buyers under contract", fmtInt], [D.rows.length, "Contracts", fmtInt], [D.units, "Units", fmtInt], [D.vol, "Contract volume", fmtBig], [D.ppu, "Avg price / unit", fmtBig]];
+  $("ppKpis").innerHTML = K.map(function (k, i) { return '<div class="pp-kpi" style="animation-delay:' + i * 90 + 'ms"><div class="v">0</div><div class="l">' + k[1] + "</div></div>"; }).join("");
+  document.querySelectorAll("#ppKpis .v").forEach(function (el, i) { countUp(el, K[i][0], K[i][2], 1400 + i * 120); });
+  var newest = D.rows.slice().sort(function (a, b) { return String(pv(b, "date")).localeCompare(String(pv(a, "date"))); }).slice(0, 14);
+  var tk = newest.map(function (r) {
+    var u = pv(r, "units"), p = pv(r, "price");
+    return "<span><b>UNDER CONTRACT</b><em>" + esc(pv(r, "buyer")) + "</em> &rarr; " + esc(pv(r, "address")) + (u ? " &middot; " + fmtInt(u) + " units" : "") + (p ? " &middot; " + fmtBig(p) : "") + " &middot; " + fmtDate(pv(r, "date")) + "</span>";
+  }).join("");
+  $("ppTick").innerHTML = tk + tk; $("ppTick").style.setProperty("--d", Math.max(40, newest.length * 7) + "s");
+  pipeList();
+  $("ppFoot").textContent = D.pending ? D.pending + " more contract" + (D.pending > 1 ? "s" : "") + " in the window with the buyer not yet known (FOIA pending)." : "";
+  /* contracts by TOPA month, last 14 months */
+  var t = new Date(), months = [];
+  for (var i = 13; i >= 0; i--) { var d = new Date(t.getFullYear(), t.getMonth() - i, 1); months.push({k: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"), d: d, n: 0, u: 0, v: 0}); }
+  D.rows.forEach(function (r) { var mk = String(pv(r, "date") || "").slice(0, 7), m = months.filter(function (x) { return x.k === mk; })[0]; if (m) { m.n++; m.u += +pv(r, "units") || 0; m.v += +pv(r, "price") || 0; } });
+  var mx = Math.max.apply(null, months.map(function (m) { return m.n; }).concat([1]));
+  $("ppBars").innerHTML = months.map(function (m, i) {
+    return '<div class="tb" title="' + m.d.toLocaleString("en-US", {month: "long", year: "numeric"}) + ": " + m.n + " contracts, " + fmtInt(m.u) + " units, " + fmtBig(m.v) + '">' + (m.n ? "<b>" + m.n + "</b>" : "") +
+      '<i style="height:' + (m.n ? Math.max(4, 58 * m.n / mx) : 2) + "px;animation-delay:" + (300 + i * 60) + 'ms;opacity:' + (m.n ? 1 : .25) + '"></i><span>' + m.d.toLocaleString("en-US", {month: "short"}) + (m.d.getMonth() === 0 || i === 0 ? " '" + String(m.d.getFullYear()).slice(2) : "") + "</span></div>";
+  }).join("");
+  pipeMarkers(D.rows, first ? 40 : 0);
+  if (first) setTimeout(function () { _pmap.invalidateSize(); fitAll(false); }, 30);
+}
+function pipeReplay() {
+  var D = S.pipe; if (!D || !_pmap) return;
+  clearInterval(_pRep); _pSel = null; focusBuyer(null); fitAll(true);
+  var rows = D.rows.filter(function (r) { return r.geo; }).sort(function (a, b) { return String(pv(a, "date")).localeCompare(String(pv(b, "date"))); });
+  _pLayer.clearLayers(); _pmk = {};
+  var i = 0, units = 0, clk = $("ppClock"); clk.classList.add("on");
+  _pRep = setInterval(function () {
+    if (i >= rows.length) { clearInterval(_pRep); setTimeout(function () { clk.classList.remove("on"); }, 2200); return; }
+    var r = rows[i++]; units += +pv(r, "units") || 0; addPipeMarker(r, 0);
+    clk.innerHTML = "<b>" + fmtDate(pv(r, "date")) + "</b><span>" + i + " contracts &middot; " + fmtInt(units) + " units</span>";
+  }, Math.max(70, 6000 / Math.max(1, rows.length)));
+}
+/* ---- presentation: intro, one slide per buyer, outro ---- */
+function presStart() {
+  var D = S.pipe; if (!D || !D.buyers.length) return;
+  clearInterval(_pRep); $("ppClock").classList.remove("on"); _pSel = null;
+  if (Object.keys(_pmk).length !== D.rows.filter(function (r) { return r.geo; }).length) pipeMarkers(D.rows, 0);
+  $("ppRoot").classList.add("pres"); document.body.classList.add("pp-pres");
+  var el = $("vPipe"); if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+  _pres = {i: 0, play: true, slides: ["intro"].concat(D.buyers.map(function (g) { return g.key; }), ["outro"]), timer: null};
+  $("ppDots").innerHTML = _pres.slides.map(function (s, i) { return '<i data-i="' + i + '"></i>'; }).join("");
+  $("ppDots").onclick = function (e) { var i = e.target.dataset && e.target.dataset.i; if (i != null) presGo(+i); };
+  $("ppPlay").innerHTML = "&#10074;&#10074;";
+  setTimeout(function () { _pmap.invalidateSize(); presGo(0); }, 300);
+}
+function presStop() {
+  if (!_pres) return;
+  clearTimeout(_pres.timer); _pres = null;
+  $("ppRoot").classList.remove("pres"); document.body.classList.remove("pp-pres"); $("ppStage").innerHTML = "";
+  if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+  focusBuyer(null);
+  setTimeout(function () { _pmap.invalidateSize(); fitAll(false); }, 300);
+}
+function presDur(s) { if (s === "intro") return 7000; if (s === "outro") return 0; var g = S.pipe.buyers.filter(function (b) { return b.key === s; })[0]; return Math.min(15000, 8000 + 1500 * (Math.min(g.rows.length, 5) - 1)); }
+function presGo(i) {
+  var P = _pres; if (!P) return;
+  var n = P.slides.length; i = Math.max(0, Math.min(n - 1, i)); P.i = i; clearTimeout(P.timer);
+  var s = P.slides[i], D = S.pipe, st = $("ppStage"), dur = presDur(s), bar = $("ppProg");
+  $("ppCount").textContent = (i + 1) + " / " + n;
+  document.querySelectorAll("#ppDots i").forEach(function (d, j) { d.classList.toggle("on", j === i); });
+  bar.style.animation = "none"; void bar.offsetWidth;
+  bar.style.width = s === "outro" ? "100%" : "0";
+  if (P.play && dur) bar.style.animation = "ppFill " + dur + "ms linear forwards";
+  if (s === "intro" || s === "outro") {
+    focusBuyer(null); fitAll(true);
+    var nums = [[D.buyers.length, "Buyers", fmtInt], [D.rows.length, "Contracts", fmtInt], [D.units, "Units", fmtInt], [D.vol, "Under contract", fmtBig]];
+    st.innerHTML = '<div class="ps-full"><div class="k">' + (s === "intro" ? "Greysteel &middot; DC TOPA buyer intelligence" : "Greysteel &middot; as of " + fmtDate(todayISO())) + "</div>" +
+      '<div class="t">' + (s === "intro" ? "New to the Pipeline" : "Every buyer. Every contract.") + "</div>" +
+      '<div class="s">' + (s === "intro" ? "Who is under contract on DC 5+ unit offers of sale right now" : "Tracked weekly from DHCD filings, FOIAs and the market") + "</div>" +
+      '<div class="ps-nums">' + nums.map(function (x, j) { return '<div style="animation-delay:' + (500 + j * 140) + 'ms"><b>0</b><span>' + x[1] + "</span></div>"; }).join("") + "</div></div>";
+    st.querySelectorAll(".ps-nums b").forEach(function (el, j) { setTimeout(function () { countUp(el, nums[j][0], nums[j][2], 1600); }, 500 + j * 140); });
+  } else {
+    var g = D.buyers.filter(function (b) { return b.key === s; })[0], rank = D.buyers.indexOf(g) + 1;
+    focusBuyer(g.key, true);
+    var chips = ["<b>" + g.rows.length + "</b> contract" + (g.rows.length > 1 ? "s" : ""), "<b>" + fmtInt(g.units) + "</b> units"];
+    if (g.vol) chips.push("<b>" + fmtBig(g.vol) + "</b> under contract");
+    if (g.vol && g.units) chips.push("<b>" + fmtBig(g.vol / g.units) + "</b> / unit");
+    var show = g.rows.slice(0, 5);
+    st.innerHTML = '<div class="ps-card"><div class="k">Buyer ' + String(rank).padStart(2, "0") + " of " + D.buyers.length + " " + pipeTag(g) + "</div>" +
+      '<div class="nm">' + esc(g.name) + "</div>" + '<div class="ps-chips">' + chips.map(function (c) { return "<span>" + c + "</span>"; }).join("") + "</div>" +
+      show.map(function (r, j) {
+        var d = pipeDays(r), c = phaseColor(d), u = pv(r, "units"), p = pv(r, "price");
+        return '<div class="ps-d" style="animation-delay:' + (350 + j * 140) + 'ms"><div class="a">' + esc(pv(r, "address")) + "</div>" +
+          '<div class="m">' + [u ? fmtInt(u) + " units" : "", p ? fmtMoney(p) : "", "TOPA " + fmtDate(pv(r, "date")), pv(r, "seller") ? "from " + esc(pv(r, "seller")) : ""].filter(Boolean).join(" &middot; ") + "</div>" +
+          '<div class="ps-trk" style="--c:' + c + '">' + MILESTONES.map(function (m) { return '<s style="left:' + (100 * m.day / 420) + '%"></s>'; }).join("") + '<i data-w="' + Math.min(100, 100 * d / 420).toFixed(1) + '"></i></div>' +
+          '<div class="ps-ph"><b style="color:' + c + '">' + esc(phase(d)) + "</b><span>Day " + d + " of 420</span></div></div>";
+      }).join("") + (g.rows.length > show.length ? '<div class="ps-more">+' + (g.rows.length - show.length) + " more contracts</div>" : "") + "</div>";
+    setTimeout(function () { st.querySelectorAll(".ps-trk i").forEach(function (b) { b.style.width = b.dataset.w + "%"; }); }, 700);
+  }
+  if (P.play && dur) P.timer = setTimeout(function () { presGo(P.i + 1); }, dur);
+}
+function presToggle() {
+  var P = _pres; if (!P) return;
+  P.play = !P.play; $("ppPlay").innerHTML = P.play ? "&#10074;&#10074;" : "&#9654;";
+  if (P.play) presGo(P.i); else { clearTimeout(P.timer); var bar = $("ppProg"), w = getComputedStyle(bar).width; bar.style.animation = "none"; bar.style.width = w; }
+}
+function initPipe() {
+  $("ppGo").onclick = presStart; $("ppX").onclick = presStop; $("ppReplay").onclick = pipeReplay;
+  $("ppPrev").onclick = function () { presGo(_pres.i - 1); }; $("ppNext").onclick = function () { presGo(_pres.i + 1); }; $("ppPlay").onclick = presToggle;
+  $("ppQ").oninput = function () { if (S.pipe) pipeList(); };
+  document.addEventListener("fullscreenchange", function () { if (!document.fullscreenElement && _pres) presStop(); setTimeout(function () { if (_pmap) _pmap.invalidateSize(); }, 200); });
+  document.addEventListener("keydown", function (e) {
+    if (!_pres) return;
+    if (e.key === "ArrowRight" || e.key === "PageDown") { presGo(_pres.i + 1); e.preventDefault(); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { presGo(_pres.i - 1); e.preventDefault(); }
+    else if (e.key === " ") { presToggle(); e.preventDefault(); }
+    else if (e.key === "Escape") presStop();
+  });
 }
 /* ---------- map tab (modelled on the original TOPA dashboard's map) ---------- */
 var _rLayer = null;
@@ -2858,6 +3309,7 @@ function closeModal() { $("modal").classList.remove("open"); $("mbox").innerHTML
 /* ---------------------------------------------------------------- wiring */
 function wire() {
   document.querySelectorAll(".tab").forEach(function (t) { t.onclick = function () { setView(t.dataset.view); }; });
+  initPipe();
   $("dt").addEventListener("click", tableClick);
   $("dt").addEventListener("dblclick", tableDbl);
   $("drX").onclick = closeDrawer;
