@@ -433,7 +433,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v19</span>
+    <span id="verBadge" title="Page version">v20</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1577,6 +1577,13 @@ function dotIcon(color, ring, sel, gs) {
     html: '<div style="width:' + sz + "px;height:" + sz + "px;border-radius:50%;background:" + color + ";border:2.5px solid " + (ring || "#fff") +
       ";box-shadow:0 1px 4px rgba(0,0,0,.35)" + (sel ? ",0 0 0 4px rgba(26,115,232,.35)" : "") + ';cursor:pointer"></div>'});
 }
+/* popup FOIA: a linked FOIA reads "Received" and opens the document; otherwise the status as typed */
+function foiaCell(r) {
+  var v = val("ofs5", r, "foia"), u = val("ofs5", r, "foiaUrl");
+  if (u && /^https?:/i.test(u)) return '<div><label>FOIA</label><a href="' + esc(u) + '" target="_blank" rel="noopener" title="' + esc(u) + '">Received &#8599;</a></div>';
+  if (v === "" || v == null) return "";
+  return "<div><label>FOIA</label>" + (/greysteel/i.test(v) ? '<span class="gs-foia">' + esc(v) + "</span>" : esc(v)) + "</div>";
+}
 function popupHtml(r) {
   var d = val("ofs5", r, "date"), n = d ? daysBetween(d, todayISO()) : null, c = compsFor("ofs5", r)[0], st = mStatus(r);
   var u = val("ofs5", r, "units"), p = val("ofs5", r, "price"), pp = cval("ofs5", r, "ppu");
@@ -1588,7 +1595,7 @@ function popupHtml(r) {
   return '<div style="min-width:270px"><div class="pu-a">' + esc(val("ofs5", r, "address")) + "</div>" + (val("ofs5", r, "name") ? '<div class="pu-n">' + esc(val("ofs5", r, "name")) + "</div>" : "") +
     '<div style="margin-top:6px"><span class="pill ' + (st === "closed" ? "orange" : st === "active" ? "green" : "gray") + '">' + (st === "closed" ? "Closed " + fmtDate(c.date) : st === "active" ? phase(n) : "Past 420 days") + '</span> <span class="pill gray">' + esc(val("ofs5", r, "type") || "") + "</span></div>" +
     '<div class="pu-g">' + f("TOPA date", fmtDate(d)) + f("Units", u ? fmtInt(u) : "") + f("Price", p ? fmtMoney(p) : "") + f("Price / unit", pp ? fmtMoney(pp) : "") +
-    f("Buyer", val("ofs5", r, "buyer"), 1) + f("Seller / owner", val("ofs5", r, "seller"), 1) + f("FOIA", val("ofs5", r, "foia")) + f("Broker", val("ofs5", r, "broker")) +
+    f("Buyer", val("ofs5", r, "buyer"), 1) + f("Seller / owner", val("ofs5", r, "seller"), 1) + foiaCell(r) + f("Broker", val("ofs5", r, "broker")) +
     (c ? f("Sold (CoStar)", fmtDate(c.date) + (c.price ? " · " + fmtMoney(c.price) : "")) + f("Days to close", daysBetween(d, c.date)) : "") + "</div>" +
     '<div class="pu-ms"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' + segBar(c ? daysBetween(d, c.date) : n) + '<span class="small muted">' + (n == null ? "" : "Day " + n + (n <= 420 && !c ? " · " + (420 - n) + " days left" : "")) + "</span></div>" + ms + "</div>" +
     '<div class="pu-f"><a href="#" onclick="openRow(\'ofs5\',\'' + r.id + '\');return false">Open details</a><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/' + encodeURIComponent((val("ofs5", r, "address") || "") + ", Washington, DC") + '">Google Maps &#8599;</a></div></div>';
