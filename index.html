@@ -594,7 +594,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v21</span>
+    <span id="verBadge" title="Page version">v22</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -3413,6 +3413,40 @@ function wire() {
       $("boot").innerHTML = '<div style="max-width:520px;text-align:center;line-height:1.6"><b>Could not load the TOPA data.</b><br><span class="small">' + esc(hint) + "</span><br><button class=\"btn sm\" onclick=\"location.reload()\" style=\"margin-top:10px\">Try again</button></div>";
     });
   });
+})();
+</script>
+<script>
+/* ---- presence: who is on the tools right now, and for how long ----
+   While this page is visible and someone has used the mouse or keyboard in
+   the last five minutes, it checks in with the sign-in Worker about once a
+   minute. Nothing is sent from a hidden tab, a locked screen or an idle page,
+   or before sign-in. Admins see the result in GreyHub's analytics. The same
+   block is on every site behind this sign-in; only SITE differs. */
+(function(){
+  var SITE = "topa";
+  var API = "https://hap-update.mrareshide.workers.dev";
+  var IDLE = 5 * 60 * 1000, EVERY = 60 * 1000;
+  var lastInput = Date.now(), lastSent = 0, refused = null;
+  ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"].forEach(function(t){
+    window.addEventListener(t, function(){ lastInput = Date.now(); }, { passive:true, capture:true });
+  });
+  function checkIn(){
+    if (document.visibilityState !== "visible") return;
+    var now = Date.now();
+    if (now - lastInput > IDLE || now - lastSent < EVERY - 5000) return;
+    var t = null;
+    try { t = localStorage.getItem("hap_session"); } catch (e) {}
+    if (!t || t === refused) return;           /* signed out, or this token has expired */
+    lastSent = now;
+    fetch(API + "/presence", {
+      method:"POST", keepalive:true,
+      headers:{ Authorization:"Bearer " + t, "Content-Type":"application/json" },
+      body:JSON.stringify({ site:SITE })
+    }).then(function(r){ if (r.status === 401) refused = t; }).catch(function(){});
+  }
+  setInterval(checkIn, 15000);
+  document.addEventListener("visibilitychange", checkIn);
+  setTimeout(checkIn, 4000);
 })();
 </script>
 </body>
