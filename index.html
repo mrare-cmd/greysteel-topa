@@ -164,8 +164,36 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .pbar i{display:block;height:100%;background:var(--blue);border-radius:2px}
 /* New to the Pipeline: light, with a then-vs-now comparison */
 #vPipe{overflow:hidden;background:var(--bg)}
-.pp{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:auto auto minmax(0,1fr) auto;
-  grid-template-areas:"hd hd" "kp kp" "map side" "tl side";gap:12px;padding:16px 20px}
+.pp{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  grid-template-areas:"hd hd" "vs vs" "kp kp" "map side" "tl side";gap:12px;padding:16px 20px}
+.pp-vs{grid-area:vs;display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:12px 16px;border-radius:12px;border:1px solid #d2e3fc;
+  background:linear-gradient(100deg,#e8f0fe 0%,#f1f6fe 45%,#e6f4ea 100%);animation:ppRise .45s both}
+.pp-vs .vs-d .k{font-size:10.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--text2)}
+.pp-vs .vs-d b{display:block;font-family:'Google Sans',sans-serif;font-size:18px;font-weight:500;color:var(--text);line-height:1.25}
+.pp-vs .vs-d em{font-style:normal;font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
+.vs-ar{flex:0 1 200px;min-width:90px;text-align:center;font-size:11.5px;color:var(--text2)}
+.vs-ln{position:relative;height:3px;border-radius:2px;background:rgba(26,115,232,.16);margin:0 7px 6px 0}
+.vs-ln i{position:absolute;left:0;top:0;bottom:0;width:100%;border-radius:2px;background:linear-gradient(90deg,#1a73e8,#188038)}
+.vs-ln::after{content:"";position:absolute;right:-7px;top:-4.5px;border-style:solid;border-width:6px 0 6px 8px;border-color:transparent transparent transparent #188038}
+.vs-ch{display:flex;gap:6px;flex-wrap:wrap}
+.vs-ch .pl{font-size:12.5px;font-weight:500;padding:3px 10px;border-radius:12px;background:rgba(255,255,255,.8);color:var(--text2);font-variant-numeric:tabular-nums}
+.vs-ch .pl.up{color:#137333}
+.vs-ch .pl.dn{color:#c5221f}
+.vs-x{margin-left:auto;height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--border);background:var(--white);font-size:12.5px;color:var(--text)}
+.vs-x:hover{background:#f1f3f4}
+.vs-note{flex-basis:100%;font-size:11.5px;color:var(--text2);margin-top:-8px}
+.pp-vs.off{background:var(--white);border-color:var(--border);font-size:12.5px;color:var(--text2);padding:10px 16px}
+.pp-vs.off b{color:var(--text);font-weight:500}
+.pp-vs.off a{margin-left:auto;color:var(--blue);cursor:pointer}
+.pp-kpi.in{animation:ppRise .45s both}
+.pp-kpi{transition:box-shadow .2s,border-color .2s}
+.pp-kpi:hover{border-color:#c6dafc;box-shadow:0 2px 10px rgba(26,115,232,.1)}
+.pb{animation:ppRise .35s both}
+.pm{position:relative}
+.pm.s-new::after{content:"";position:absolute;inset:-2px;border-radius:50%;border:2px solid #188038;animation:pmPing 1.5s ease-out both;pointer-events:none}
+.pb .dl .pm::after,.pm.lg::after{display:none}
+@keyframes pmPing{from{transform:scale(1);opacity:.85}to{transform:scale(3);opacity:0}}
+@keyframes ppRise{from{opacity:0;transform:translateY(6px)}}
 .pp-hd{grid-area:hd;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .pp-t{font-family:'Google Sans',sans-serif;font-size:22px;color:var(--text);line-height:1.25}
 .pp-s{font-size:12.5px;color:var(--text2);margin-top:2px}
@@ -247,20 +275,22 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .pp-tlh .k{display:inline-flex;align-items:center;gap:5px}
 .pp-tlh .k i{width:10px;height:10px;border-radius:2px}
 .pp-tlh .ml-auto{margin-left:auto}
-.pp-bars{display:flex;align-items:flex-end;gap:4px;height:84px}
+.pp-bars{display:flex;align-items:flex-end;gap:3px;height:84px}
 .pp-bars .tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
-.pp-bars .tb i{display:block;width:100%;max-width:30px;border-radius:3px 3px 0 0;background:#dadce0;transition:height .5s ease-out,background-color .4s}
+.pp-bars .tb i{display:block;width:100%;max-width:30px;border-radius:3px 3px 0 0;background:#dadce0;transition:height .6s cubic-bezier(.2,.8,.2,1),background-color .4s}
 .pp-bars .tb.cur i{background:#188038}
 .pp-bars .tb.prev i{background:#8ab4f8}
 .pp-bars .tb b{font-size:10.5px;color:var(--text2);font-weight:400;margin-bottom:2px;font-variant-numeric:tabular-nums}
 .pp-bars .tb span{font-size:10px;color:var(--text3);margin-top:3px;white-space:nowrap}
 @media (max-width:900px){
-  .pp{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 380px auto auto;grid-template-areas:"hd" "kp" "map" "tl" "side";overflow:auto;padding:12px 16px}
+  .pp{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 380px auto auto;grid-template-areas:"hd" "vs" "kp" "map" "tl" "side";overflow:auto;padding:12px 16px}
+  .pp{grid-template-rows:auto auto auto 380px auto auto}
+  .vs-x{margin-left:0}
   .pp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pp-cmp{flex-wrap:wrap}
   .pp-side{min-height:420px}
 }
-@media (prefers-reduced-motion:reduce){.pp *{transition-duration:.01ms!important}}
+@media (prefers-reduced-motion:reduce){.pp *{transition-duration:.01ms!important;animation-duration:.01ms!important}}
 /* map tab */
 #vMap{overflow:hidden}
 .mv{position:absolute;inset:0;display:flex}
@@ -312,7 +342,7 @@ main{position:fixed;top:var(--header);left:0;right:0;bottom:0;overflow:hidden}
 .marea{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--blue-light);border-bottom:1px solid #c6dafc;font-size:12.5px;color:var(--blue)}
 .marea input{width:64px;height:26px;border:1px solid #c6dafc;border-radius:6px;padding:0 6px;font-size:12.5px;outline:none}
 .marea a{margin-left:auto;cursor:pointer}
-.mtools .chk{box-shadow:var(--shadow)}
+.mtools .chk{box-shadow:var(--shadow);white-space:nowrap}
 .leaflet-popup-content-wrapper{border-radius:12px;box-shadow:var(--shadow-lg)}
 .leaflet-popup-content{margin:14px 16px;font-family:'Roboto',sans-serif;font-size:12.5px;color:var(--text);line-height:1.4}
 .pu-a{font-family:'Google Sans',sans-serif;font-size:15px;line-height:1.3}
@@ -546,7 +576,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v25</span>
+    <span id="verBadge" title="Page version">v26</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -578,9 +608,10 @@ tr.hidden-row td{opacity:.45}
   <section class="view" id="vPipe"><div class="pp" id="ppRoot">
     <div class="pp-hd">
       <div><div class="pp-t">New to the Pipeline</div><div class="pp-s" id="ppSub"></div></div>
-      <div class="pp-cmp"><span>Compare with</span><div class="seg" id="ppPer"></div>
+      <div class="pp-cmp"><span>Compare with</span><div class="seg" id="ppPer" title="Today's pipeline against the pipeline on an earlier date"></div>
         <button class="pp-rp" id="ppReplay" title="Play the change from that date to today again"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Replay</button></div>
     </div>
+    <div class="pp-vs" id="ppVs"></div>
     <div class="pp-kpis" id="ppKpis"></div>
     <div class="pp-mapw">
       <div id="pMap"></div>
@@ -607,7 +638,6 @@ tr.hidden-row td{opacity:.45}
         <div class="ms-row">
           <div class="seg" id="mStatus" title="Pick one or more"><button data-v="active" class="on">Active</button><button data-v="closed">Closed</button><button data-v="archived">420+ days</button><button data-v="all">All</button></div>
         </div>
-        <div class="ms-row" id="mStageRow" hidden><label class="chk" id="mStageChk" title="Color each active property by where it is in the 420-day TOPA window: green just filed, red in the TA financing extension"><input type="checkbox">Color by TOPA stage</label></div>
         <div class="ms-row">
           <div class="seg" id="mType"><button data-v="" class="on">All offerings</button><button data-v="w/ Contract">w/ Contract</button><button data-v="w/o Contract">w/o Contract</button></div>
         </div>
@@ -648,6 +678,7 @@ tr.hidden-row td{opacity:.45}
       </div>
       <div class="mtools">
         <label class="chk on" id="mCompsChk" title="Sale comps not linked to an offer of sale"><input type="checkbox">Sale comps</label>
+        <label class="chk" id="mStageChk" hidden title="Color each active property by where it is in the 420-day TOPA window: green just filed, red in the TA financing extension"><input type="checkbox">Color by TOPA stage</label>
         <label class="chk" id="mRedevChk" title="Condo registrations, not-a-housing and vacancy exemptions, raze permits since 2023"><input type="checkbox">Redevelopment</label>
       </div>
       <div class="mlegend">
@@ -1648,14 +1679,31 @@ function renderCmp() {
     row("Median units (annual)", function (y) { return ann[y] ? ann[y].medU : "TBD"; }, I)
   ].join("") + "</tbody>";
 }
-/* ---------- New to the Pipeline: buyers under contract (5+ offers of sale w/ contract, known buyer, inside the 420-day window).
-   The tab compares today's pipeline with the pipeline on an earlier date and plays the change between the two on the map. ---------- */
-var _pmap = null, _pLayer = null, _pmk = {}, _pSig = "", _pSel = null, _pAnim = null, _pOnly = "", _pShown = 0;
-var PP_PERIODS = [{d: 30, l: "30 days ago"}, {d: 90, l: "90 days ago"}, {d: 182, l: "6 months ago"}, {d: 365, l: "1 year ago"}];
-var _pPer = (function () { try { return +localStorage.getItem("topa_ppcmp") || 90; } catch (e) { return 90; } })();
+/* ---------- New to the Pipeline: 5+ offers of sale w/ contract inside the 420-day window. Totals and map count every
+   contract; the buyer list (and the buyer count) only those with a buyer filled in, which the tracker has from 2023 on.
+   The tab compares today's pipeline with the pipeline 6 months to 5 years ago and plays the change on the map;
+   with the comparison off it shows only today's pipeline, dots colored by TOPA stage. ---------- */
+var _pmap = null, _pLayer = null, _pmk = {}, _pSig = "", _pSel = null, _pAnim = null, _pOnly = "", _pShown = -1;
+var PP_PERIODS = [{m: 0, l: "Off", t: "No comparison"}, {m: 6, l: "6 mo", t: "6 months ago", n: "6 months"}, {m: 12, l: "1 yr", t: "1 year ago", n: "year"},
+  {m: 24, l: "2 yr", t: "2 years ago", n: "2 years"}, {m: 36, l: "3 yr", t: "3 years ago", n: "3 years"}, {m: 48, l: "4 yr", t: "4 years ago", n: "4 years"}, {m: 60, l: "5 yr", t: "5 years ago", n: "5 years"}];
+var _pPer = (function () {
+  try { var v = localStorage.getItem("topa_ppcmp_m"); return v != null && PP_PERIODS.some(function (p) { return String(p.m) === v; }) ? +v : 12; } catch (e) { return 12; }
+})();
+function ppPeriod() { return PP_PERIODS.filter(function (p) { return p.m === _pPer; })[0]; }
+function setPipePeriod(m) {
+  if (m === _pPer) return;
+  _pPer = m; try { localStorage.setItem("topa_ppcmp_m", m); } catch (x) {}
+  renderPipe();
+}
 function pipeKey(b) { return String(b || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
 function pv(r, f) { return val("ofs5", r, f); }
 function isoShift(iso, days) { var d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); }
+/* same day n months earlier/later (the 31st falls back to the month's last day) */
+function isoMonths(iso, n) {
+  var y = +iso.slice(0, 4), m = +iso.slice(5, 7) - 1 + n, d = +iso.slice(8, 10);
+  var last = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m, Math.min(d, last), 12)).toISOString().slice(0, 10);
+}
 /* in the pipeline on `on`: filed by then, not past day 420, and no sale comp dated on or before it (today: no sale comp at all, as on the map) */
 function inPipeOn(r, on, lo) {
   var d = pv(r, "date"); if (!d || d > on || d < (lo || isoShift(on, -420))) return false;
@@ -1671,21 +1719,20 @@ function pipeSnap(base, on) {
   var by = {}, pending = 0, ids = {}, units = 0, vol = 0, pu = 0, pvv = 0, n = 0, lo = isoShift(on, -420);
   base.forEach(function (r) {
     if (!inPipeOn(r, on, lo)) return;
-    var k = pipeKey(pv(r, "buyer"));
-    if (!k) { pending++; return; }
+    var k = pipeKey(pv(r, "buyer")), u = +pv(r, "units") || 0, p = +pv(r, "price") || 0;
     ids[r.id] = 1; n++;
-    var u = +pv(r, "units") || 0, p = +pv(r, "price") || 0;
     units += u; vol += p; if (u && p) { pu += u; pvv += p; }
+    if (!k) { pending++; return; }
     var g = by[k] = by[k] || {key: k, rows: [], units: 0, vol: 0};
     g.rows.push(r); g.units += u; g.vol += p;
   });
   return {on: on, by: by, ids: ids, n: n, buyers: Object.keys(by).length, pending: pending, units: units, vol: vol, ppu: pu ? pvv / pu : 0};
 }
 function pipeData() {
-  var t = todayISO(), then = isoShift(t, -_pPer), all = ofsRows();
+  var t = todayISO(), off = !_pPer, then = off ? null : isoMonths(t, -_pPer), all = ofsRows();
   var base = all.filter(function (r) { return /w\/ Contract/i.test(String(pv(r, "type") || "")); });
-  var lo = isoShift(then, -421), win = base.filter(function (r) { return String(pv(r, "date") || "") >= lo; });   /* only these can be in the pipeline between the two dates */
-  var now = pipeSnap(win, t), was = pipeSnap(win, then);
+  var lo = isoShift(then || t, -421), win = base.filter(function (r) { return String(pv(r, "date") || "") >= lo; });   /* only these can be in the pipeline between the two dates */
+  var now = pipeSnap(win, t), was = off ? pipeSnap([], t) : pipeSnap(win, then);
   var past = {};
   all.forEach(function (r) { var k = pipeKey(pv(r, "buyer")); if (k) (past[k] = past[k] || []).push(r); });
   var buyers = Object.keys(now.by).map(function (k) {
@@ -1696,15 +1743,17 @@ function pipeData() {
     var here = {}; g.rows.forEach(function (r) { here[normAddr(pv(r, "address"))] = 1; });
     var prior = {}; (past[k] || []).forEach(function (r) { var a = normAddr(pv(r, "address")); if (!here[a]) prior[a] = 1; });
     g.prior = Object.keys(prior).length;
-    g.added = g.rows.filter(function (r) { return !was.ids[r.id]; }).length;
-    g.isNew = !was.by[k];
+    g.added = off ? 0 : g.rows.filter(function (r) { return !was.ids[r.id]; }).length;
+    g.isNew = !off && !was.by[k];
     return g;
   }).sort(function (a, b) { return b.units - a.units || b.rows.length - a.rows.length || a.name.localeCompare(b.name); });
-  var rows = [];
+  var rows = [], cur = win.filter(function (r) { return now.ids[r.id]; });
   buyers.forEach(function (g) { rows = rows.concat(g.rows); });
-  var left = win.filter(function (r) { return was.ids[r.id] && !now.ids[r.id]; }).map(function (r) { return Object.assign({r: r}, pipeExit(r)); })
+  var bStart = base.reduce(function (m, r) { var d = pv(r, "date"); return d && pipeKey(pv(r, "buyer")) && (!m || d < m) ? d : m; }, "");
+  var left = off ? [] : win.filter(function (r) { return was.ids[r.id] && !now.ids[r.id]; }).map(function (r) { return Object.assign({r: r}, pipeExit(r)); })
     .sort(function (a, b) { return b.on.localeCompare(a.on); });
-  return {t: t, then: then, base: base, win: win, now: now, was: was, buyers: buyers, rows: rows, left: left};
+  return {t: t, then: then, off: off, base: base, win: win, now: now, was: was, buyers: buyers, rows: rows, cur: cur, left: left, bStart: bStart,
+    added: cur.filter(function (r) { return !off && !was.ids[r.id]; }).length};
 }
 function fmtBig(n) {
   n = +n || 0;
@@ -1734,25 +1783,26 @@ function pipeState(r, on) {
   return was ? "kept" : "new";
 }
 function pipePopup(r) {
-  var D = S.pipe, n = pipeDays(r), u = pv(r, "units"), p = pv(r, "price"), st = pipeState(r, D.t), ex = st === "left" ? pipeExit(r) : null;
-  var k = st === "new" ? "New since " + shortDate(D.then) : st === "kept" ? "In the pipeline on " + shortDate(D.then) + " and today" : "Left " + shortDate(ex.on) + " (" + ex.why + ")";
+  var D = S.pipe, n = pipeDays(r), u = pv(r, "units"), p = pv(r, "price"), st = D.off ? "" : pipeState(r, D.t), ex = st === "left" ? pipeExit(r) : null;
+  var k = D.off ? phase(n) : st === "new" ? "New since " + shortDate(D.then) : st === "kept" ? "In the pipeline on " + shortDate(D.then) + " and today" : "Left " + shortDate(ex.on) + " (" + ex.why + ")";
   return '<div class="ppop"><div class="k">' + esc(k) + "</div>" +
-    '<div class="a">' + esc(pv(r, "address")) + "</div>" + '<div class="b">' + esc(pv(r, "buyer")) + "</div>" +
+    '<div class="a">' + esc(pv(r, "address")) + "</div>" + '<div class="b">' + (pipeKey(pv(r, "buyer")) ? esc(pv(r, "buyer")) : '<span class="muted">Buyer not yet known</span>') + "</div>" +
     '<div class="g">' + [u ? fmtInt(u) + " units" : "", p ? fmtMoney(p) : "", u && p ? fmtBig(p / u) + " / unit" : ""].filter(Boolean).join(" &middot; ") + "</div>" +
-    '<div class="m">TOPA ' + fmtDate(pv(r, "date")) + (st !== "left" ? " &middot; day " + n + " of 420 &middot; " + esc(phase(n)) : "") + (pv(r, "seller") ? " &middot; seller " + esc(pv(r, "seller")) : "") + "</div>" +
+    '<div class="m">TOPA ' + fmtDate(pv(r, "date")) + (st !== "left" ? " &middot; day " + n + " of 420" + (D.off ? "" : " &middot; " + esc(phase(n))) : "") + (pv(r, "seller") ? " &middot; seller " + esc(pv(r, "seller")) : "") + "</div>" +
     '<a href="#" onclick="openRow(\'ofs5\',\'' + r.id + '\');return false">Open details</a></div>';
 }
+function pipeDot(r) { return S.pipe.off ? '<i class="pm" style="background:' + phaseColor(pipeDays(r)) + '"></i>' : '<i class="pm s-' + pipeState(r, S.pipe.t) + '"></i>'; }
 function pipeMarkers() {
   var D = S.pipe; _pLayer.clearLayers(); _pmk = {};
-  D.rows.concat(D.left.map(function (x) { return x.r; })).forEach(function (r) {
+  D.cur.concat(D.left.map(function (x) { return x.r; })).forEach(function (r) {
     if (!r.geo) return;
     r._exit = D.now.ids[r.id] ? null : pipeExit(r).on;
-    var m = L.marker(r.geo, {icon: L.divIcon({className: "pmw", iconSize: [13, 13], iconAnchor: [6.5, 6.5], popupAnchor: [0, -8], html: '<i class="pm s-' + pipeState(r, D.t) + '"></i>'}), riseOnHover: true})
+    var m = L.marker(r.geo, {icon: L.divIcon({className: "pmw", iconSize: [13, 13], iconAnchor: [6.5, 6.5], popupAnchor: [0, -8], html: pipeDot(r)}), riseOnHover: true})
       .bindPopup(function () { return pipePopup(r); }, {maxWidth: 320})
       .bindTooltip(esc(pv(r, "buyer") || pv(r, "address")), {direction: "top", offset: [0, -8]}).addTo(_pLayer);
     var k = pipeKey(pv(r, "buyer"));
     m.on("click", function () {
-      if (!D.now.ids[r.id]) return;
+      if (!D.now.ids[r.id] || !k) return;
       _pSel = k; focusBuyer(k, false);
       var c = document.querySelector('#ppList .pb[data-k="' + k + '"]'); if (c) c.scrollIntoView({block: "nearest", behavior: "smooth"});
     });
@@ -1760,6 +1810,7 @@ function pipeMarkers() {
   });
 }
 function setPipeState(on) {
+  if (S.pipe.off) return;
   Object.keys(_pmk).forEach(function (id) {
     var m = _pmk[id], el = m.getElement(), dot = el && el.firstChild, st = pipeState(m._row, on); if (!dot || dot._st === st) return;
     dot._st = st; dot.classList.remove("s-off", "s-new", "s-kept", "s-left"); dot.classList.add("s-" + st);
@@ -1767,7 +1818,7 @@ function setPipeState(on) {
   });
 }
 function fitAll(fly) {
-  var D = S.pipe, pts = D ? D.rows.concat(D.left.map(function (x) { return x.r; })).filter(function (r) { return r.geo; }).map(function (r) { return r.geo; }) : [];
+  var D = S.pipe, pts = D ? D.cur.concat(D.left.map(function (x) { return x.r; })).filter(function (r) { return r.geo; }).map(function (r) { return r.geo; }) : [];
   if (!pts.length || !_pmap) return;
   var o = {padding: [50, 50], maxZoom: 14};
   if (fly) _pmap.flyToBounds(L.latLngBounds(pts), Object.assign({duration: 1}, o)); else _pmap.fitBounds(L.latLngBounds(pts), o);
@@ -1787,20 +1838,21 @@ function focusBuyer(key, fly) {
   if (pts.length) _pmap.flyToBounds(L.latLngBounds(pts), {padding: [70, 70], maxZoom: 15, duration: .9});
 }
 function pipeList() {
-  var D = S.pipe, q = normAddr($("ppQ").value), since = shortDate(D.then);
+  var D = S.pipe, q = normAddr($("ppQ").value), since = D.off ? "" : mdDate(D.then);
   var bs = D.buyers.filter(function (g) {
     if (_pOnly && !g.added) return false;
     return !q || normAddr(g.name + " " + g.rows.map(function (r) { return pv(r, "address"); }).join(" ")).indexOf(q) >= 0;
   });
-  $("ppList").innerHTML = bs.map(function (g) {
-    var tag = g.isNew ? '<span class="tag new" title="No contract in the pipeline on ' + since + '">New since ' + since + "</span>" :
+  $("ppList").innerHTML = bs.map(function (g, i) {
+    var tag = g.isNew ? '<span class="tag new" title="No contract in the pipeline on ' + shortDate(D.then) + '">New since ' + since + "</span>" :
       g.prior ? '<span class="tag" title="' + g.prior + " other building" + (g.prior > 1 ? "s" : "") + ' under this buyer in the tracker">Repeat &middot; ' + g.prior + "</span>" : "";
-    return '<div class="pb" data-k="' + g.key + '"><div class="pb-h"><div class="pb-n"><div class="nm">' + esc(g.name) + '</div><div class="mt">' +
+    return '<div class="pb" data-k="' + g.key + '" style="animation-delay:' + Math.min(i, 12) * 30 + 'ms"><div class="pb-h"><div class="pb-n"><div class="nm">' + esc(g.name) + '</div><div class="mt">' +
       g.rows.length + " contract" + (g.rows.length > 1 ? "s" : "") + " &middot; " + fmtInt(g.units) + " units" + (g.vol ? " &middot; " + fmtBig(g.vol) : "") +
       (g.added && !g.isNew ? " &middot; " + g.added + " added since " + since : "") + "</div></div>" + tag + "</div>" +
       '<div class="dl">' + g.rows.map(function (r) {
-        var n = pipeDays(r), nw = !D.was.ids[r.id];
-        return '<div title="' + esc(phase(n)) + (nw ? " · new since " + since : "") + '"><i class="pm s-' + (nw ? "new" : "kept") + '"></i><span class="ad">' + esc(pv(r, "address")) + "</span>" + segBar(n) + "<em>day " + n + "</em></div>";
+        var n = pipeDays(r), nw = !D.off && !D.was.ids[r.id];
+        return '<div title="' + esc(phase(n)) + (nw ? " · new since " + since : "") + '">' + (D.off ? '<i class="pm" style="background:' + phaseColor(n) + '"></i>' : '<i class="pm s-' + (nw ? "new" : "kept") + '"></i>') +
+          '<span class="ad">' + esc(pv(r, "address")) + "</span>" + segBar(n) + "<em>day " + n + "</em></div>";
       }).join("") + "</div></div>";
   }).join("") || '<div class="empty" style="padding:24px 14px">' + (_pOnly ? "No buyer added a contract since " + since + "." : "No buyer matches.") + "</div>";
   $("ppN").textContent = bs.length === D.buyers.length ? D.buyers.length + " buyers" : bs.length + " of " + D.buyers.length;
@@ -1810,74 +1862,113 @@ function pipeList() {
   if (_pSel) focusBuyer(_pSel, false);
 }
 var PP_KPIS = [["buyers", "Buyers under contract", fmtInt], ["n", "Contracts", fmtInt], ["units", "Units", fmtInt], ["vol", "Contract volume", fmtBig], ["ppu", "Avg price / unit", fmtBig]];
-function pipeKpis(cur, fin) {
+function pipeKpis(cur) {
   var D = S.pipe;
   document.querySelectorAll("#ppKpis .pp-kpi").forEach(function (el, i) {
-    var k = PP_KPIS[i], a = D.was[k[0]], b = cur[k[0]], dlt = b - a, mx = Math.max(a, D.now[k[0]], 1);
+    var k = PP_KPIS[i], b = cur[k[0]];
     el.querySelector(".v").textContent = k[2](b);
+    if (D.off) return;
+    var a = D.was[k[0]], dlt = b - a, mx = Math.max(a, D.now[k[0]], 1);
     var d = el.querySelector(".d"), pct = a ? Math.round(100 * dlt / a) : null;
     d.className = "d" + (Math.abs(dlt) < 1e-9 ? "" : dlt > 0 ? " up" : " dn");
     d.textContent = Math.abs(dlt) < 1e-9 ? "no change" : (dlt > 0 ? "+" : "−") + k[2](Math.abs(dlt)) + (pct != null && pct ? " (" + (pct > 0 ? "+" : "−") + Math.abs(pct) + "%)" : "");
     el.querySelector(".tr s").style.width = (100 * a / mx) + "%"; el.querySelector(".tr i").style.width = (100 * b / mx) + "%";
-    if (fin != null) el.title = k[1] + ": " + k[2](a) + " on " + shortDate(D.then) + ", " + k[2](D.now[k[0]]) + " today";
   });
 }
+/* the comparison, spelled out above the numbers */
+function pipeVs() {
+  var D = S.pipe, el = $("ppVs");
+  if (D.off) {
+    el.className = "pp-vs off";
+    el.innerHTML = "<span><b>No comparison.</b> Today's pipeline only, with dots colored by TOPA stage.</span>" + '<a data-m="12">Compare with 1 year ago</a>';
+  } else {
+    var P = ppPeriod();
+    el.className = "pp-vs";
+    el.innerHTML = '<div class="vs-d"><span class="k">' + P.t + "</span><b>" + shortDate(D.then) + "</b><em>" + D.was.n + " contracts &middot; " + fmtInt(D.was.units) + " units</em></div>" +
+      '<div class="vs-ar"><div class="vs-ln"><i id="ppVsBar"></i></div><span>' + (P.m === 12 ? "1 year" : P.n) + " later</span></div>" +
+      '<div class="vs-d"><span class="k">Today</span><b>' + shortDate(D.t) + "</b><em>" + D.now.n + " contracts &middot; " + fmtInt(D.now.units) + " units</em></div>" +
+      '<div class="vs-ch"><span class="pl up" title="Under contract today, not on ' + shortDate(D.then) + '">+' + D.added + ' new</span><span class="pl dn" title="Closed or passed day 420 since ' + shortDate(D.then) + '">&minus;' + D.left.length + " left</span>" +
+      '<span class="pl" title="Under contract on both dates">' + (D.cur.length - D.added) + " in both</span></div>" +
+      '<button class="vs-x" data-m="0" title="Show only today\'s pipeline">&times; Clear comparison</button>' +
+      (D.bStart && isoShift(D.then, -420) < D.bStart ? '<div class="vs-note">Buyer names are recorded from ' + new Date(D.bStart + "T12:00:00Z").toLocaleDateString("en-US", {month: "long", year: "numeric", timeZone: "UTC"}) +
+        " on, so the buyer count for " + shortDate(D.then) + " is low. Contracts, units and volume count every filing w/ contract.</div>" : "");
+  }
+  el.querySelectorAll("[data-m]").forEach(function (a) { a.onclick = function () { setPipePeriod(+a.dataset.m); }; });
+}
 function pipeWhen(on, k) {
-  var D = S.pipe;
-  $("ppWhen").innerHTML = "<b>" + shortDate(on) + "</b><span>" + (on === D.then ? "The pipeline " + PP_PERIODS.filter(function (p) { return p.d === _pPer; })[0].l : on === D.t ? "Today, compared with " + shortDate(D.then) : "Playing " + shortDate(D.then) + " to today") + "</span>" +
+  var D = S.pipe; $("ppWhen").hidden = D.off; if (D.off) return;
+  $("ppWhen").innerHTML = "<b>" + shortDate(on) + "</b><span>" + (on === D.then ? "The pipeline " + ppPeriod().t : on === D.t ? "Today, compared with " + shortDate(D.then) : "Playing " + shortDate(D.then) + " to today") + "</span>" +
     '<div class="tk"><i style="width:' + (100 * k).toFixed(1) + '%"></i></div>';
+  var b = $("ppVsBar"); if (b) b.style.width = (100 * k).toFixed(1) + "%";
 }
 function pipeLegend() {
-  var D = S.pipe, since = shortDate(D.then), nn = D.rows.filter(function (r) { return !D.was.ids[r.id]; }).length;
-  $("ppLeg").innerHTML = '<div><i class="pm lg s-new"></i>New since ' + since + "<em>" + nn + "</em></div>" +
-    '<div><i class="pm lg s-kept"></i>In the pipeline then and now<em>' + (D.rows.length - nn) + "</em></div>" +
+  var D = S.pipe;
+  if (D.off) {
+    var c = MILESTONES.map(function () { return 0; });
+    D.cur.forEach(function (r) { var n = pipeDays(r); for (var i = 0; i < MILESTONES.length; i++) if (n <= MILESTONES[i].day || i === MILESTONES.length - 1) { c[i]++; break; } });
+    $("ppLeg").innerHTML = MILESTONES.map(function (m, i) { return '<div><i class="pm lg" style="background:' + SEG_COLORS[i] + '"></i>Day ' + (i ? MILESTONES[i - 1].day + 1 : 0) + "&ndash;" + m.day + " &middot; " + m.label + "<em>" + c[i] + "</em></div>"; }).join("");
+    return;
+  }
+  var since = shortDate(D.then);
+  $("ppLeg").innerHTML = '<div><i class="pm lg s-new"></i>New since ' + since + "<em>" + D.added + "</em></div>" +
+    '<div><i class="pm lg s-kept"></i>In the pipeline then and now<em>' + (D.cur.length - D.added) + "</em></div>" +
     '<div><i class="pm lg s-left"></i>Left since ' + since + " (closed or past day 420)<em>" + D.left.length + "</em></div>";
 }
-/* the comparison: start on the earlier date and step day by day to today; markers, KPIs and the date move together */
+/* the comparison: start on the earlier date and step to today; markers, KPIs and the date move together */
 function pipePlay() {
-  var D = S.pipe; if (!D || !_pmap) return;
+  var D = S.pipe; if (!D || !_pmap || D.off) return;
   cancelAnimationFrame(_pAnim); _pSel = null; focusBuyer(null);
-  var span = daysBetween(D.then, D.t), ms = Math.min(4200, 1800 + span * 7), t0 = 0, lastDay = -1, cache = {};
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { setPipeState(D.t); pipeKpis(D.now, 1); pipeWhen(D.t, 1); return; }
+  var span = daysBetween(D.then, D.t), ms = Math.min(4500, 2000 + span * 3), t0 = 0, lastDay = -1;
+  if (document.hidden || matchMedia("(prefers-reduced-motion: reduce)").matches) { setPipeState(D.t); pipeKpis(D.now); pipeWhen(D.t, 1); return; }
   setPipeState(D.then); pipeKpis(D.was); pipeWhen(D.then, 0);
+  var done = false;
+  function finish() { done = true; setPipeState(D.t); pipeKpis(D.now); pipeWhen(D.t, 1); }
+  setTimeout(function () { if (!done && S.pipe === D) { cancelAnimationFrame(_pAnim); finish(); } }, ms + 1500);   /* frames can stall (background tab) */
   function step(ts) {
+    if (S.pipe !== D || done) return;                         /* re-rendered meanwhile */
     if (!t0) t0 = ts + 500;                                   /* hold on the earlier date for half a second */
     var k = Math.max(0, Math.min(1, (ts - t0) / ms)), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2, day = Math.round(e * span);
     if (day !== lastDay) {
       lastDay = day; var on = isoShift(D.then, day);
-      setPipeState(on); pipeKpis(cache[day] = cache[day] || (day === span ? D.now : pipeSnap(D.win, on))); pipeWhen(on, e);
+      setPipeState(on); pipeKpis(day === span ? D.now : pipeSnap(D.win, on)); pipeWhen(on, e);
     }
     if (k < 1 && $("vPipe").offsetParent !== null) _pAnim = requestAnimationFrame(step);
-    else { setPipeState(D.t); pipeKpis(D.now, 1); pipeWhen(D.t, 1); }
+    else finish();
   }
   _pAnim = requestAnimationFrame(step);
 }
+/* filings w/ contract by TOPA month (quarter for comparisons over a year): last period vs the one before */
 function pipeFlow() {
-  var D = S.pipe, span = _pPer, t = D.t, a = D.then, b = isoShift(D.then, -span), cur = 0, prev = 0;
-  D.base.forEach(function (r) { var d = pv(r, "date"); if (!d) return; if (d > a && d <= t) cur++; else if (d > b && d <= a) prev++; });
-  var pct = prev ? Math.round(100 * (cur - prev) / prev) : null;
-  $("ppTlh").innerHTML = "<span>Contract filings by TOPA month</span>" +
-    '<span class="k"><i style="background:#188038"></i>Last ' + span + " days: <b>" + cur + "</b></span>" +
-    '<span class="k"><i style="background:#8ab4f8"></i>The ' + span + " days before: <b>" + prev + "</b></span>" +
-    (pct != null ? "<span><b>" + (pct > 0 ? "+" : pct < 0 ? "−" : "") + Math.abs(pct) + "%</b></span>" : "") + '<span class="ml-auto">Every 5+ offer of sale filed w/ contract, buyer known or not</span>';
-  var td = new Date(t + "T12:00:00Z"), months = [];
-  for (var i = 23; i >= 0; i--) {
-    var d = new Date(Date.UTC(td.getUTCFullYear(), td.getUTCMonth() - i, 1)), k = d.toISOString().slice(0, 7), end = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
-    months.push({k: k, d: d, n: 0, u: 0, cls: end > a ? "cur" : end > b ? "prev" : ""});
+  var D = S.pipe, t = D.t, q = !D.off && _pPer > 12, step = q ? 3 : 1, nb = q ? Math.ceil(2 * _pPer / 3) + 1 : 24, P = ppPeriod();
+  var a = D.then, b = D.off ? null : isoMonths(D.then, -_pPer), cur = 0, prev = 0;
+  if (!D.off) D.base.forEach(function (r) { var d = pv(r, "date"); if (!d) return; if (d > a && d <= t) cur++; else if (d > b && d <= a) prev++; });
+  var pct = prev ? Math.round(100 * (cur - prev) / prev) : null, per = P.m === 12 ? "year" : P.n;
+  $("ppTlh").innerHTML = "<span>Contract filings by TOPA " + (q ? "quarter" : "month") + "</span>" + (D.off ? "" :
+    '<span class="k"><i style="background:#188038"></i>Last ' + per + ": <b>" + cur + "</b></span>" +
+    '<span class="k"><i style="background:#8ab4f8"></i>The ' + per + " before: <b>" + prev + "</b></span>" +
+    (pct != null ? "<span><b>" + (pct > 0 ? "+" : pct < 0 ? "−" : "") + Math.abs(pct) + "%</b></span>" : "")) + '<span class="ml-auto">Every 5+ offer of sale filed w/ contract, buyer known or not</span>';
+  var y = +t.slice(0, 4), m0 = +t.slice(5, 7) - 1, bk = [];
+  if (q) m0 -= m0 % 3;
+  for (var i = nb - 1; i >= 0; i--) {
+    var s = new Date(Date.UTC(y, m0 - i * step, 1)), e = new Date(Date.UTC(y, m0 - i * step + step, 0)), si = s.toISOString().slice(0, 10), ei = e.toISOString().slice(0, 10);
+    bk.push({s: si, e: ei, d: s, n: 0, u: 0, cls: D.off ? "" : ei > a ? "cur" : ei > b ? "prev" : ""});
   }
-  D.base.forEach(function (r) { var mk = String(pv(r, "date") || "").slice(0, 7); months.forEach(function (m) { if (m.k === mk) { m.n++; m.u += +pv(r, "units") || 0; } }); });
-  var mx = Math.max.apply(null, months.map(function (m) { return m.n; }).concat([1]));
-  $("ppBars").innerHTML = months.map(function (m, i) {
-    var lab = m.d.toLocaleString("en-US", {month: "short", timeZone: "UTC"});
-    return '<div class="tb ' + m.cls + '" title="' + m.d.toLocaleString("en-US", {month: "long", year: "numeric", timeZone: "UTC"}) + ": " + m.n + " filings, " + fmtInt(m.u) + ' units">' + (m.n ? "<b>" + m.n + "</b>" : "") +
-      '<i style="height:' + (m.n ? Math.max(3, 56 * m.n / mx) : 1) + 'px"></i><span>' + (i % 2 ? "&nbsp;" : lab + (m.d.getUTCMonth() < 2 || i === 0 ? " '" + String(m.d.getUTCFullYear()).slice(2) : "")) + "</span></div>";
+  D.base.forEach(function (r) { var d = pv(r, "date"); if (!d || d < bk[0].s) return; for (var j = 0; j < bk.length; j++) if (d <= bk[j].e) { bk[j].n++; bk[j].u += +pv(r, "units") || 0; break; } });
+  var mx = Math.max.apply(null, bk.map(function (x) { return x.n; }).concat([1])), every = Math.ceil(nb / 13);
+  $("ppBars").innerHTML = bk.map(function (x, i) {
+    var mo = x.d.getUTCMonth(), yy = " '" + String(x.d.getUTCFullYear()).slice(2), lab = q ? "Q" + (mo / 3 + 1) + yy : x.d.toLocaleString("en-US", {month: "short", timeZone: "UTC"}) + (mo === 0 || i === 0 ? yy : "");
+    var name = q ? "Q" + (mo / 3 + 1) + " " + x.d.getUTCFullYear() : x.d.toLocaleString("en-US", {month: "long", year: "numeric", timeZone: "UTC"});
+    return '<div class="tb ' + x.cls + '" title="' + name + ": " + x.n + " filings, " + fmtInt(x.u) + ' units">' + (x.n && nb <= 30 ? "<b>" + x.n + "</b>" : "") +
+      '<i data-h="' + (x.n ? Math.max(3, 56 * x.n / mx) : 1) + '" style="height:0"></i><span>' + ((nb - 1 - i) % every ? "&nbsp;" : lab) + "</span></div>";
   }).join("");
+  setTimeout(function () { $("ppBars").querySelectorAll("i").forEach(function (b, i) { b.style.transitionDelay = (i * 12) + "ms"; b.style.height = b.dataset.h + "px"; }); }, 40);
 }
 function pipeFoot() {
-  var D = S.pipe, since = shortDate(D.then), closed = D.left.filter(function (x) { return x.why === "closed"; }).length;
-  $("ppFoot").innerHTML = (D.left.length ? "<details><summary>" + D.left.length + " contract" + (D.left.length > 1 ? "s" : "") + " left since " + since + ": " + closed + " closed, " + (D.left.length - closed) + " passed day 420</summary><div class=\"lfw\">" +
+  var D = S.pipe, since = D.off ? "" : shortDate(D.then), closed = D.left.filter(function (x) { return x.why === "closed"; }).length;
+  $("ppFoot").innerHTML = (D.off ? "" : D.left.length ? "<details><summary>" + D.left.length + " contract" + (D.left.length > 1 ? "s" : "") + " left since " + since + ": " + closed + " closed, " + (D.left.length - closed) + " passed day 420</summary><div class=\"lfw\">" +
     D.left.map(function (x) { return '<div class="lf"><span title="' + esc(pv(x.r, "buyer") || "") + '">' + esc(pv(x.r, "address")) + '</span><em style="font-style:normal">' + (x.why === "closed" ? "closed " : "day 420 ") + fmtDate(x.on) + '</em><a data-open="' + x.r.id + '">Open</a></div>'; }).join("") + "</div></details>" : "No contract left the pipeline since " + since + ".") +
-    (D.now.pending ? '<div style="margin-top:6px">' + D.now.pending + " more contract" + (D.now.pending > 1 ? "s" : "") + " in the window with the buyer not yet known (FOIA pending).</div>" : "");
+    (D.now.pending ? '<div' + (D.off ? "" : ' style="margin-top:6px"') + ">" + D.now.pending + " contract" + (D.now.pending > 1 ? "s" : "") + " with the buyer not yet known (FOIA pending): counted in the totals and on the map, not in this list.</div>" : "");
+  $("ppFoot").hidden = !$("ppFoot").innerHTML;
   $("ppFoot").querySelectorAll("[data-open]").forEach(function (a) { a.onclick = function () { openRow("ofs5", a.dataset.open); }; });
 }
 function renderPipe() {
@@ -1887,23 +1978,32 @@ function renderPipe() {
   var D = pipeData();
   var sig = _pPer + "#" + D.t + "#" + D.base.map(function (r) { return [r.id, pv(r, "buyer"), pv(r, "units"), pv(r, "price"), pv(r, "address"), pv(r, "date"), r.geo, compsFor("ofs5", r).length].join("~"); }).join("|");
   if (sig === _pSig) return;
-  var first = !_pSig, replay = first || _pShown !== _pPer; _pSig = sig; _pShown = _pPer; S.pipe = D;
-  $("ppSub").textContent = "Buyers under contract on DC 5+ unit offers of sale still inside the 420-day TOPA window, as of " + fmtDate(D.t) + ".";
-  $("ppPer").innerHTML = PP_PERIODS.map(function (p) { return '<button data-v="' + p.d + '"' + (p.d === _pPer ? ' class="on"' : "") + ">" + p.l + "</button>"; }).join("");
-  $("ppOnly").querySelector('[data-v="new"]').textContent = "New since " + shortDate(D.then);
-  $("ppKpis").innerHTML = PP_KPIS.map(function (k) { return '<div class="pp-kpi"><div class="l">' + k[1] + '</div><div class="v"></div><div class="c"><span class="d"></span><span>vs ' + k[2](D.was[k[0]]) + " on " + mdDate(D.then) + '</span></div><div class="tr"><s></s><i></i></div></div>'; }).join("");
-  pipeKpis(D.now, 1); pipeWhen(D.t, 1); pipeLegend(); pipeList(); pipeFoot(); pipeFlow();
+  cancelAnimationFrame(_pAnim);
+  var first = !_pSig, replay = !D.off && (first || _pShown !== _pPer), fresh = first || _pShown !== _pPer; _pSig = sig; _pShown = _pPer; S.pipe = D;
+  if (D.off) _pOnly = "";
+  $("ppSub").textContent = "DC 5+ unit offers of sale filed w/ contract and still inside the 420-day TOPA window, and who the buyers are, as of " + fmtDate(D.t) + ".";
+  $("ppPer").innerHTML = PP_PERIODS.map(function (p) { return '<button data-v="' + p.m + '" title="' + p.t + '"' + (p.m === _pPer ? ' class="on"' : "") + ">" + p.l + "</button>"; }).join("");
+  $("ppReplay").hidden = D.off;
+  $("ppOnly").hidden = D.off;
+  $("ppOnly").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x.dataset.v === _pOnly); });
+  if (!D.off) $("ppOnly").querySelector('[data-v="new"]').textContent = "New since " + mdDate(D.then);
+  $("ppKpis").innerHTML = PP_KPIS.map(function (k, i) {
+    return '<div class="pp-kpi' + (fresh ? " in" : "") + '" style="animation-delay:' + i * 50 + 'ms"><div class="l">' + k[1] + '</div><div class="v"></div>' +
+      (D.off ? '<div class="c">Today</div>' : '<div class="c"><span class="d"></span><span>vs ' + k[2](D.was[k[0]]) + " on " + mdDate(D.then) + '</span></div><div class="tr"><s></s><i></i></div>') + "</div>";
+  }).join("");
+  pipeVs(); pipeKpis(D.now); pipeWhen(D.t, 1); pipeLegend(); pipeList(); pipeFoot(); pipeFlow();
   pipeMarkers();
+  if (D.off && fresh && !document.hidden) document.querySelectorAll("#ppKpis .v").forEach(function (el, i) {
+    var k = PP_KPIS[i], to = D.now[k[0]], t0 = performance.now();
+    (function f(ts) { var x = Math.min(1, Math.max(0, ts - t0) / 800), e = 1 - Math.pow(1 - x, 3); el.textContent = k[2](Math.round(to * e)); if (x < 1 && S.pipe === D) requestAnimationFrame(f); })(t0);
+    setTimeout(function () { if (S.pipe === D) el.textContent = k[2](to); }, 1000);
+  });
   if (first) [30, 400].forEach(function (ms) { setTimeout(function () { _pmap.invalidateSize(); fitAll(false); }, ms); });
   if (replay) setTimeout(pipePlay, first ? 450 : 60);
 }
 function initPipe() {
   $("ppReplay").onclick = pipePlay;
-  $("ppPer").onclick = function (e) {
-    var b = e.target.closest("button"); if (!b || +b.dataset.v === _pPer) return;
-    _pPer = +b.dataset.v; try { localStorage.setItem("topa_ppcmp", _pPer); } catch (x) {}
-    renderPipe();
-  };
+  $("ppPer").onclick = function (e) { var b = e.target.closest("button"); if (b) setPipePeriod(+b.dataset.v); };
   $("ppOnly").querySelectorAll("button").forEach(function (b) {
     b.onclick = function () { _pOnly = b.dataset.v; $("ppOnly").querySelectorAll("button").forEach(function (x) { x.classList.toggle("on", x === b); }); if (S.pipe) pipeList(); };
   });
@@ -2055,7 +2155,7 @@ function renderMapView() {
   });
   _rLayer.clearLayers();
   $("lgRedev").hidden = !S.mf.redevLayer;
-  $("mStageRow").hidden = !mActiveOnly(); $("mStageChk").classList.toggle("on", !!S.mf.stage);
+  $("mStageChk").hidden = !mActiveOnly(); $("mStageChk").classList.toggle("on", !!S.mf.stage);
   $("lgStatus").hidden = stageOn(); $("lgStage").hidden = !stageOn();
   if (stageOn() && !$("lgStage").innerHTML) $("lgStage").innerHTML = MILESTONES.map(function (m, i) {
     return '<div class="lr"><span class="mdot" style="background:' + SEG_COLORS[i] + '"></span>Day ' + (i ? MILESTONES[i - 1].day + 1 : 0) + "&ndash;" + m.day + " &middot; " + m.label + "</div>";
