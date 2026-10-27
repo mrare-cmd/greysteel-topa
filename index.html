@@ -449,6 +449,11 @@ button.nav-h:hover{background:#f1f3f4}
 table.dt{border-collapse:separate;border-spacing:0;font-size:13px;min-width:100%}
 .dt th{position:sticky;top:0;z-index:2;background:var(--white);text-align:left;font-weight:500;font-size:12px;color:var(--text2);padding:0 10px;height:38px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
 .dt th:hover{color:var(--text)}
+.dt th .rsz{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize;z-index:3;touch-action:none}
+.dt th .rsz::after{content:"";position:absolute;right:0;top:9px;bottom:9px;width:2px;border-radius:1px;background:var(--border);opacity:0;transition:opacity .15s,background .15s}
+.dt th:hover .rsz::after{opacity:1}
+.dt th .rsz:hover::after{background:var(--blue);opacity:1}
+body.col-rsz,body.col-rsz *{cursor:col-resize!important;user-select:none}
 .dt th.sorted{color:var(--blue)}
 .dt th .ar{font-size:10px;margin-left:3px}
 .dt td{padding:0 10px;height:36px;border-bottom:1px solid var(--border2);white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;position:relative}
@@ -594,7 +599,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v22</span>
+    <span id="verBadge" title="Page version">v23</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1316,10 +1321,11 @@ function ruleHl(slug, row) {
 var SIBLINGS = {ofs5: ["ofs24", "dopa"], ofs24: ["ofs5"], dopa: ["ofs5"], not: ["sfdofs"], sfdofs: ["not", "rofr"], rofr: ["sfdofs"]};
 
 /* computed columns */
-var COMPUTED = {ppu: 1, status: 1, days: 1, saleDate: 1, uc: 1, sheetTitle: 1};
+var COMPUTED = {ppu: 1, tppu: 1, status: 1, days: 1, saleDate: 1, uc: 1, sheetTitle: 1};
 function compsFor(slug, row) { return slug === "ofs5" ? (S.compsByLink[row.id] || []) : []; }
 function cval(slug, row, f) {
   if (f === "ppu") { var u = +val(slug, row, "units"), p = +val(slug, row, "price"); return u > 0 && p > 0 ? p / u : null; }
+  if (f === "tppu") { var tu = +val(slug, row, "tunits"), tp = +val(slug, row, "tprice"); return tu > 0 && tp > 0 ? tp / tu : null; }
   if (f === "sheetTitle") return sheetMeta(slug).title;
   if (slug !== "ofs5") return null;
   var d = val(slug, row, "date"), cs = compsFor(slug, row), c = cs[0];
@@ -1435,6 +1441,7 @@ function applyOp(ov, o, email) {
 function coerce(col, raw) {
   var s = String(raw == null ? "" : raw).trim();
   if (col.type === "int" || col.type === "money") { if (!s) return ""; var n = parseNum(s); return n == null ? undefined : n; }
+  if (col.type === "url") return !s || /^(https?:\/\/|mailto:)/i.test(s) ? s : undefined;
   if (col.type === "date") { if (!s) return ""; var m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s); if (m) return (m[3].length === 2 ? "20" + m[3] : m[3]) + "-" + m[1].padStart(2, "0") + "-" + m[2].padStart(2, "0"); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : undefined; }
   return s;
 }
@@ -1498,7 +1505,7 @@ function reindex(index, sheet) {
   m.count = sheet.rows.length; m.maxDate = ds.length ? ds.sort().pop() : "";
   index.updated = new Date().toISOString();
 }
-function stripPrep(sh) { var o = {}; ["slug", "title", "group", "excelSheet", "columns", "rows"].forEach(function (k) { o[k] = sh[k]; }); o.columns = o.columns.filter(function (c) { return !c.computed || c.key === "ppu"; }).map(function (c) { var x = Object.assign({}, c); delete x.computed; return x; }); return o; }
+function stripPrep(sh) { var o = {}; ["slug", "title", "group", "excelSheet", "columns", "rows"].forEach(function (k) { o[k] = sh[k]; }); o.columns = o.columns.filter(function (c) { return !c.computed || c.key === "ppu" || c.key === "tppu"; }).map(function (c) { var x = Object.assign({}, c); delete x.computed; return x; }); return o; }
 async function newRowId(slug, row, taken) {
   var key = [row.date, row.address, row.orgName, row.type, row.units, row.price].map(function (x) { return x == null ? "" : x; }).join("|");
   var base = (await sha1hex(slug + "|" + key)).slice(0, 10), id = base, n = 1;
@@ -2355,6 +2362,7 @@ function cellHtml(slug, r, c) {
   if (t === "date") txt = fmtDate(v);
   else if (t === "money") txt = fmtMoney(v);
   else if (t === "int") txt = typeof v === "number" ? fmtInt(v) : esc(v);
+  else if (t === "url") txt = v && /^(https?:|mailto:)/i.test(v) ? '<a href="' + esc(v) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="' + esc(v) + '">Link &#8599;</a>' : esc(v);
   else txt = esc(v);
   if (c.key === "foia" && /greysteel/i.test(String(v || ""))) txt = '<span class="gs-foia">' + txt + "</span>";
   var url = !c.computed && val(slug, r, c.key + "Url");
@@ -2391,7 +2399,7 @@ function renderTable(soft) {
   var slice = rows.slice(S.page * ps, S.page * ps + ps);
   var head = '<thead><tr><th style="width:34px" title="Highlight"></th>' + cols.map(function (c) {
     var on = S.sort.key === c.key;
-    return '<th data-k="' + c.key + '" class="' + (on ? "sorted " : "") + (c.type === "int" || c.type === "money" ? "num" : "") + '">' + esc(c.label) + (on ? '<span class="ar">' + (S.sort.dir > 0 ? "&#9650;" : "&#9660;") + "</span>" : "") + "</th>";
+    return '<th data-k="' + c.key + '" class="' + (on ? "sorted " : "") + (c.type === "int" || c.type === "money" ? "num" : "") + '">' + esc(c.label) + (on ? '<span class="ar">' + (S.sort.dir > 0 ? "&#9650;" : "&#9660;") + "</span>" : "") + '<span class="rsz" title="Drag to resize, double-click to reset"></span></th>';
   }).join("") + '<th style="width:34px"></th></tr></thead>';
   var body = "<tbody>" + slice.map(function (x) {
     var hl = hlShown(x.slug, x.r);
@@ -2407,8 +2415,39 @@ function renderTable(soft) {
   var fOn = !!(f.q || f.from || f.to || f.type || f.units || f.status || f.hl || f.ed || f.hid || f.all);
   $("resetF").classList.toggle("on", fOn); $("resetF").title = fOn ? "Clear every filter on this view" : "Nothing to clear";
   $("pPrev").disabled = S.page === 0; $("pNext").disabled = S.page >= pages - 1;
-  $("dt").querySelectorAll("th[data-k]").forEach(function (th) { th.onclick = function () { var k = th.dataset.k; S.sort = {key: k, dir: S.sort.key === k ? -S.sort.dir : (k === "date" || k === "units" || k === "price" ? -1 : 1)}; renderTable(); }; });
+  applyColW(cols); bindColResize(cols);
+  $("dt").querySelectorAll("th[data-k]").forEach(function (th) { th.onclick = function () { if (Date.now() - _rszAt < 300) return; var k = th.dataset.k; S.sort = {key: k, dir: S.sort.key === k ? -S.sort.dir : (k === "date" || k === "units" || k === "price" ? -1 : 1)}; renderTable(); }; });
   if (!slice.length) $("dt").querySelector("tbody").innerHTML = '<tr><td colspan="' + (cols.length + 2) + '" class="empty">No rows match these filters.</td></tr>';
+}
+/* column widths: drag a header's right edge. Per person (this browser) and per tab; double-click resets. */
+var COLW = (function () { try { return JSON.parse(localStorage.getItem("topa_colw") || "{}"); } catch (e) { return {}; } })(), _rszAt = 0;
+function colwKey(k) { return (S.f.all ? "all" : S.sheet) + "|" + k; }
+function saveColW() { try { localStorage.setItem("topa_colw", JSON.stringify(COLW)); } catch (e) {} }
+function applyColW(cols) {
+  var el = $("colwCss");
+  if (!el) { el = document.createElement("style"); el.id = "colwCss"; document.head.appendChild(el); }
+  el.textContent = cols.map(function (c, i) {
+    var w = COLW[colwKey(c.key)]; if (!w) return "";
+    var n = ":nth-child(" + (i + 2) + ")";
+    return ".dt th" + n + ",.dt td" + n + "{width:" + w + "px;min-width:" + w + "px;max-width:" + w + "px}" +
+      ".dt td.adr" + n + "{max-width:none}.dt td.adr" + n + " .adt{max-width:" + Math.max(30, w - 20) + "px}";
+  }).join("");
+}
+function bindColResize(cols) {
+  $("dt").querySelectorAll("th[data-k] .rsz").forEach(function (h) {
+    var th = h.parentNode;
+    h.onclick = function (e) { e.stopPropagation(); };
+    h.ondblclick = function (e) { e.stopPropagation(); delete COLW[colwKey(th.dataset.k)]; saveColW(); applyColW(cols); };
+    h.onpointerdown = function (e) {
+      if (e.button) return;
+      e.preventDefault(); e.stopPropagation();
+      var k = colwKey(th.dataset.k), x0 = e.clientX, w0 = th.getBoundingClientRect().width;
+      document.body.classList.add("col-rsz");
+      function mv(ev) { COLW[k] = Math.max(40, Math.round(w0 + ev.clientX - x0)); applyColW(cols); }
+      function up() { document.removeEventListener("pointermove", mv); document.removeEventListener("pointerup", up); document.body.classList.remove("col-rsz"); _rszAt = Date.now(); saveColW(); }
+      document.addEventListener("pointermove", mv); document.addEventListener("pointerup", up);
+    };
+  });
 }
 /* table interactions: delegated */
 function tableClick(e) {
