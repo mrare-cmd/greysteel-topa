@@ -502,6 +502,12 @@ tr.hidden-row td{opacity:.45}
 .dt td .lnk.has{opacity:.9;color:var(--blue)}
 #lnkPop{position:fixed;z-index:7000;width:360px;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-lg);padding:12px;display:none}
 #lnkPop.open{display:block}
+#ctxMenu{position:fixed;z-index:7100;min-width:220px;max-width:320px;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-lg);padding:4px 0;display:none}
+#ctxMenu.open{display:block}
+#ctxMenu .ch{padding:6px 14px 6px;font-size:11.5px;color:var(--text2);border-bottom:1px solid var(--border2);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ctxMenu button,#ctxMenu a{display:flex;align-items:center;gap:10px;width:100%;height:34px;padding:0 14px;font-size:13px;color:var(--text);text-align:left;text-decoration:none}
+#ctxMenu button:hover,#ctxMenu a:hover{background:#f1f3f4}
+#ctxMenu svg{width:15px;height:15px;color:var(--text2);flex-shrink:0}
 #lnkPop .lt{font-size:12px;color:var(--text2);margin-bottom:6px}
 #lnkPop input{width:100%;height:32px;border:1px solid var(--border);border-radius:6px;padding:0 8px;outline:none;font-size:12.5px}
 #lnkPop input:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light)}
@@ -576,7 +582,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v27</span>
+    <span id="verBadge" title="Page version">v28</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -844,6 +850,7 @@ tr.hidden-row td{opacity:.45}
 <div id="modal"><div class="mbox" id="mbox"></div></div>
 <div id="hlPop"></div>
 <div id="lnkPop"></div>
+<div id="ctxMenu" role="menu"></div>
 <div class="tip" id="tip"></div>
 <div id="toast"></div>
 
@@ -2759,6 +2766,7 @@ function renderDrawer() {
       if (col.key === "notes") h += '<textarea data-f="' + col.key + '">' + esc(shown) + "</textarea>";
       else h += '<input data-f="' + col.key + '" type="' + (col.type === "date" ? "date" : "text") + '" value="' + esc(shown) + '"' + (col.type === "money" ? ' placeholder="$"' : "") + ">";
     }
+    if (col.key === "link" && slug === "not") h += '<div class="foia-acts"><button class="btn sm" onclick="copyFoia(\'' + r.id + '\',\'not\')">Copy FOIA request</button><a href="' + FOIA_PORTAL + '" target="_blank" rel="noopener" class="small">DC FOIA portal &#8599;</a></div>';
     if (col.key === "foia" && slug === "ofs5" && needsFoia(r)) h += '<div class="foia-acts"><button class="btn sm primary" onclick="copyFoia(\'' + r.id + '\')">Copy FOIA request</button><a href="' + FOIA_PORTAL + '" target="_blank" rel="noopener" class="small">DC FOIA portal &#8599;</a></div>';
     if (e) h += '<div class="orig">Original: ' + esc(r[col.key] == null || r[col.key] === "" ? "(blank)" : col.type === "money" ? fmtMoney(r[col.key]) : col.type === "date" ? fmtDate(r[col.key]) : r[col.key]) + ' · <a data-revert="' + col.key + '">restore</a></div>';
     h += "</div>";
@@ -3189,19 +3197,45 @@ async function loadActivity() {
 /* ---------- FOIA request (only while a 5+ row still reads NEED TO SUBMIT) ---------- */
 var FOIA_PORTAL = "https://myfoiadc.govqa.us/WEBAPP/_rs/supporthome.aspx";
 function needsFoia(r) { return /^need to submit$/i.test(String(val("ofs5", r, "foia") || "").trim()); }
-function foiaText(r) {
-  var d = dParse(val("ofs5", r, "date"));
+/* the request text: offers of sale ask for the offer of sale notice, Notice of Transfer rows for the notice of transfer */
+var REQ_DOC = {ofs5: "offer of sale notice", not: "notice of transfer"};
+function foiaText(r, slug) {
+  slug = slug || "ofs5";
+  var d = dParse(val(slug, r, "date"));
   var ds = d ? String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0") + "/" + d.getFullYear() : "xx/xx/xxxx";
-  return "Please provide the offer of sale notice recorded in the weekly TOPA report dated " + ds + " for " + (val("ofs5", r, "address") || "") + ".";
+  return "Please provide the " + REQ_DOC[slug] + " recorded in the weekly TOPA report dated " + ds + " for " + (val(slug, r, "address") || "") + ".";
 }
 function copyText(t) {
   if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
   return new Promise(function (ok) { var a = document.createElement("textarea"); a.value = t; a.style.position = "fixed"; a.style.opacity = "0"; document.body.appendChild(a); a.select(); try { document.execCommand("copy"); } catch (e) {} a.remove(); ok(); });
 }
-function copyFoia(id) {
-  var r = findRow("ofs5", id); if (!r) return;
-  copyText(foiaText(r)).then(function () { toast("FOIA request copied - paste it into the DC FOIA portal, then set FOIA to Requested"); }, function () { toast("Couldn't copy - your browser blocked the clipboard", true); });
+function copyFoia(id, slug) {
+  slug = slug || "ofs5";
+  var r = findRow(slug, id); if (!r) return;
+  copyText(foiaText(r, slug)).then(function () { toast("FOIA request copied - paste it into the DC FOIA portal" + (slug === "ofs5" ? ", then set FOIA to Requested" : "")); }, function () { toast("Couldn't copy - your browser blocked the clipboard", true); });
 }
+/* right-click a Notice of Transfer row: copy its FOIA request */
+function tableCtx(e) {
+  var tr = e.target.closest("tr[data-id]"); if (!tr || tr.dataset.s !== "not" || e.target.closest("input,textarea")) return;
+  e.preventDefault();
+  var slug = tr.dataset.s, id = tr.dataset.id, r = findRow(slug, id), m = $("ctxMenu");
+  m.innerHTML = '<div class="ch">' + esc(val(slug, r, "address") || "") + "</div>" +
+    '<button data-a="copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy FOIA request</button>' +
+    '<a href="' + FOIA_PORTAL + '" target="_blank" rel="noopener" data-a="portal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>DC FOIA portal</a>' +
+    '<button data-a="open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Open details</button>';
+  m.classList.add("open");
+  var w = m.offsetWidth, h = m.offsetHeight;
+  m.style.left = Math.min(e.clientX, innerWidth - w - 8) + "px"; m.style.top = Math.min(e.clientY, innerHeight - h - 8) + "px";
+  m.onclick = function (ev) {
+    var a = ev.target.closest("[data-a]"); if (!a) return;
+    m.classList.remove("open");
+    if (a.dataset.a === "copy") copyFoia(id, slug);
+    else if (a.dataset.a === "open") openRow(slug, id);
+  };
+}
+document.addEventListener("mousedown", function (e) { if (!e.target.closest("#ctxMenu")) $("ctxMenu").classList.remove("open"); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("ctxMenu").classList.remove("open"); });
+window.addEventListener("blur", function () { $("ctxMenu").classList.remove("open"); });
 
 /* ---------- "Tenants formed" flag: a tenant organization registered for the same building
    (DHCD Tenant Org Registrations, or the DC corporate registry's tenant associations)
@@ -3524,6 +3558,7 @@ function wire() {
   initPipe();
   $("dt").addEventListener("click", tableClick);
   $("dt").addEventListener("dblclick", tableDbl);
+  $("dt").addEventListener("contextmenu", tableCtx);
   $("drX").onclick = closeDrawer;
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if ($("modal").classList.contains("open")) closeModal(); else if (S.drawer && !e.target.closest("td.editing")) closeDrawer(); } });
   var tq; $("tq").addEventListener("input", function () { clearTimeout(tq); tq = setTimeout(function () { S.f.q = $("tq").value; S.page = 0; renderTable(); }, 160); });
