@@ -582,7 +582,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v28</span>
+    <span id="verBadge" title="Page version">v29</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1430,12 +1430,18 @@ function coerce(col, raw) {
   if (col.type === "date") { if (!s) return ""; var m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(s); if (m) return (m[3].length === 2 ? "20" + m[3] : m[3]) + "-" + m[1].padStart(2, "0") + "-" + m[2].padStart(2, "0"); return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : undefined; }
   return s;
 }
+/* the cell text to set when a link is attached: blank -> FOIA (or Link), and "Requested" -> FOIA since the document is in */
+function linkLabel(slug, row, field) {
+  var cur = String(val(slug, row, field) || "").trim();
+  if (!cur) return field === "foia" ? "FOIA" : "Link";
+  return /^requested$/i.test(cur) ? "FOIA" : null;
+}
 /* set a field; returns false when the value is not valid for the column */
 function setField(slug, row, col, raw) {
   var sh0 = S.sheets[slug], rawT = String(raw == null ? "" : raw).trim();
   if (sh0 && sh0.colKeys[col.key + "Url"] && /^https?:\/\/\S+$/i.test(rawT)) {
     var ops = [{t: "set", k: rk(slug, row), f: col.key + "Url", v: rawT === String(row[col.key + "Url"] || "") ? null : rawT}];
-    if (!String(val(slug, row, col.key) || "").trim()) ops.push({t: "set", k: rk(slug, row), f: col.key, v: col.key === "foia" ? "FOIA" : "Link"});
+    var lv = linkLabel(slug, row, col.key); if (lv) ops.push({t: "set", k: rk(slug, row), f: col.key, v: lv});
     sendOps(ops, "Link saved");
     return true;
   }
@@ -2654,7 +2660,7 @@ function openLinkPop(anchor, slug, id, field) {
     var u = inp.value.trim();
     if (u && !/^(https?:\/\/|mailto:)/i.test(u)) { toast("Paste a full link starting with https://", true); return; }
     var ops = [{t: "set", k: rk(slug, r), f: field + "Url", v: u === String(r[field + "Url"] || "") ? null : (u || "")}];
-    if (u && !String(val(slug, r, field) || "").trim()) ops.push({t: "set", k: rk(slug, r), f: field, v: field === "foia" ? "FOIA" : "Link"});
+    var lv = u && linkLabel(slug, r, field); if (lv) ops.push({t: "set", k: rk(slug, r), f: field, v: lv});
     close(); sendOps(ops, u ? "Link saved" : "Link removed");
   }
   $("lnkOk").onclick = save; $("lnkX").onclick = close;
