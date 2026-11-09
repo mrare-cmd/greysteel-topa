@@ -523,6 +523,9 @@ tr.hidden-row td{opacity:.45}
 .swrow button.on{border-color:var(--text)}
 .statbox{border:1px solid var(--border2);border-radius:10px;padding:12px 14px;background:var(--bg)}
 .statbox .row{display:flex;justify-content:space-between;font-size:12.5px;margin:3px 0}
+.maprow{display:flex;gap:8px;margin-top:8px}
+.maprow input{flex:1;min-width:0;height:32px;border:1px solid var(--border);border-radius:8px;padding:0 10px;font-size:12.5px;outline:none;background:var(--white)}
+.maprow input:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-light)}
 .citem{border:1px solid var(--border2);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:12.5px}
 .citem .ct{font-weight:500;margin-bottom:2px}
 .dr-f{padding:12px 18px;border-top:1px solid var(--border2);display:flex;gap:8px;justify-content:flex-end}
@@ -582,7 +585,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v29</span>
+    <span id="verBadge" title="Page version">v30</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -2760,6 +2763,11 @@ function renderDrawer() {
     }).join("") : '<div class="small muted" style="margin-bottom:8px">No closing linked yet.</div>') +
       '<div class="f"><input id="linkQ" placeholder="Link a comp: search comps by address"></div><div id="linkRes"></div>';
   }
+  if (MAPPED[slug]) {
+    h += '<div class="dr-sec">Map location</div><div class="statbox"><div class="row"><span>' +
+      (r.geo ? "On the map" + (r.mapAddr ? " at <b>" + esc(r.mapAddr) + "</b>" : "") : '<b style="color:var(--red)">Not on the map</b> - the address could not be found') + "</span></div>" +
+      '<div class="maprow"><input id="mapIn" placeholder="' + (r.geo ? "Move the pin: type a street address" : "Street address to pin, e.g. 5005 Bass Place SE") + '" value="' + esc(r.mapAddr || "") + '"><button class="btn sm' + (r.geo ? "" : " primary") + '" id="mapGo">Set pin</button></div></div>';
+  }
   h += '<div class="dr-sec">Details</div>';
   sh.columns.forEach(function (col) {
     if (col.computed && col.key !== "ppu") return;
@@ -2790,6 +2798,10 @@ function renderDrawer() {
   });
   $("drB").querySelectorAll("[data-revert]").forEach(function (a) { a.onclick = function () { sendOps([{t: "set", k: rk(slug, r), f: a.dataset.revert, v: null}], "Restored original"); setTimeout(renderDrawer, 30); }; });
   $("drB").querySelectorAll("[data-unlink]").forEach(function (a) { a.onclick = function (e) { e.preventDefault(); linkComp(a.dataset.unlink, null); }; });
+  if ($("mapGo")) {
+    $("mapGo").onclick = function () { setMapAddr(slug, r.id, $("mapIn").value); };
+    $("mapIn").onkeydown = function (e) { if (e.key === "Enter") setMapAddr(slug, r.id, $("mapIn").value); };
+  }
   var lq = $("linkQ");
   if (lq) lq.addEventListener("input", function () {
     var q = normAddr(lq.value); if (q.length < 2) { $("linkRes").innerHTML = ""; return; }
@@ -3103,14 +3115,61 @@ async function previewImport(batches) {
     saveImport(batches, pick);
   };
 }
+/* street addresses to try for one row, best first. Lists like "5005, 5009 and 5011 Bass Place SE" pair the bare
+   numbers with the next street (the number written next to the street first); ranges keep their first number;
+   the quadrant is borrowed from elsewhere in the text. */
+function geoCands(addr) {
+  var s = String(addr || "").replace(/\([^)]*\)/g, " ").replace(/\s*#.*$/, "")
+    .replace(/\bnorth\s*west\b/gi, "NW").replace(/\bnorth\s*east\b/gi, "NE").replace(/\bsouth\s*west\b/gi, "SW").replace(/\bsouth\s*east\b/gi, "SE")
+    .replace(/,?\s*washington(,?\s*d\.?c\.?)?(\s+\d{5})?\s*$/i, "")
+    /* typos seen in DHCD filings: Avneue, Streeet, Strreet, Sreet, Stree, 18thStreet, Vstreet */
+    .replace(/\bav[ne]+ue\b/gi, "Avenue").replace(/\bst+r*e+e*t*\b(?=\s|$|,)/gi, "Street").replace(/\bsreet\b/gi, "Street")
+    .replace(/(\d(?:st|nd|rd|th)|\b[A-Z])(street|place|avenue)\b/gi, "$1 $2").replace(/\s+/g, " ").trim();
+  var qm = /\b(NW|NE|SW|SE)\b/i.exec(s), quad = qm ? qm[1].toUpperCase() : "";
+  var out = [], seen = {}, pend = [];
+  function add(n, st) { var a = n + " " + st; if (!seen[a.toLowerCase()]) { seen[a.toLowerCase()] = 1; out.push(a); } }
+  s.split(/\s*(?:&|\band\b|,|;)\s*/i).forEach(function (g) {
+    g = g.trim(); if (!g) return;
+    var bare = /^(\d+)[A-Za-z]?(?:\s*-\s*\d+[A-Za-z]?)?$/.exec(g);
+    if (bare) { pend.push(bare[1]); return; }
+    var m = /^(\d+)[A-Za-z]?(?:\s*-\s*\d+[A-Za-z]?)?\s+(.*[A-Za-z].*)$/.exec(g); if (!m) return;
+    var st = m[2].replace(/[\s.,]+$/, "");
+    if (quad && !/\b(NW|NE|SW|SE)$/i.test(st)) st += " " + quad;
+    [m[1]].concat(pend).forEach(function (n) { add(n, st); }); pend = [];
+  });
+  return out.slice(0, 4);
+}
+/* sets r.geo on every row the Census geocoder finds; a row that is not found tries its next address */
 async function geocodeRows(rows) {
-  var items = rows.map(function (r, i) { return {k: String(i), a: String(r.address).split(/\s*(?:&| and |,|;)\s*/)[0].replace(/^(\d+)[A-Za-z]?\s*-\s*\d+[A-Za-z]?\b/, "$1").replace(/\s*#.*$/, ""), c: "Washington", s: "DC"}; });
-  for (var i = 0; i < items.length; i += 10) {
-    try {
-      var j = await apiPost("/topa/geocode", {items: items.slice(i, i + 10)});
-      Object.keys(j.results || {}).forEach(function (k) { var g = j.results[k]; if (g) rows[+k].geo = [Math.round(g.lat * 1e6) / 1e6, Math.round(g.lng * 1e6) / 1e6]; });
-    } catch (e) { /* the map is a nicety; never block an import on it */ }
+  var todo = rows.map(function (r, i) { return {r: r, c: geoCands(r.address), i: i}; }).filter(function (x) { return x.c.length; });
+  for (var round = 0; round < 4 && todo.length; round++) {
+    var items = todo.map(function (x) { return {k: String(x.i), a: x.c[round], c: "Washington", s: "DC"}; });
+    for (var i = 0; i < items.length; i += 10) {
+      try {
+        var j = await apiPost("/topa/geocode", {items: items.slice(i, i + 10)});
+        Object.keys(j.results || {}).forEach(function (k) { var g = j.results[k]; if (g) rows[+k].geo = [Math.round(g.lat * 1e6) / 1e6, Math.round(g.lng * 1e6) / 1e6]; });
+      } catch (e) { /* the map is a nicety; never block an import on it */ }
+    }
+    todo = todo.filter(function (x) { return !x.r.geo && x.c[round + 1]; });
   }
+}
+/* "Map location" in the row panel: geocode what the person typed and save the pin (and that address) on the row */
+var MAPPED = {ofs5: 1, condo: 1, nha: 1, vac: 1, raze: 1};
+async function setMapAddr(slug, id, typed) {
+  typed = String(typed || "").trim(); if (!typed) return;
+  var btn = $("mapGo"); if (btn) { btn.disabled = true; btn.textContent = "Finding..."; }
+  try {
+    var t = {address: typed}; await geocodeRows([t]);
+    if (!t.geo) { toast("Couldn't find " + typed + " - try one street address with its quadrant, e.g. 5005 Bass Place SE", true); return; }
+    var p = "sheets/" + slug + ".json";
+    await commitFiles([p], async function (o) {
+      var row = o[p].rows.filter(function (x) { return x.id === id; })[0]; if (!row) throw new Error("that row is gone");
+      row.geo = t.geo; row.mapAddr = typed; row.geoBy = S.me.email;
+      return "map pin for " + (row.address || id) + ": " + typed;
+    }, "topa:map_address");
+    toast("Pinned at " + typed); renderAll(); renderDrawer();
+  } catch (e) { toast("Not saved: " + e.message, true); }
+  finally { if ($("mapGo")) { $("mapGo").disabled = false; $("mapGo").textContent = "Set pin"; } }
 }
 async function saveImport(batches, pick) {
   $("mGo").disabled = true; $("mGo").textContent = "Saving...";
