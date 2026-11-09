@@ -585,7 +585,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v30</span>
+    <span id="verBadge" title="Page version">v31</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -2401,7 +2401,7 @@ function selectSheet(slug) {
   ensureSheet(slug).then(function () { renderTable(); }, function (e) { toast(e.message, true); });
   renderSide();
 }
-var ALLCOLS = [{key: "sheetTitle", label: "Tab", type: "text", computed: 1}, {key: "date", label: "Date", type: "date"}, {key: "address", label: "Address", type: "text"},
+var ALLCOLS = [{key: "sheetTitle", label: "Tab", type: "text", computed: 1}, {key: "date", label: "Date", type: "date"}, {key: "address", label: "Address", type: "text"}, {key: "name", label: "Property Name", type: "text"},
   {key: "type", label: "Type", type: "text"}, {key: "units", label: "Units", type: "text"}, {key: "price", label: "Price", type: "money"}, {key: "buyer", label: "Buyer", type: "text"},
   {key: "seller", label: "Seller", type: "text"}, {key: "notes", label: "Notes", type: "text"}];
 function currentRows() {
