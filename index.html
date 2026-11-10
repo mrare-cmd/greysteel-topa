@@ -585,7 +585,7 @@ tr.hidden-row td{opacity:.45}
     <div class="mark">T</div>
     <span class="brand-name">Greysteel</span><span class="brand-sep">|</span>
     <span class="brand-page">TOPA Tracker</span>
-    <span id="verBadge" title="Page version">v31</span>
+    <span id="verBadge" title="Page version">v32</span>
   </div>
   <nav class="tabs">
     <button class="tab" data-view="map"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg><span class="tl">Map</span></button>
@@ -1309,7 +1309,33 @@ var SIBLINGS = {ofs5: ["ofs24", "dopa"], ofs24: ["ofs5"], dopa: ["ofs5"], not: [
 
 /* computed columns */
 var COMPUTED = {ppu: 1, tppu: 1, status: 1, days: 1, saleDate: 1, uc: 1, sheetTitle: 1};
-function compsFor(slug, row) { return slug === "ofs5" ? (S.compsByLink[row.id] || []) : []; }
+/* sale comps for an offer of sale: the ones linked to it, plus a closing linked to another filing for the same
+   building (same address) when this filing came within the 420 days before that filing and on or before the sale.
+   So a building filed w/o Contract in February and w/ Contract in May is closed on both once the sale is linked to
+   either, while an older offer that lapsed years before stays as it was. The index is rebuilt whenever comps, comp
+   links, the sheet or the shared edits are swapped for a newer copy. */
+var _bldg = {};
+function bldgComps() {
+  var sh = S.sheets.ofs5;
+  if (_bldg.comps === S.comps && _bldg.links === S.compsByLink && _bldg.sh === sh && _bldg.ov === S.overlay) return _bldg.map;
+  var byId = {}, map = {};
+  if (sh) sh.rows.forEach(function (r) { byId[r.id] = r; });
+  S.comps.forEach(function (c) {
+    var r = c.link && byId[c.link], ld = r && val("ofs5", r, "date"); if (!ld || !c.date) return;
+    var a = normAddr(val("ofs5", r, "address")); if (a) (map[a] = map[a] || []).push({c: c, from: isoShift(ld, -420)});
+  });
+  _bldg = {comps: S.comps, links: S.compsByLink, sh: sh, ov: S.overlay, map: map};
+  return map;
+}
+function compsFor(slug, row) {
+  if (slug !== "ofs5") return [];
+  var own = S.compsByLink[row.id] || [], d = val("ofs5", row, "date");
+  var more = d ? (bldgComps()[normAddr(val("ofs5", row, "address"))] || []).filter(function (x) {
+    return x.c.link !== row.id && own.indexOf(x.c) < 0 && d >= x.from && d <= x.c.date;
+  }).map(function (x) { return x.c; }) : [];
+  if (!more.length) return own;
+  return own.concat(more).sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+}
 function cval(slug, row, f) {
   if (f === "ppu") { var u = +val(slug, row, "units"), p = +val(slug, row, "price"); return u > 0 && p > 0 ? p / u : null; }
   if (f === "tppu") { var tu = +val(slug, row, "tunits"), tp = +val(slug, row, "tprice"); return tu > 0 && tp > 0 ? tp / tu : null; }
@@ -2759,7 +2785,7 @@ function renderDrawer() {
       (c ? '<div class="row"><span>Sold</span><span>' + fmtDate(c.date) + (c.price ? " · " + fmtMoney(c.price) : "") + '</span></div><div class="row"><span>Days under contract (TOPA date to sale)</span><b>' + daysBetween(d, c.date) + "</b></div>" : "") +
       '<div class="pbar" style="margin-top:8px"><i style="width:' + Math.min(100, (c ? daysBetween(d, c.date) : n || 0) / 420 * 100) + "%" + (c ? ";background:var(--green)" : "") + '"></i></div></div>';
     h += '<div class="dr-sec">CoStar sale comps</div>' + (cs.length ? cs.map(function (c) {
-      return '<div class="citem"><div class="ct">' + fmtDate(c.date) + " · " + fmtMoney(c.price) + (c.units ? " · " + c.units + " units" : "") + '</div><div class="muted">' + esc([c.buyer && "Buyer: " + c.buyer, c.seller && "Seller: " + c.seller].filter(Boolean).join(" · ")) + '</div><a href="#" class="small" data-unlink="' + c.id + '">Unlink</a></div>';
+      return '<div class="citem"><div class="ct">' + fmtDate(c.date) + " · " + fmtMoney(c.price) + (c.units ? " · " + c.units + " units" : "") + '</div><div class="muted">' + esc([c.buyer && "Buyer: " + c.buyer, c.seller && "Seller: " + c.seller].filter(Boolean).join(" · ")) + '</div>' + (c.link === r.id ? '<a href="#" class="small" data-unlink="' + c.id + '">Unlink</a>' : '<a href="#" class="small" onclick="openRow(\'ofs5\',\'' + c.link + '\');return false" title="Linked to a later filing for the same building">Linked via the ' + fmtDate((findRow("ofs5", c.link) && val("ofs5", findRow("ofs5", c.link), "date")) || "") + " filing</a>") + "</div>";
     }).join("") : '<div class="small muted" style="margin-bottom:8px">No closing linked yet.</div>') +
       '<div class="f"><input id="linkQ" placeholder="Link a comp: search comps by address"></div><div id="linkRes"></div>';
   }
